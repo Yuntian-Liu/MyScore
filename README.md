@@ -1,6 +1,6 @@
 # MyScore - 成绩管理系统
 
-![Version](https://img.shields.io/badge/version-5.2-green)
+![Version](https://img.shields.io/badge/version-5.3-green)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
 一个功能完善的考试成绩管理系统，支持雅思、大学英语四六级以及自定义考试的成绩录入、统计分析和数据管理。
@@ -43,7 +43,7 @@
 ## 🚀 快速开始
 
 ### 1. 打开应用
-直接在浏览器中打开 `myscore_V5.2.html` 文件即可使用。
+直接在浏览器中打开 `myscore_V5.3.html` 文件即可使用。
 
 ### 2. 录入成绩
 1. 点击顶部导航栏的"录入成绩"
@@ -66,13 +66,21 @@
 ```
 MyScore/
 ├── README.md                          # 使用说明文档
-├── myscore_V5.2.html                  # 最新版本（V5.2）
-└── [历史版本文件]                     # V1.0 - V5.1的历史版本
+├── myscore_V5.3.html                  # 最新版本（V5.3）
+└── [历史版本文件]                     # V1.0 - V5.2的历史版本
 ```
 
 ## 🎯 版本历史
 
-### V5.2 (当前版本)
+### V5.3 (当前版本)
+- ✅ 恢复成绩趋势图表功能（Chart.js）
+- ✅ CET考试写作和翻译合并显示
+- ✅ 修复图表切换Bug
+- ✅ 修复历史记录不显示问题
+- ✅ 修复数据兼容性问题
+- ✅ 明亮精致UI风格
+
+### V5.2
 - ✅ 新增多小题计分功能
 - ✅ 修复自定义考试计分Bug
 - ✅ 分部分计分实时预览修复
@@ -94,12 +102,12 @@ MyScore/
 
 - 使用LocalStorage存储数据，建议定期备份
 - 建议使用现代浏览器获得最佳体验
-- V5.2 数据与之前版本不兼容，需重新导入
+- V5.3 数据与 V5.2 格式兼容
 
 ## 📄 许可证
 
 Copyright © LYT, 2026 All Rights Reserved
-
+联系方式：liuyuntian@ytun.team
 ---
 
 ## 📖 详细功能说明

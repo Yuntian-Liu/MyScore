@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyScore V5.2 - 我的成绩单</title>
+    <title>MyScore V5.3 - 我的成绩单</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -328,7 +328,7 @@
                         </div>
                         <div>
                             <h1 style="font-size: 1.75rem; font-weight: bold;" class="gradient-text">MyScore</h1>
-                            <p style="font-size: 0.875rem; color: #6b7280;">V5.2 我的成绩单</p>
+                            <p style="font-size: 0.875rem; color: #6b7280;">V5.3 我的成绩单</p>
                         </div>
                     </div>
                     <nav style="display: flex; gap: 0.5rem;">
@@ -405,11 +405,14 @@
                 <!-- 统计 Tabs -->
                 <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
                     <div id="dashboard-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; border-bottom: 2px solid #f3f4f6; padding-bottom: 1rem;">
-                        <button class="tab-btn active" onclick="switchDashboardTab('overview')">概览</button>
+                        <button class="tab-btn active" onclick="switchDashboardTab('overview', this)">概览</button>
                     </div>
                     <div id="tab-content-overview">
                         <!-- 图表容器 -->
                         <div id="charts-container" style="display: none;">
+                            <!-- 统计区域 -->
+                            <div id="stats-area"></div>
+                            <!-- 图表标题和画布 -->
                             <div style="margin-bottom: 1.5rem;">
                                 <h3 style="font-weight: 700; font-size: 1.125rem; margin-bottom: 1rem;">📈 成绩趋势</h3>
                                 <div style="position: relative; height: 350px; background: white; border: 2px solid #e5e7eb; border-radius: 1rem; padding: 1rem;">
@@ -543,14 +546,14 @@
 
         <footer style="text-align: center; padding: 2rem; color: #9ca3af;">
             <p>Copyright © LYT, 2026 All Rights Reserved</p>
-            <p style="font-size: 0.875rem; margin-top: 0.25rem;">MyScore V5.2</p>
+            <p style="font-size: 0.875rem; margin-top: 0.25rem;">MyScore V5.3</p>
         </footer>
     </div>
 
     <script>
         // ==================== 数据存储 ====================
         const STORAGE = {
-            RECORDS: 'myscore_v51_records',
+            RECORDS: 'myscore_v51_records',  // 保持与V5.2兼容
             CUSTOM: 'myscore_v51_custom'
         };
 
@@ -677,7 +680,7 @@
 
         function lookup(raw, type) {
             const table = IELTS_TABLES[type];
-            if (!table) return parseFloat(raw) || 0; // 自定义考试没有查找表，直接返回输入值
+            if (!table) return parseFloat(raw) || 0;
             const v = parseInt(raw) || 0;
             for (const item of table) {
                 if (v >= item.min && v <= item.max) return item.s;
@@ -741,7 +744,7 @@
                         const writingScore = last.scores['writing'] || 0;
                         const translationScore = last.scores['translation'] || 0;
                         const wtTotal = writingScore + translationScore;
-                        const wtColor = '#f59e0b'; // 橙色
+                        const wtColor = '#f59e0b';
                         html += '<div style="background:' + wtColor + '15;border:2px solid ' + wtColor + '40;padding:0.75rem 1.25rem;border-radius:0.75rem;text-align:center;min-width:80px;">';
                         html += '<div style="font-size:0.75rem;color:' + wtColor + ';font-weight:600;">写作和翻译</div>';
                         html += '<div style="font-size:1.5rem;font-weight:bold;color:' + wtColor + ';">' + wtTotal + '</div></div>';
@@ -756,10 +759,10 @@
 
             // Tabs
             const tabsDiv = document.getElementById('dashboard-tabs');
-            let tabsHtml = '<button class="tab-btn active" onclick="switchDashboardTab(\'overview\')">概览</button>';
+            let tabsHtml = '<button class="tab-btn active" onclick="switchDashboardTab(\'overview\', this)">概览</button>';
             for (const tid of types) {
                 const e = exams[tid];
-                if (e) tabsHtml += '<button class="tab-btn" onclick="switchDashboardTab(\'' + tid + '\')">' + e.icon + ' ' + e.name + '</button>';
+                if (e) tabsHtml += '<button class="tab-btn" onclick="switchDashboardTab(\'' + tid + '\', this)">' + e.icon + ' ' + e.name + '</button>';
             }
             tabsDiv.innerHTML = tabsHtml;
 
@@ -778,14 +781,11 @@
                     let badges = '';
 
                     for (const s of e.subjects) {
-                        // CET考试跳过单独的写作和翻译
                         if (isCet && (s.id === 'writing' || s.id === 'translation')) continue;
-
                         const sc = r.scores[s.id] || 0;
                         badges += '<span class="score-badge" style="background:' + s.color + '15;color:' + s.color + ';">' + s.short + ': ' + sc.toFixed(s.dec) + '</span>';
                     }
 
-                    // CET考试：添加合并的写作和翻译徽章
                     if (isCet) {
                         const writingScore = r.scores['writing'] || 0;
                         const translationScore = r.scores['translation'] || 0;
@@ -804,19 +804,23 @@
             }
         }
 
-        function switchDashboardTab(tab) {
+        function switchDashboardTab(tab, btnElement) {
+            // 使用传入的btnElement而不是event.target
+            const btn = btnElement || event.target;
+            
+            // 移除所有active状态
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
+            // 添加active状态到当前按钮
+            btn.classList.add('active');
+            
             const container = document.getElementById('tab-content-overview');
             const chartsContainer = document.getElementById('charts-container');
             const overviewEmpty = document.getElementById('overview-empty');
 
             if (tab === 'overview') {
-                container.innerHTML = '';
-                container.appendChild(chartsContainer);
-                container.appendChild(overviewEmpty);
-                chartsContainer.style.display = 'none';
+                // 显示概览
                 overviewEmpty.style.display = 'block';
+                chartsContainer.style.display = 'none';
                 return;
             }
 
@@ -826,23 +830,29 @@
 
             overviewEmpty.style.display = 'none';
             if (!recs.length) {
-                container.innerHTML = '<div class="empty-state" style="padding:2rem;"><p style="color:#9ca3af;">暂无' + (exam ? exam.name : '') + '数据</p></div>';
+                overviewEmpty.innerHTML = '<p style="color:#9ca3af;">暂无' + (exam ? exam.name : '') + '数据</p>';
+                chartsContainer.style.display = 'none';
                 return;
             }
 
-            // 显示统计卡片
-            let html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem;">';
-            html += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">考试次数</p><p style="font-size:2rem;font-weight:bold;" class="gradient-text">' + recs.length + '</p></div>';
-            html += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">最近</p><p style="font-size:1.25rem;font-weight:bold;">' + recs[recs.length-1].date + '</p></div>';
+            // 显示统计卡片 - 不破坏chartsContainer
+            let statsHtml = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem;">';
+            statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">考试次数</p><p style="font-size:2rem;font-weight:bold;" class="gradient-text">' + recs.length + '</p></div>';
+            statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">最近</p><p style="font-size:1.25rem;font-weight:bold;">' + recs[recs.length-1].date + '</p></div>';
             if (exam.calcTotal) {
                 const totals = recs.map(r => r.total);
-                html += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">最佳</p><p style="font-size:2rem;font-weight:bold;color:#3b82f6;">' + Math.max(...totals).toFixed(1) + '</p></div>';
-                html += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">平均</p><p style="font-size:2rem;font-weight:bold;color:#8b5cf6;">' + (totals.reduce((a,b)=>a+b,0)/totals.length).toFixed(1) + '</p></div>';
+                statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">最佳</p><p style="font-size:2rem;font-weight:bold;color:#3b82f6;">' + Math.max(...totals).toFixed(1) + '</p></div>';
+                statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">平均</p><p style="font-size:2rem;font-weight:bold;color:#8b5cf6;">' + (totals.reduce((a,b)=>a+b,0)/totals.length).toFixed(1) + '</p></div>';
             }
-            html += '</div>';
+            statsHtml += '</div>';
 
-            container.innerHTML = html;
-            container.appendChild(chartsContainer);
+            // 更新统计区域
+            const statsArea = document.getElementById('stats-area');
+            if (statsArea) {
+                statsArea.innerHTML = statsHtml;
+            } else {
+                overviewEmpty.innerHTML = statsHtml;
+            }
 
             // 渲染图表
             chartsContainer.style.display = 'block';
@@ -941,6 +951,49 @@
             });
         }
 
+        // ==================== 历史记录 ====================
+        function renderHistoryRecords() {
+            const records = getRecords();
+            const exams = allExams();
+            const listDiv = document.getElementById('records-list');
+            
+            if (!records.length) {
+                listDiv.innerHTML = '<div class="empty-state" style="padding:2rem;"><p style="color:#9ca3af;">暂无历史记录</p></div>';
+                return;
+            }
+            
+            let listHtml = '';
+            for (let i = records.length - 1; i >= 0; i--) {
+                const r = records[i];
+                const e = exams[r.examType];
+                if (!e) continue;
+
+                const isCet = r.examType === 'cet4' || r.examType === 'cet6';
+                let badges = '';
+
+                for (const s of e.subjects) {
+                    if (isCet && (s.id === 'writing' || s.id === 'translation')) continue;
+                    const sc = r.scores[s.id] || 0;
+                    badges += '<span class="score-badge" style="background:' + s.color + '15;color:' + s.color + ';">' + s.short + ': ' + sc.toFixed(s.dec) + '</span>';
+                }
+
+                if (isCet) {
+                    const writingScore = r.scores['writing'] || 0;
+                    const translationScore = r.scores['translation'] || 0;
+                    const wtTotal = writingScore + translationScore;
+                    const wtColor = '#f59e0b';
+                    badges += '<span class="score-badge" style="background:' + wtColor + '15;color:' + wtColor + ';">写作和翻译: ' + wtTotal + '</span>';
+                }
+
+                listHtml += '<div class="record-box"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;"><span style="font-size:1.25rem;">' + e.icon + '</span><span style="font-weight:700;">' + e.name + '</span><span style="color:#9ca3af;font-size:0.875rem;">' + r.date + '</span></div><div>' + badges + '</div></div><div style="display:flex;align-items:center;gap:1rem;">';
+                if (r.total !== null) {
+                    listHtml += '<div style="text-align:right;"><div style="font-size:0.75rem;color:#9ca3af;">总分</div><div style="font-size:1.75rem;font-weight:bold;" class="gradient-text">' + r.total.toFixed(1) + '</div></div>';
+                }
+                listHtml += '<button onclick="deleteRecord(' + r.id + ')" style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:1.5rem;">×</button></div></div></div>';
+            }
+            listDiv.innerHTML = listHtml;
+        }
+
         function deleteRecord(id) {
             if (!confirm('确定删除这条记录？')) return;
             saveRecords(getRecords().filter(r => r.id !== id));
@@ -1003,12 +1056,10 @@
 
                 // 雅思写作特殊处理 - Task1/Task2
                 if (s.type === 'ielts-writing') {
-                    // 总分输入
                     html += '<div style="margin-bottom:1rem;">';
                     html += '<label style="display:block;margin-bottom:0.5rem;font-size:0.875rem;color:#b45309;font-weight:500;">总分 (0-9，步长0.5)</label>';
                     html += '<input type="number" id="sub-' + s.id + '" min="0" max="9" step="0.5" class="input" placeholder="输入总分" oninput="updateTotalPreview()">';
                     html += '</div>';
-                    // Task 1 & Task 2
                     html += '<div style="border-top:2px solid #fcd34d;padding-top:1rem;margin-top:1rem;">';
                     html += '<div style="margin-bottom:1rem;">';
                     html += '<label style="display:block;margin-bottom:0.5rem;font-size:0.875rem;color:#b45309;">Task 1 (小作文)</label>';
@@ -1018,7 +1069,6 @@
                     html += '<label style="display:block;margin-bottom:0.5rem;font-size:0.875rem;color:#b45309;">Task 2 (大作文)</label>';
                     html += '<input type="number" id="task2-' + s.id + '" min="0" max="9" step="0.5" class="input" placeholder="Task2 分数" oninput="onTaskInput(2, this.value)">';
                     html += '</div>';
-                    // 自动计算显示
                     html += '<div style="background:rgba(255,255,255,0.7);border:2px solid #fcd34d;border-radius:0.75rem;padding:1rem;">';
                     html += '<div style="font-size:0.875rem;color:#b45309;font-weight:500;">自动计算 (Task2×2 + Task1) ÷ 3</div>';
                     html += '<div id="writing-calc" style="font-size:1.5rem;font-weight:bold;color:#b45309;">-</div>';
@@ -1089,24 +1139,20 @@
             const arrow = header.querySelector('.accordion-arrow');
             const isExpanded = content.classList.contains('expanded');
             
-            // 先收起所有项
             document.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('expanded'));
             document.querySelectorAll('.accordion-arrow').forEach(a => a.classList.remove('expanded'));
             
-            // 如果当前项未展开，则展开它
             if (!isExpanded) {
                 content.classList.add('expanded');
                 arrow.classList.add('expanded');
             }
         }
 
-        // Task1/Task2 输入处理
         function onTaskInput(task, val) {
             const score = parseFloat(val);
             if (task === 1) writingTask1 = isNaN(score) ? null : score;
             else writingTask2 = isNaN(score) ? null : score;
 
-            // 自动计算并填入总分
             if (writingTask1 !== null && writingTask2 !== null) {
                 const total = calcWritingScore(writingTask1, writingTask2);
                 document.getElementById('writing-calc').textContent = total.toFixed(1);
@@ -1400,7 +1446,7 @@
                 alert('暂无数据可导出！');
                 return;
             }
-            const data = { version: '5.1', date: new Date().toISOString(), records, custom };
+            const data = { version: '5.2', date: new Date().toISOString(), records, custom };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
