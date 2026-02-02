@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyScore V2.2 - 我的成绩单</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 明亮主题配色 */
+        :root {
+            --bg-main: #faf8f5;
+            --bg-card: #ffffff;
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --text-main: #1f2937;
+            --text-secondary: #6b7280;
+            --listening: #3b82f6;
+            --reading: #10b981;
+            --writing: #f59e0b;
+            --speaking: #8b5cf6;
+            --translation: #ef4444;
+        }
+
+        body {
+            background: linear-gradient(135deg, #faf8f5 0%, #f3f0eb 100%);
+            min-height: 100vh;
+        }
+
+        .card-bright {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(16, 185, 129, 0.1);
+        }
+
+        .card-bright:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .gradient-text-bright {
+            background: linear-gradient(135deg, #10b981, #059669);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subject-card-listening {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 2px solid #3b82f6;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
+        }
+
+        .subject-card-reading {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border: 2px solid #10b981;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);
+        }
+
+        .subject-card-writing {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 2px solid #f59e0b;
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
+        }
+
+        .subject-card-speaking {
+            background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+            border: 2px solid #8b5cf6;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.15);
+        }
+
+        .subject-card-translation {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border: 2px solid #ef4444;
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.15);
+        }
+
+        .subject-card {
+            transition: all 0.3s ease;
+            border-radius: 1rem;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .input-bright {
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+
+        .input-bright:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .input-bright.input-error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+        .input-warning {
+            font-size: 0.75rem;
+            color: #ef4444;
+            margin-top: 0.25rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .expandable-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .expandable-content.expanded {
+            max-height: 400px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+            border: 2px solid #e5e7eb;
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: #10b981;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15);
+        }
+
+        .exam-type-btn {
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .exam-type-btn.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border-color: #059669;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .exam-type-btn:not(.active):hover {
+            border-color: #10b981;
+            background-color: rgba(16, 185, 129, 0.1);
+        }
+    </style>
+</head>
+<body class="text-gray-900">
+    <div id="app" class="container mx-auto px-4 py-8 max-w-5xl">
+        <!-- 头部导航 -->
+        <header class="mb-8">
+            <div class="card-bright p-6 flex justify-between items-center">
+                <div>
+                    <h1 class="text-4xl font-bold gradient-text-bright">MyScore</h1>
+                    <p class="text-gray-500 text-sm mt-1">我的成绩单 (V2.2 - 支持雅思/四六级)</p>
+                </div>
+                <nav class="flex gap-3">
+                    <button onclick="showPage('dashboard')" id="nav-dashboard"
+                        class="px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-all font-medium shadow-md">
+                        仪表盘
+                    </button>
+                    <button onclick="showPage('entry')" id="nav-entry"
+                        class="px-5 py-2.5 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 transition-all font-medium">
+                        录入成绩
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- 仪表盘页面 -->
+        <div id="page-dashboard" class="page">
+            <!-- 最近成绩卡片 -->
+            <div id="recent-score-card" class="card-bright p-8 mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+                    最近成绩
+                </h2>
+                <div id="recent-score-content">
+                    <!-- 动态内容 -->
+                </div>
+            </div>
+
+            <!-- 统计概览 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="stat-card p-6">
+                    <div class="text-gray-500 text-sm mb-2 font-medium">总考试次数</div>
+                    <div id="total-count" class="text-4xl font-bold text-emerald-600">0</div>
+                </div>
+                <div class="stat-card p-6">
+                    <div class="text-gray-500 text-sm mb-2 font-medium">雅思最佳Overall</div>
+                    <div id="ielts-best" class="text-4xl font-bold text-blue-600">-</div>
+                </div>
+                <div class="stat-card p-6">
+                    <div class="text-gray-500 text-sm mb-2 font-medium">雅思平均Overall</div>
+                    <div id="ielts-avg" class="text-4xl font-bold text-purple-600">-</div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="stat-card p-6">
+                    <div class="text-gray-500 text-sm mb-2 font-medium">四级最佳</div>
+                    <div id="cet4-best" class="text-4xl font-bold text-blue-600">-</div>
+                </div>
+                <div class="stat-card p-6">
+                    <div class="text-gray-500 text-sm mb-2 font-medium">四级平均</div>
+                    <div id="cet4-avg" class="text-4xl font-bold text-purple-600">-</div>
+                </div>
+                <div class="stat-card p-6">
+                    <div class="text-gray-500 text-sm mb-2 font-medium">六级最佳</div>
+                    <div id="cet6-best" class="text-4xl font-bold text-blue-600">-</div>
+                </div>
+                <div class="stat-card p-6">
+                    <div class="text-gray-500 text-sm mb-2 font-medium">六级平均</div>
+                    <div id="cet6-avg" class="text-4xl font-bold text-purple-600">-</div>
+                </div>
+            </div>
+
+            <!-- 历史记录列表 -->
+            <div class="card-bright p-8 mt-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-semibold text-gray-800">
+                        历史记录
+                    </h2>
+                    <button onclick="clearAllRecords()" class="text-red-500 hover:text-red-600 text-sm font-semibold transition-colors">
+                        清空所有记录
+                    </button>
+                </div>
+                <div id="records-list" class="space-y-3">
+                    <!-- 动态内容 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 录入页面 -->
+        <div id="page-entry" class="page hidden">
+            <!-- 考试类型切换器 -->
+            <div class="card-bright p-6 mb-6">
+                <h2 class="text-lg font-semibold text-gray-800 mb-4">选择考试类型</h2>
+                <div class="flex gap-3">
+                    <button onclick="switchExamType('ielts')" id="btn-ielts" class="exam-type-btn active px-6 py-3 rounded-lg font-semibold">
+                        雅思
+                    </button>
+                    <button onclick="switchExamType('cet4')" id="btn-cet4" class="exam-type-btn px-6 py-3 rounded-lg font-semibold text-gray-700">
+                        四级 (CET-4)
+                    </button>
+                    <button onclick="switchExamType('cet6')" id="btn-cet6" class="exam-type-btn px-6 py-3 rounded-lg font-semibold text-gray-700">
+                        六级 (CET-6)
+                    </button>
+                </div>
+            </div>
+
+            <!-- 雅思录入表单 -->
+            <div id="ielts-form-container">
+                <div class="card-bright p-8 mb-6">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+                        录入雅思成绩
+                    </h2>
+                    <form id="ielts-form" class="space-y-6">
+                        <!-- 考试日期 -->
+                        <div>
+                            <label class="block text-gray-700 text-sm font-medium mb-2">考试日期（支持键盘输入，如20260125自动转换）</label>
+                            <input type="date" id="ielts-exam-date" required
+                                class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                            <div id="ielts-date-warning" class="input-warning"></div>
+                        </div>
+
+                        <!-- 四科输入区域 -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Listening -->
+                            <div class="subject-card subject-card-listening p-6">
+                                <h3 class="text-lg font-bold text-blue-700 mb-4">
+                                    Listening
+                                </h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-blue-600 text-sm font-medium mb-2">正确题数 (0-40)</label>
+                                        <input type="number" id="ielts-listening-raw" min="0" max="40" required placeholder="请输入正确题数 (0-40)"
+                                            class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="ielts-listening-warning" class="input-warning"></div>
+                                    </div>
+                                    <div class="bg-white/70 rounded-lg p-4 border-2 border-blue-300">
+                                        <div class="text-blue-600 text-sm font-medium">折算分</div>
+                                        <div id="ielts-listening-score" class="text-3xl font-bold text-blue-700">0.0</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Reading -->
+                            <div class="subject-card subject-card-reading p-6">
+                                <h3 class="text-lg font-bold text-emerald-700 mb-4">
+                                    Reading (Academic)
+                                </h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-emerald-600 text-sm font-medium mb-2">正确题数 (0-40)</label>
+                                        <input type="number" id="ielts-reading-raw" min="0" max="40" required placeholder="请输入正确题数 (0-40)"
+                                            class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="ielts-reading-warning" class="input-warning"></div>
+                                    </div>
+                                    <div class="bg-white/70 rounded-lg p-4 border-2 border-emerald-300">
+                                        <div class="text-emerald-600 text-sm font-medium">折算分</div>
+                                        <div id="ielts-reading-score" class="text-3xl font-bold text-emerald-700">0.0</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Writing -->
+                            <div class="subject-card subject-card-writing p-6">
+                                <h3 class="text-lg font-bold text-amber-700 mb-4">
+                                    Writing
+                                </h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-amber-600 text-sm font-medium mb-2">总分 (0-9，步长0.5)</label>
+                                        <input type="number" id="ielts-writing-score" min="0" max="9" step="0.5" required placeholder="请输入总分 (0-9)"
+                                            class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="ielts-writing-warning" class="input-warning"></div>
+                                    </div>
+                                    <button type="button" onclick="toggleIeltsWritingDetails()"
+                                        class="w-full text-amber-600 hover:text-amber-700 text-sm font-semibold transition-colors">
+                                        展开Task详情
+                                    </button>
+                                    <div id="ielts-writing-details" class="expandable-content">
+                                        <div class="pt-4 space-y-3 border-t-2 border-amber-300 mt-4">
+                                            <div>
+                                                <label class="block text-amber-600 text-sm font-medium mb-2">Task 1 (小作文, 权重1/3)</label>
+                                                <input type="number" id="ielts-writing-task1" min="0" max="9" step="0.5" placeholder="请输入Task1分数 (0-9)"
+                                                    class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                                <div id="ielts-task1-warning" class="input-warning"></div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-amber-600 text-sm font-medium mb-2">Task 2 (大作文, 权重2/3)</label>
+                                                <input type="number" id="ielts-writing-task2" min="0" max="9" step="0.5" placeholder="请输入Task2分数 (0-9)"
+                                                    class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                                <div id="ielts-task2-warning" class="input-warning"></div>
+                                            </div>
+                                            <div class="bg-white/70 rounded-lg p-3 border-2 border-amber-300">
+                                                <div class="text-amber-600 text-sm font-medium">自动计算 (Task2×2+Task1)÷3</div>
+                                                <div id="ielts-writing-calculated" class="text-xl font-bold text-amber-700">-</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Speaking -->
+                            <div class="subject-card subject-card-speaking p-6">
+                                <h3 class="text-lg font-bold text-purple-700 mb-4">
+                                    Speaking
+                                </h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-purple-600 text-sm font-medium mb-2">总分 (0-9，步长0.5)</label>
+                                        <input type="number" id="ielts-speaking-score" min="0" max="9" step="0.5" required placeholder="请输入总分 (0-9)"
+                                            class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="ielts-speaking-warning" class="input-warning"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Overall 预览 -->
+                        <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-6 border-2 border-emerald-300">
+                            <div class="text-emerald-700 text-sm mb-3 font-semibold">Overall 总分预览</div>
+                            <div class="flex items-center justify-between flex-wrap gap-4">
+                                <div class="text-gray-600 font-medium">L: <span id="ielts-overall-l" class="text-blue-700 font-bold">0.0</span></div>
+                                <div class="text-gray-600 font-medium">R: <span id="ielts-overall-r" class="text-emerald-700 font-bold">0.0</span></div>
+                                <div class="text-gray-600 font-medium">W: <span id="ielts-overall-w" class="text-amber-700 font-bold">0.0</span></div>
+                                <div class="text-gray-600 font-medium">S: <span id="ielts-overall-s" class="text-purple-700 font-bold">0.0</span></div>
+                                <div class="text-right">
+                                    <div class="text-emerald-600 text-sm font-medium">Overall</div>
+                                    <div id="ielts-overall-score" class="text-5xl font-bold gradient-text-bright">0.0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 保存按钮 -->
+                        <button type="submit"
+                            class="w-full btn-primary text-white font-bold py-4 px-6 rounded-lg shadow-lg">
+                            保存成绩
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 四六级录入表单 -->
+            <div id="cet-form-container" class="hidden">
+                <div class="card-bright p-8 mb-6">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+                        录入<span id="cet-exam-title">四级</span>成绩
+                    </h2>
+                    <form id="cet-form" class="space-y-6">
+                        <!-- 考试日期 -->
+                        <div>
+                            <label class="block text-gray-700 text-sm font-medium mb-2">考试日期（支持键盘输入，如20260125自动转换）</label>
+                            <input type="date" id="cet-exam-date" required
+                                class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                            <div id="cet-date-warning" class="input-warning"></div>
+                        </div>
+
+                        <!-- 听力输入区域 -->
+                        <div class="subject-card subject-card-listening p-6">
+                            <h3 class="text-lg font-bold text-blue-700 mb-4">
+                                听力 (35%，满分249分)
+                            </h3>
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-blue-600 text-sm font-medium mb-2">Section A: <span id="listening-sectiona-label">短对话/新闻</span> (7.1分/题)</label>
+                                        <input type="number" id="cet-listening-sectiona" min="0" max="8" required placeholder="题数 (0-8)"
+                                            class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="cet-sectiona-warning" class="input-warning"></div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-blue-600 text-sm font-medium mb-2">Section B: 长对话 (7.1分/题)</label>
+                                        <input type="number" id="cet-listening-sectionb" min="0" max="7" required placeholder="题数 (0-7)"
+                                            class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="cet-sectionb-warning" class="input-warning"></div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-blue-600 text-sm font-medium mb-2">Section C: <span id="listening-sectionc-label">短文</span> (14.2分/题)</label>
+                                        <input type="number" id="cet-listening-sectionc" min="0" max="10" required placeholder="题数 (0-10)"
+                                            class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="cet-sectionc-warning" class="input-warning"></div>
+                                    </div>
+                                </div>
+                                <div class="bg-white/70 rounded-lg p-4 border-2 border-blue-300">
+                                    <div class="flex justify-between items-center">
+                                        <div class="text-blue-600 text-sm font-medium">听力总分 (向上取整)</div>
+                                        <div id="cet-listening-total" class="text-3xl font-bold text-blue-700">0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 阅读输入区域 -->
+                        <div class="subject-card subject-card-reading p-6">
+                            <h3 class="text-lg font-bold text-emerald-700 mb-4">
+                                阅读 (35%，满分249分)
+                            </h3>
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-emerald-600 text-sm font-medium mb-2">选词填空 (3.55分/题)</label>
+                                        <input type="number" id="cet-reading-wordbank" min="0" max="10" required placeholder="题数 (0-10)"
+                                            class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="cet-wordbank-warning" class="input-warning"></div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-emerald-600 text-sm font-medium mb-2">长篇阅读 (7.1分/题)</label>
+                                        <input type="number" id="cet-reading-skimming" min="0" max="10" required placeholder="题数 (0-10)"
+                                            class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="cet-skimming-warning" class="input-warning"></div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-emerald-600 text-sm font-medium mb-2">仔细阅读 (14.2分/题)</label>
+                                        <input type="number" id="cet-reading-reading" min="0" max="10" required placeholder="题数 (0-10)"
+                                            class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="cet-reading-warning" class="input-warning"></div>
+                                    </div>
+                                </div>
+                                <div class="bg-white/70 rounded-lg p-4 border-2 border-emerald-300">
+                                    <div class="flex justify-between items-center">
+                                        <div class="text-emerald-600 text-sm font-medium">阅读总分 (向上取整)</div>
+                                        <div id="cet-reading-total" class="text-3xl font-bold text-emerald-700">0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 写作输入区域 -->
+                        <div class="subject-card subject-card-writing p-6">
+                            <h3 class="text-lg font-bold text-amber-700 mb-4">
+                                写作 (15%，满分106.5分)
+                            </h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-amber-600 text-sm font-medium mb-2">原始分 (0-15分)</label>
+                                    <input type="number" id="cet-writing-raw" min="0" max="15" step="0.5" required placeholder="请输入原始分 (0-15)"
+                                        class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                    <div id="cet-writing-warning" class="input-warning"></div>
+                                </div>
+                                <div class="bg-white/70 rounded-lg p-4 border-2 border-amber-300">
+                                    <div class="flex justify-between items-center">
+                                        <div class="text-amber-600 text-sm font-medium">报道分 (原始分×7.1，向上取整)</div>
+                                        <div id="cet-writing-score" class="text-3xl font-bold text-amber-700">0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 翻译输入区域 -->
+                        <div class="subject-card subject-card-translation p-6">
+                            <h3 class="text-lg font-bold text-red-700 mb-4">
+                                翻译 (15%，满分106.5分)
+                            </h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-red-600 text-sm font-medium mb-2">原始分 (0-15分)</label>
+                                    <input type="number" id="cet-translation-raw" min="0" max="15" step="0.5" required placeholder="请输入原始分 (0-15)"
+                                        class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                    <div id="cet-translation-warning" class="input-warning"></div>
+                                </div>
+                                <div class="bg-white/70 rounded-lg p-4 border-2 border-red-300">
+                                    <div class="flex justify-between items-center">
+                                        <div class="text-red-600 text-sm font-medium">报道分 (原始分×7.1，向上取整)</div>
+                                        <div id="cet-translation-score" class="text-3xl font-bold text-red-700">0</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 总分预览 -->
+                        <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-6 border-2 border-emerald-300">
+                            <div class="text-emerald-700 text-sm mb-3 font-semibold">总分预览 (满分710分)</div>
+                            <div class="flex items-center justify-between flex-wrap gap-4">
+                                <div class="text-gray-600 font-medium">听力: <span id="cet-total-listening" class="text-blue-700 font-bold">0</span></div>
+                                <div class="text-gray-600 font-medium">阅读: <span id="cet-total-reading" class="text-emerald-700 font-bold">0</span></div>
+                                <div class="text-gray-600 font-medium">写作和翻译: <span id="cet-total-wt" class="text-orange-600 font-bold">0</span></div>
+                                <div class="text-right">
+                                    <div class="text-emerald-600 text-sm font-medium">总分</div>
+                                    <div id="cet-total-score" class="text-5xl font-bold gradient-text-bright">0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 保存按钮 -->
+                        <button type="submit"
+                            class="w-full btn-primary text-white font-bold py-4 px-6 rounded-lg shadow-lg">
+                            保存成绩
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 全局状态 ====================
+        let currentExamType = 'ielts';
+
+        // ==================== 数据存储 ====================
+        const STORAGE_KEY = 'myscore_v2.2_records';
+
+        // 获取所有记录
+        function getRecords() {
+            const records = localStorage.getItem(STORAGE_KEY);
+            return records ? JSON.parse(records) : [];
+        }
+
+        // 保存记录
+        function saveRecord(record) {
+            const records = getRecords();
+            records.push(record);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        }
+
+        // 清空所有记录
+        function clearAllRecords() {
+            if (confirm('确定要清空所有成绩记录吗？此操作不可恢复。')) {
+                localStorage.removeItem(STORAGE_KEY);
+                updateUI();
+            }
+        }
+
+        // 删除单条记录
+        function deleteRecord(id) {
+            if (confirm('确定要删除这条记录吗？')) {
+                const records = getRecords().filter(r => r.id !== id);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+                updateUI();
+            }
+        }
+
+        // ==================== 日期格式化函数 ====================
+        function formatDateInput(input) {
+            // 移除非数字字符
+            let digits = input.replace(/\D/g, '');
+            
+            // 只有完整的8位数字才转换
+            if (digits.length === 8) {
+                let year = digits.substring(0, 4);
+                let month = digits.substring(4, 6);
+                let day = digits.substring(6, 8);
+                
+                // 验证日期是否有效
+                const date = new Date(year, month - 1, day);
+                if (!isNaN(date.getTime())) {
+                    return `${year}-${month}-${day}`;
+                }
+            }
+            
+            // 其他情况保持原值（包括输入中、不足8位、无效日期等）
+            // 返回空字符串，不进行任何转换
+            return '';
+        }
+
+        // ==================== 考试类型切换 ====================
+        function switchExamType(type) {
+            currentExamType = type;
+
+            // 更新按钮状态
+            document.querySelectorAll('.exam-type-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`btn-${type}`).classList.add('active');
+
+            // 切换表单显示
+            if (type === 'ielts') {
+                document.getElementById('ielts-form-container').classList.remove('hidden');
+                document.getElementById('cet-form-container').classList.add('hidden');
+            } else {
+                document.getElementById('ielts-form-container').classList.add('hidden');
+                document.getElementById('cet-form-container').classList.remove('hidden');
+                
+                // 更新四六级标题
+                if (type === 'cet4') {
+                    document.getElementById('cet-exam-title').textContent = '四级';
+                    document.getElementById('listening-sectiona-label').textContent = '短对话/新闻';
+                    document.getElementById('listening-sectionc-label').textContent = '短文';
+                } else {
+                    document.getElementById('cet-exam-title').textContent = '六级';
+                    document.getElementById('listening-sectiona-label').textContent = '长对话';
+                    document.getElementById('listening-sectionc-label').textContent = '讲座/报道';
+                }
+            }
+
+            // 重置表单
+            resetCurrentForm();
+        }
+
+        function resetCurrentForm() {
+            if (currentExamType === 'ielts') {
+                document.getElementById('ielts-form').reset();
+                document.getElementById('ielts-listening-score').textContent = '0.0';
+                document.getElementById('ielts-reading-score').textContent = '0.0';
+                document.getElementById('ielts-writing-calculated').textContent = '-';
+                clearAllWarnings();
+                updateIeltsOverallPreview();
+            } else {
+                document.getElementById('cet-form').reset();
+                clearAllWarnings();
+                updateCetTotalPreview();
+            }
+        }
+
+        // 清除所有警告信息
+        function clearAllWarnings() {
+            const warnings = document.querySelectorAll('.input-warning');
+            warnings.forEach(w => w.textContent = '');
+            
+            const errorInputs = document.querySelectorAll('.input-error');
+            errorInputs.forEach(input => input.classList.remove('input-error'));
+        }
+
+        // ==================== 向上取整函数 ====================
+        function roundUp(score) {
+            return Math.ceil(score);
+        }
+
+        // ==================== 雅思评分逻辑 ====================
+
+        // Listening 评分表
+        function calculateListeningScore(correctCount) {
+            const scoreTable = [
+                { range: [39, 40], score: 9.0 },
+                { range: [37, 38], score: 8.5 },
+                { range: [35, 36], score: 8.0 },
+                { range: [32, 34], score: 7.5 },
+                { range: [30, 31], score: 7.0 },
+                { range: [26, 29], score: 6.5 },
+                { range: [23, 25], score: 6.0 },
+                { range: [18, 22], score: 5.5 },
+                { range: [16, 17], score: 5.0 },
+                { range: [13, 15], score: 4.5 },
+                { range: [10, 12], score: 4.0 },
+                { range: [6, 9], score: 3.5 },
+                { range: [4, 5], score: 3.0 },
+                { range: [3, 3], score: 2.5 },
+                { range: [2, 2], score: 2.0 },
+                { range: [1, 1], score: 1.0 },
+                { range: [0, 0], score: 0.5 }
+            ];
+
+            for (const item of scoreTable) {
+                if (correctCount >= item.range[0] && correctCount <= item.range[1]) {
+                    return item.score;
+                }
+            }
+            return 0.0;
+        }
+
+        // Reading (Academic) 评分表
+        function calculateReadingScore(correctCount) {
+            const scoreTable = [
+                { range: [39, 40], score: 9.0 },
+                { range: [37, 38], score: 8.5 },
+                { range: [35, 36], score: 8.0 },
+                { range: [33, 34], score: 7.5 },
+                { range: [30, 32], score: 7.0 },
+                { range: [27, 29], score: 6.5 },
+                { range: [23, 26], score: 6.0 },
+                { range: [19, 22], score: 5.5 },
+                { range: [15, 18], score: 5.0 },
+                { range: [13, 14], score: 4.5 },
+                { range: [10, 12], score: 4.0 },
+                { range: [8, 9], score: 3.5 },
+                { range: [6, 7], score: 3.0 },
+                { range: [4, 5], score: 2.5 },
+                { range: [3, 3], score: 2.0 },
+                { range: [2, 2], score: 1.0 },
+                { range: [1, 1], score: 1.0 },
+                { range: [0, 0], score: 0.5 }
+            ];
+
+            for (const item of scoreTable) {
+                if (correctCount >= item.range[0] && correctCount <= item.range[1]) {
+                    return item.score;
+                }
+            }
+            return 0.0;
+        }
+
+        // 计算 Overall 分数（雅思官方规则）
+        function calculateOverall(l, r, w, s) {
+            const average = (l + r + w + s) / 4;
+            const decimal = average - Math.floor(average);
+
+            // 特殊进位规则
+            if (decimal >= 0.25 && decimal < 0.5) {
+                return Math.floor(average) + 0.5;
+            } else if (decimal >= 0.75) {
+                return Math.floor(average) + 1.0;
+            } else {
+                // 四舍五入到半分
+                return Math.round(average * 2) / 2;
+            }
+        }
+
+        // Writing Task 计算 (Task2权重2/3, Task1权重1/3)
+        function calculateWritingScore(task1, task2) {
+            if (task1 === null || task2 === null) return null;
+            const score = (task2 * 2 + task1) / 3;
+            return Math.round(score * 2) / 2; // 四舍五入到半分
+        }
+
+        // ==================== 四六级评分逻辑 ====================
+
+        // 四六级听力计分（统一公式）
+        function calculateCetListening(sectionA, sectionB, sectionC) {
+            const rawScore = sectionA * 7.1 + sectionB * 7.1 + sectionC * 14.2;
+            return roundUp(rawScore);
+        }
+
+        // 四六级阅读计分
+        function calculateCetReading(wordBank, skimming, reading) {
+            const rawScore = wordBank * 3.55 + skimming * 7.1 + reading * 14.2;
+            return roundUp(rawScore);
+        }
+
+        // 四六级写作/翻译转换（原始分 × 7.1，向上取整）
+        function convertRawToReportScore(rawScore) {
+            const scaledScore = rawScore * 7.1;
+            return roundUp(scaledScore);
+        }
+
+        // ==================== 输入验证 ====================
+
+        // 验证数值输入范围
+        function validateNumberInput(input, min, max, warningId) {
+            const warningEl = document.getElementById(warningId);
+            const value = parseFloat(input.value);
+            
+            if (input.value && (isNaN(value) || value < min || value > max)) {
+                warningEl.textContent = `⚠️ 请输入 ${min} 到 ${max} 之间的数值`;
+                input.classList.add('input-error');
+                return false;
+            } else {
+                warningEl.textContent = '';
+                input.classList.remove('input-error');
+                return true;
+            }
+        }
+
+        // ==================== UI 渲染 ====================
+        function showPage(pageName) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.add('hidden');
+            });
+
+            document.getElementById(`page-${pageName}`).classList.remove('hidden');
+
+            document.getElementById('nav-dashboard').className = pageName === 'dashboard'
+                ? 'px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-all font-medium shadow-md'
+                : 'px-5 py-2.5 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 transition-all font-medium';
+            document.getElementById('nav-entry').className = pageName === 'entry'
+                ? 'px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-all font-medium shadow-md'
+                : 'px-5 py-2.5 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 transition-all font-medium';
+
+            updateUI();
+        }
+
+        function updateUI() {
+            const records = getRecords();
+            updateDashboard(records);
+            updateRecordsList(records);
+        }
+
+        function updateDashboard(records) {
+            const recentScoreContent = document.getElementById('recent-score-content');
+            const totalCountEl = document.getElementById('total-count');
+
+            if (records.length === 0) {
+                recentScoreContent.innerHTML = `
+                    <div class="text-center py-12 text-gray-400">
+                        <div class="text-6xl mb-4">暂无数据</div>
+                        <p class="text-xl text-gray-600 font-medium">还没有成绩记录</p>
+                        <p class="text-sm mt-2 text-gray-500">点击"录入成绩"开始记录你的进步</p>
+                    </div>
+                `;
+                totalCountEl.textContent = '0';
+                // 重置所有统计卡片
+                document.getElementById('ielts-best').textContent = '-';
+                document.getElementById('ielts-avg').textContent = '-';
+                document.getElementById('cet4-best').textContent = '-';
+                document.getElementById('cet4-avg').textContent = '-';
+                document.getElementById('cet6-best').textContent = '-';
+                document.getElementById('cet6-avg').textContent = '-';
+                return;
+            }
+
+            const latest = records[records.length - 1];
+
+            // 根据考试类型显示不同的仪表盘
+            if (latest.examType === 'ielts') {
+                recentScoreContent.innerHTML = `
+                    <div class="mb-6">
+                        <div class="text-gray-500 text-sm font-medium">${latest.date} - 雅思学术类</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-6 border-2 border-emerald-200">
+                        <div class="text-center mb-6">
+                            <div class="text-emerald-600 text-sm mb-2 font-semibold">Overall 总分</div>
+                            <div class="text-6xl font-bold gradient-text-bright">${latest.overall.toFixed(1)}</div>
+                        </div>
+                        <div class="grid grid-cols-4 gap-4 text-center">
+                            <div class="bg-blue-50 rounded-lg p-3 border-2 border-blue-200">
+                                <div class="text-blue-600 text-xs mb-1 font-semibold">Listening</div>
+                                <div class="text-2xl font-bold text-blue-700">${latest.listening.score.toFixed(1)}</div>
+                                <div class="text-blue-400 text-xs mt-1">${latest.listening.raw}/40</div>
+                            </div>
+                            <div class="bg-emerald-50 rounded-lg p-3 border-2 border-emerald-200">
+                                <div class="text-emerald-600 text-xs mb-1 font-semibold">Reading</div>
+                                <div class="text-2xl font-bold text-emerald-700">${latest.reading.score.toFixed(1)}</div>
+                                <div class="text-emerald-400 text-xs mt-1">${latest.reading.raw}/40</div>
+                            </div>
+                            <div class="bg-amber-50 rounded-lg p-3 border-2 border-amber-200">
+                                <div class="text-amber-600 text-xs mb-1 font-semibold">Writing</div>
+                                <div class="text-2xl font-bold text-amber-700">${latest.writing.score.toFixed(1)}</div>
+                            </div>
+                            <div class="bg-purple-50 rounded-lg p-3 border-2 border-purple-200">
+                                <div class="text-purple-600 text-xs mb-1 font-semibold">Speaking</div>
+                                <div class="text-2xl font-bold text-purple-700">${latest.speaking.score.toFixed(1)}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // 四六级
+                const examName = latest.examLevel === 'cet4' ? '四级' : '六级';
+
+                recentScoreContent.innerHTML = `
+                    <div class="mb-6">
+                        <div class="text-gray-500 text-sm font-medium">${latest.date} - 大学${examName}</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-6 border-2 border-emerald-200">
+                        <div class="text-center mb-6">
+                            <div class="text-emerald-600 text-sm mb-2 font-semibold">总分 (满分710)</div>
+                            <div class="text-6xl font-bold gradient-text-bright">${latest.total}</div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 text-center">
+                            <div class="bg-blue-50 rounded-lg p-3 border-2 border-blue-200">
+                                <div class="text-blue-600 text-xs mb-1 font-semibold">听力</div>
+                                <div class="text-2xl font-bold text-blue-700">${latest.listening.total}</div>
+                                <div class="text-blue-400 text-xs mt-1">249分</div>
+                            </div>
+                            <div class="bg-emerald-50 rounded-lg p-3 border-2 border-emerald-200">
+                                <div class="text-emerald-600 text-xs mb-1 font-semibold">阅读</div>
+                                <div class="text-2xl font-bold text-emerald-700">${latest.reading.total}</div>
+                                <div class="text-emerald-400 text-xs mt-1">249分</div>
+                            </div>
+                            <div class="bg-orange-50 rounded-lg p-3 border-2 border-orange-200">
+                                <div class="text-orange-600 text-xs mb-1 font-semibold">写作和翻译</div>
+                                <div class="text-2xl font-bold text-orange-700">${latest.writing.score + latest.translation.score}</div>
+                                <div class="text-orange-400 text-xs mt-1">213分</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            totalCountEl.textContent = records.length;
+
+            // 分别计算雅思、四级、六级的统计数据
+            const ieltsRecords = records.filter(r => r.examType === 'ielts');
+            const cet4Records = records.filter(r => r.examType === 'cet' && r.examLevel === 'cet4');
+            const cet6Records = records.filter(r => r.examType === 'cet' && r.examLevel === 'cet6');
+
+            // 雅思统计
+            const ieltsBestEl = document.getElementById('ielts-best');
+            const ieltsAvgEl = document.getElementById('ielts-avg');
+            if (ieltsRecords.length > 0) {
+                const ieltsOveralls = ieltsRecords.map(r => r.overall);
+                const ieltsMax = Math.max(...ieltsOveralls);
+                const ieltsAvg = (ieltsOveralls.reduce((a, b) => a + b, 0) / ieltsOveralls.length).toFixed(1);
+                ieltsBestEl.textContent = ieltsMax.toFixed(1);
+                ieltsAvgEl.textContent = ieltsAvg;
+            } else {
+                ieltsBestEl.textContent = '-';
+                ieltsAvgEl.textContent = '-';
+            }
+
+            // 四级统计
+            const cet4BestEl = document.getElementById('cet4-best');
+            const cet4AvgEl = document.getElementById('cet4-avg');
+            if (cet4Records.length > 0) {
+                const cet4Totals = cet4Records.map(r => r.total);
+                const cet4Max = Math.max(...cet4Totals);
+                const cet4Avg = (cet4Totals.reduce((a, b) => a + b, 0) / cet4Totals.length).toFixed(0);
+                cet4BestEl.textContent = cet4Max;
+                cet4AvgEl.textContent = cet4Avg;
+            } else {
+                cet4BestEl.textContent = '-';
+                cet4AvgEl.textContent = '-';
+            }
+
+            // 六级统计
+            const cet6BestEl = document.getElementById('cet6-best');
+            const cet6AvgEl = document.getElementById('cet6-avg');
+            if (cet6Records.length > 0) {
+                const cet6Totals = cet6Records.map(r => r.total);
+                const cet6Max = Math.max(...cet6Totals);
+                const cet6Avg = (cet6Totals.reduce((a, b) => a + b, 0) / cet6Totals.length).toFixed(0);
+                cet6BestEl.textContent = cet6Max;
+                cet6AvgEl.textContent = cet6Avg;
+            } else {
+                cet6BestEl.textContent = '-';
+                cet6AvgEl.textContent = '-';
+            }
+        }
+
+        function updateRecordsList(records) {
+            const recordsList = document.getElementById('records-list');
+
+            if (records.length === 0) {
+                recordsList.innerHTML = `
+                    <div class="text-center py-12 text-gray-400">
+                        <div class="text-5xl mb-3">暂无记录</div>
+                        <p class="text-lg text-gray-600 font-medium">还没有录入任何成绩</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const sortedRecords = [...records].reverse();
+
+            recordsList.innerHTML = sortedRecords.map(record => {
+                if (record.examType === 'ielts') {
+                    return `
+                        <div class="bg-gradient-to-r from-white to-gray-50 rounded-lg p-5 border-2 border-gray-200 hover:border-emerald-300 transition-all hover:shadow-md">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="text-gray-800 font-semibold mb-2 flex items-center gap-2">
+                                        ${record.date} - 雅思学术类
+                                    </div>
+                                    <div class="text-gray-600 text-sm mb-3 flex gap-4 flex-wrap">
+                                        <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded font-medium">L: ${record.listening.score.toFixed(1)}</span>
+                                        <span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-medium">R: ${record.reading.score.toFixed(1)}</span>
+                                        <span class="bg-amber-100 text-amber-700 px-2 py-1 rounded font-medium">W: ${record.writing.score.toFixed(1)}</span>
+                                        <span class="bg-purple-100 text-purple-700 px-2 py-1 rounded font-medium">S: ${record.speaking.score.toFixed(1)}</span>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-gray-600 text-sm font-medium">Overall:</span>
+                                        <span class="text-3xl font-bold gradient-text-bright">${record.overall.toFixed(1)}</span>
+                                    </div>
+                                </div>
+                                <button onclick="deleteRecord(${record.id})"
+                                    class="ml-4 text-gray-400 hover:text-red-500 transition-colors font-semibold">
+                                    删除
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    const examName = record.examLevel === 'cet4' ? '四级' : '六级';
+                    return `
+                        <div class="bg-gradient-to-r from-white to-gray-50 rounded-lg p-5 border-2 border-gray-200 hover:border-emerald-300 transition-all hover:shadow-md">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="text-gray-800 font-semibold mb-2 flex items-center gap-2">
+                                        ${record.date} - 大学${examName}
+                                    </div>
+                                    <div class="text-gray-600 text-sm mb-3 flex gap-4 flex-wrap">
+                                        <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded font-medium">听力: ${record.listening.total}</span>
+                                        <span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-medium">阅读: ${record.reading.total}</span>
+                                        <span class="bg-orange-100 text-orange-700 px-2 py-1 rounded font-medium">写作和翻译: ${record.writing.score + record.translation.score}</span>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-gray-600 text-sm font-medium">总分:</span>
+                                        <span class="text-3xl font-bold gradient-text-bright">${record.total}</span>
+                                    </div>
+                                </div>
+                                <button onclick="deleteRecord(${record.id})"
+                                    class="ml-4 text-gray-400 hover:text-red-500 transition-colors font-semibold">
+                                    删除
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+        }
+
+        // ==================== 雅思Writing详情展开/收起 ====================
+        function toggleIeltsWritingDetails() {
+            const details = document.getElementById('ielts-writing-details');
+            const button = document.querySelector('button[onclick="toggleIeltsWritingDetails()"]');
+
+            if (details.classList.contains('expanded')) {
+                details.classList.remove('expanded');
+                button.textContent = '展开Task详情';
+            } else {
+                details.classList.add('expanded');
+                button.textContent = '收起Task详情';
+            }
+        }
+
+        // ==================== 雅思表单处理 ====================
+        const ieltsListeningRawInput = document.getElementById('ielts-listening-raw');
+        const ieltsReadingRawInput = document.getElementById('ielts-reading-raw');
+        const ieltsWritingScoreInput = document.getElementById('ielts-writing-score');
+        const ieltsWritingTask1Input = document.getElementById('ielts-writing-task1');
+        const ieltsWritingTask2Input = document.getElementById('ielts-writing-task2');
+        const ieltsSpeakingScoreInput = document.getElementById('ielts-speaking-score');
+        const ieltsDateInput = document.getElementById('ielts-exam-date');
+
+        // 实时预览 - Listening
+        ieltsListeningRawInput.addEventListener('input', function() {
+            validateNumberInput(this, 0, 40, 'ielts-listening-warning');
+            const count = parseInt(this.value) || 0;
+            const score = calculateListeningScore(count);
+            document.getElementById('ielts-listening-score').textContent = score.toFixed(1);
+            updateIeltsOverallPreview();
+        });
+
+        // 实时预览 - Reading
+        ieltsReadingRawInput.addEventListener('input', function() {
+            validateNumberInput(this, 0, 40, 'ielts-reading-warning');
+            const count = parseInt(this.value) || 0;
+            const score = calculateReadingScore(count);
+            document.getElementById('ielts-reading-score').textContent = score.toFixed(1);
+            updateIeltsOverallPreview();
+        });
+
+        // 实时预览 - Writing
+        ieltsWritingScoreInput.addEventListener('input', function() {
+            validateNumberInput(this, 0, 9, 'ielts-writing-warning');
+            updateIeltsOverallPreview();
+        });
+        ieltsWritingTask1Input.addEventListener('input', function() {
+            validateNumberInput(this, 0, 9, 'ielts-task1-warning');
+            const task1 = parseFloat(this.value) || null;
+            const task2 = parseFloat(ieltsWritingTask2Input.value) || null;
+            const calculated = calculateWritingScore(task1, task2);
+            document.getElementById('ielts-writing-calculated').textContent = calculated !== null ? calculated.toFixed(1) : '-';
+
+            // 自动填入Writing总分框
+            if (calculated !== null) {
+                ieltsWritingScoreInput.value = calculated;
+                updateIeltsOverallPreview();
+            }
+        });
+        ieltsWritingTask2Input.addEventListener('input', function() {
+            validateNumberInput(this, 0, 9, 'ielts-task2-warning');
+            const task1 = parseFloat(ieltsWritingTask1Input.value) || null;
+            const task2 = parseFloat(this.value) || null;
+            const calculated = calculateWritingScore(task1, task2);
+            document.getElementById('ielts-writing-calculated').textContent = calculated !== null ? calculated.toFixed(1) : '-';
+
+            // 自动填入Writing总分框
+            if (calculated !== null) {
+                ieltsWritingScoreInput.value = calculated;
+                updateIeltsOverallPreview();
+            }
+        });
+
+        // 实时预览 - Speaking
+        ieltsSpeakingScoreInput.addEventListener('input', function() {
+            validateNumberInput(this, 0, 9, 'ielts-speaking-warning');
+            updateIeltsOverallPreview();
+        });
+
+        // 日期输入点击选中和实时格式化
+        ieltsDateInput.addEventListener('click', function() {
+            this.select(); // 点击时选中，让用户可以方便覆盖或修改
+        });
+
+        ieltsDateInput.addEventListener('input', function() {
+            const formatted = formatDateInput(this.value);
+            if (formatted !== this.value && formatted !== '') {
+                this.value = formatted;
+                document.getElementById('ielts-date-warning').textContent = '';
+            }
+        });
+
+        // 更新 Overall 预览
+        function updateIeltsOverallPreview() {
+            const l = parseFloat(document.getElementById('ielts-listening-score').textContent) || 0;
+            const r = parseFloat(document.getElementById('ielts-reading-score').textContent) || 0;
+            const w = parseFloat(ieltsWritingScoreInput.value) || 0;
+            const s = parseFloat(ieltsSpeakingScoreInput.value) || 0;
+
+            document.getElementById('ielts-overall-l').textContent = l.toFixed(1);
+            document.getElementById('ielts-overall-r').textContent = r.toFixed(1);
+            document.getElementById('ielts-overall-w').textContent = w.toFixed(1);
+            document.getElementById('ielts-overall-s').textContent = s.toFixed(1);
+
+            const overall = calculateOverall(l, r, w, s);
+            document.getElementById('ielts-overall-score').textContent = overall.toFixed(1);
+        }
+
+        // 雅思表单提交验证
+        document.getElementById('ielts-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // 验证所有输入
+            const validListening = validateNumberInput(ieltsListeningRawInput, 0, 40, 'ielts-listening-warning');
+            const validReading = validateNumberInput(ieltsReadingRawInput, 0, 40, 'ielts-reading-warning');
+            const validWriting = validateNumberInput(ieltsWritingScoreInput, 0, 9, 'ielts-writing-warning');
+            const validSpeaking = validateNumberInput(ieltsSpeakingScoreInput, 0, 9, 'ielts-speaking-warning');
+
+            if (!validListening || !validReading || !validWriting || !validSpeaking) {
+                alert('请修正输入错误后再提交');
+                return;
+            }
+
+            const date = document.getElementById('ielts-exam-date').value;
+            const listeningRaw = parseInt(ieltsListeningRawInput.value);
+            const readingRaw = parseInt(ieltsReadingRawInput.value);
+            const writingScore = parseFloat(ieltsWritingScoreInput.value);
+            const speakingScore = parseFloat(ieltsSpeakingScoreInput.value);
+
+            const listeningScore = calculateListeningScore(listeningRaw);
+            const readingScore = calculateReadingScore(readingRaw);
+            const overall = calculateOverall(listeningScore, readingScore, writingScore, speakingScore);
+
+            const record = {
+                id: Date.now(),
+                examType: 'ielts',
+                date: date,
+                listening: { raw: listeningRaw, score: listeningScore },
+                reading: { raw: readingRaw, score: readingScore },
+                writing: {
+                    score: writingScore,
+                    task1: ieltsWritingTask1Input.value ? parseFloat(ieltsWritingTask1Input.value) : null,
+                    task2: ieltsWritingTask2Input.value ? parseFloat(ieltsWritingTask2Input.value) : null
+                },
+                speaking: { score: speakingScore },
+                overall: overall
+            };
+
+            saveRecord(record);
+            updateUI();
+
+            // 重置表单
+            this.reset();
+            document.getElementById('ielts-listening-score').textContent = '0.0';
+            document.getElementById('ielts-reading-score').textContent = '0.0';
+            document.getElementById('ielts-writing-calculated').textContent = '-';
+            clearAllWarnings();
+            updateIeltsOverallPreview();
+
+            alert('雅思成绩保存成功！');
+        });
+
+        // ==================== 四六级表单处理 ====================
+        const cetListeningSectionA = document.getElementById('cet-listening-sectiona');
+        const cetListeningSectionB = document.getElementById('cet-listening-sectionb');
+        const cetListeningSectionC = document.getElementById('cet-listening-sectionc');
+        const cetReadingWordBank = document.getElementById('cet-reading-wordbank');
+        const cetReadingSkimming = document.getElementById('cet-reading-skimming');
+        const cetReadingReading = document.getElementById('cet-reading-reading');
+        const cetWritingRaw = document.getElementById('cet-writing-raw');
+        const cetTranslationRaw = document.getElementById('cet-translation-raw');
+        const cetDateInput = document.getElementById('cet-exam-date');
+
+        // 四六级实时预览
+        [cetListeningSectionA, cetListeningSectionB, cetListeningSectionC].forEach(input => {
+            input.addEventListener('input', function() {
+                const max = input === cetListeningSectionA ? 8 : (input === cetListeningSectionB ? 7 : 10);
+                const warningId = input === cetListeningSectionA ? 'cet-sectiona-warning' : 
+                              (input === cetListeningSectionB ? 'cet-sectionb-warning' : 'cet-sectionc-warning');
+                validateNumberInput(input, 0, max, warningId);
+                updateCetTotalPreview();
+            });
+        });
+
+        [cetReadingWordBank, cetReadingSkimming, cetReadingReading].forEach(input => {
+            input.addEventListener('input', function() {
+                validateNumberInput(input, 0, 10, 'cet-' + input.id.split('-')[1] + '-warning');
+                updateCetTotalPreview();
+            });
+        });
+
+        cetWritingRaw.addEventListener('input', function() {
+            validateNumberInput(this, 0, 15, 'cet-writing-warning');
+            updateCetTotalPreview();
+        });
+        cetTranslationRaw.addEventListener('input', function() {
+            validateNumberInput(this, 0, 15, 'cet-translation-warning');
+            updateCetTotalPreview();
+        });
+
+        // 日期输入点击选中和实时格式化
+        cetDateInput.addEventListener('click', function() {
+            this.select(); // 点击时选中，让用户可以方便覆盖或修改
+        });
+
+        cetDateInput.addEventListener('input', function() {
+            const formatted = formatDateInput(this.value);
+            if (formatted !== this.value && formatted !== '') {
+                this.value = formatted;
+                document.getElementById('cet-date-warning').textContent = '';
+            }
+        });
+
+        function updateCetTotalPreview() {
+            const sectionA = parseInt(cetListeningSectionA.value) || 0;
+            const sectionB = parseInt(cetListeningSectionB.value) || 0;
+            const sectionC = parseInt(cetListeningSectionC.value) || 0;
+
+            const listeningTotal = calculateCetListening(sectionA, sectionB, sectionC);
+            document.getElementById('cet-listening-total').textContent = listeningTotal;
+            document.getElementById('cet-total-listening').textContent = listeningTotal;
+
+            const wordBank = parseInt(cetReadingWordBank.value) || 0;
+            const skimming = parseInt(cetReadingSkimming.value) || 0;
+            const reading = parseInt(cetReadingReading.value) || 0;
+
+            const readingTotal = calculateCetReading(wordBank, skimming, reading);
+            document.getElementById('cet-reading-total').textContent = readingTotal;
+            document.getElementById('cet-total-reading').textContent = readingTotal;
+
+            const writingRaw = parseFloat(cetWritingRaw.value) || 0;
+            const writingScore = convertRawToReportScore(writingRaw);
+            document.getElementById('cet-writing-score').textContent = writingScore;
+
+            const translationRaw = parseFloat(cetTranslationRaw.value) || 0;
+            const translationScore = convertRawToReportScore(translationRaw);
+            document.getElementById('cet-translation-score').textContent = translationScore;
+
+            // 合并写作和翻译
+            const wtTotal = writingScore + translationScore;
+            document.getElementById('cet-total-wt').textContent = wtTotal;
+
+            const total = listeningTotal + readingTotal + wtTotal;
+            document.getElementById('cet-total-score').textContent = total;
+        }
+
+        // 四六级表单提交验证
+        document.getElementById('cet-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // 验证所有输入
+            const validSectionA = validateNumberInput(cetListeningSectionA, 0, 8, 'cet-sectiona-warning');
+            const validSectionB = validateNumberInput(cetListeningSectionB, 0, 7, 'cet-sectionb-warning');
+            const validSectionC = validateNumberInput(cetListeningSectionC, 0, 10, 'cet-sectionc-warning');
+            const validWordBank = validateNumberInput(cetReadingWordBank, 0, 10, 'cet-wordbank-warning');
+            const validSkimming = validateNumberInput(cetReadingSkimming, 0, 10, 'cet-skimming-warning');
+            const validReading = validateNumberInput(cetReadingReading, 0, 10, 'cet-reading-warning');
+            const validWriting = validateNumberInput(cetWritingRaw, 0, 15, 'cet-writing-warning');
+            const validTranslation = validateNumberInput(cetTranslationRaw, 0, 15, 'cet-translation-warning');
+
+            if (!validSectionA || !validSectionB || !validSectionC || !validWordBank || !validSkimming || !validReading || !validWriting || !validTranslation) {
+                alert('请修正输入错误后再提交');
+                return;
+            }
+
+            const date = document.getElementById('cet-exam-date').value;
+            const sectionA = parseInt(cetListeningSectionA.value);
+            const sectionB = parseInt(cetListeningSectionB.value);
+            const sectionC = parseInt(cetListeningSectionC.value);
+            const wordBank = parseInt(cetReadingWordBank.value);
+            const skimming = parseInt(cetReadingSkimming.value);
+            const reading = parseInt(cetReadingReading.value);
+            const writingRaw = parseFloat(cetWritingRaw.value);
+            const translationRaw = parseFloat(cetTranslationRaw.value);
+
+            const listeningTotal = calculateCetListening(sectionA, sectionB, sectionC);
+            const readingTotal = calculateCetReading(wordBank, skimming, reading);
+            const writingScore = convertRawToReportScore(writingRaw);
+            const translationScore = convertRawToReportScore(translationRaw);
+            const total = listeningTotal + readingTotal + writingScore + translationScore;
+
+            const record = {
+                id: Date.now(),
+                examType: 'cet',
+                examLevel: currentExamType, // cet4 or cet6
+                date: date,
+                listening: {
+                    sectionA: { count: sectionA },
+                    sectionB: { count: sectionB },
+                    sectionC: { count: sectionC },
+                    total: listeningTotal
+                },
+                reading: {
+                    wordBank: { count: wordBank },
+                    skimming: { count: skimming },
+                    reading: { count: reading },
+                    total: readingTotal
+                },
+                writing: {
+                    raw: writingRaw,
+                    score: writingScore
+                },
+                translation: {
+                    raw: translationRaw,
+                    score: translationScore
+                },
+                total: total
+            };
+
+            saveRecord(record);
+            updateUI();
+
+            // 重置表单
+            this.reset();
+            clearAllWarnings();
+            updateCetTotalPreview();
+
+            const examName = currentExamType === 'cet4' ? '四级' : '六级';
+            alert(`大学${examName}成绩保存成功！总分: ${total}`);
+        });
+
+        // ==================== 初始化 ====================
+        function init() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('ielts-exam-date').value = today;
+            document.getElementById('cet-exam-date').value = today;
+            updateUI();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

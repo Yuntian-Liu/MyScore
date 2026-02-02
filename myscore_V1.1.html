@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyScore V1.1 - 我的成绩单</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 自定义样式补充 */
+        .glass-effect {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .glass-effect:hover {
+            border-color: rgba(59, 130, 246, 0.5);
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            border-color: rgba(139, 92, 246, 0.6);
+            box-shadow: 0 20px 40px rgba(139, 92, 246, 0.2);
+        }
+        .input-glow:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            border-color: #3b82f6;
+        }
+        .score-card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .score-card:hover {
+            border-color: rgba(59, 130, 246, 0.6);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(59, 130, 246, 0.15);
+        }
+        .expandable-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        .expandable-content.expanded {
+            max-height: 300px;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 min-h-screen text-gray-100">
+    <div id="app" class="container mx-auto px-4 py-8 max-w-5xl">
+        <!-- 头部导航 -->
+        <header class="mb-8">
+            <div class="glass-effect rounded-2xl p-6 flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold gradient-text">MyScore</h1>
+                    <p class="text-slate-400 text-sm mt-1">我的成绩单 - 雅思学术类 (V1.1)</p>
+                </div>
+                <nav class="flex gap-3">
+                    <button onclick="showPage('dashboard')" id="nav-dashboard" 
+                        class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-all font-medium">
+                        仪表盘
+                    </button>
+                    <button onclick="showPage('entry')" id="nav-entry"
+                        class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-all font-medium">
+                        录入成绩
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- 仪表盘页面 -->
+        <div id="page-dashboard" class="page">
+            <!-- 最近成绩卡片 -->
+            <div id="recent-score-card" class="glass-effect rounded-2xl p-8 mb-6 card-hover">
+                <h2 class="text-xl font-semibold text-slate-300 mb-6">最近成绩</h2>
+                <div id="recent-score-content">
+                    <!-- 动态内容 -->
+                </div>
+            </div>
+
+            <!-- 统计概览 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="glass-effect rounded-xl p-6 card-hover">
+                    <div class="text-slate-400 text-sm mb-2">总考试次数</div>
+                    <div id="total-count" class="text-3xl font-bold text-blue-400">0</div>
+                </div>
+                <div class="glass-effect rounded-xl p-6 card-hover">
+                    <div class="text-slate-400 text-sm mb-2">最佳Overall</div>
+                    <div id="highest-overall" class="text-3xl font-bold text-green-400">-</div>
+                </div>
+                <div class="glass-effect rounded-xl p-6 card-hover">
+                    <div class="text-slate-400 text-sm mb-2">平均Overall</div>
+                    <div id="average-overall" class="text-3xl font-bold text-purple-400">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 录入页面 -->
+        <div id="page-entry" class="page hidden">
+            <!-- 录入表单 -->
+            <div class="glass-effect rounded-2xl p-8 mb-6">
+                <h2 class="text-xl font-semibold text-slate-300 mb-6">录入雅思成绩</h2>
+                <form id="score-form" class="space-y-6">
+                    <!-- 考试日期 -->
+                    <div>
+                        <label class="block text-slate-400 text-sm mb-2">考试日期</label>
+                        <input type="date" id="exam-date" required
+                            class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white input-glow focus:outline-none transition-all">
+                    </div>
+
+                    <!-- 四科输入区域 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Listening -->
+                        <div class="score-card rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-white mb-4">Listening</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-slate-400 text-sm mb-2">正确题数 (0-40)</label>
+                                    <input type="number" id="listening-raw" min="0" max="40" required placeholder="请输入正确题数"
+                                        class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white input-glow focus:outline-none transition-all">
+                                </div>
+                                <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700">
+                                    <div class="text-slate-500 text-sm">折算分</div>
+                                    <div id="listening-score" class="text-2xl font-bold gradient-text">0.0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reading -->
+                        <div class="score-card rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-white mb-4">Reading (Academic)</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-slate-400 text-sm mb-2">正确题数 (0-40)</label>
+                                    <input type="number" id="reading-raw" min="0" max="40" required placeholder="请输入正确题数"
+                                        class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white input-glow focus:outline-none transition-all">
+                                </div>
+                                <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700">
+                                    <div class="text-slate-500 text-sm">折算分</div>
+                                    <div id="reading-score" class="text-2xl font-bold gradient-text">0.0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Writing -->
+                        <div class="score-card rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-white mb-4">Writing</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-slate-400 text-sm mb-2">总分 (0-9，步长0.5)</label>
+                                    <input type="number" id="writing-score" min="0" max="9" step="0.5" required placeholder="请输入总分"
+                                        class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white input-glow focus:outline-none transition-all">
+                                </div>
+                                <button type="button" onclick="toggleWritingDetails()" 
+                                    class="w-full text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors">
+                                    展开Task详情
+                                </button>
+                                <div id="writing-details" class="expandable-content">
+                                    <div class="pt-4 space-y-3 border-t border-slate-700 mt-4">
+                                        <div>
+                                            <label class="block text-slate-400 text-sm mb-2">Task 1 (小作文, 权重1/3)</label>
+                                            <input type="number" id="writing-task1" min="0" max="9" step="0.5" placeholder="请输入Task1分数"
+                                                class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white input-glow focus:outline-none transition-all">
+                                        </div>
+                                        <div>
+                                            <label class="block text-slate-400 text-sm mb-2">Task 2 (大作文, 权重2/3)</label>
+                                            <input type="number" id="writing-task2" min="0" max="9" step="0.5" placeholder="请输入Task2分数"
+                                                class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white input-glow focus:outline-none transition-all">
+                                        </div>
+                                        <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700">
+                                            <div class="text-slate-500 text-sm">自动计算 (Task2×2+Task1)÷3</div>
+                                            <div id="writing-calculated" class="text-xl font-bold text-blue-400">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Speaking -->
+                        <div class="score-card rounded-xl p-6">
+                            <h3 class="text-lg font-semibold text-white mb-4">Speaking</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-slate-400 text-sm mb-2">总分 (0-9，步长0.5)</label>
+                                    <input type="number" id="speaking-score" min="0" max="9" step="0.5" required placeholder="请输入总分"
+                                        class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white input-glow focus:outline-none transition-all">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Overall 预览 -->
+                    <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
+                        <div class="text-slate-400 text-sm mb-3">Overall 总分预览</div>
+                        <div class="flex items-center justify-between">
+                            <div class="text-slate-500">L: <span id="overall-l" class="text-white font-semibold">0.0</span></div>
+                            <div class="text-slate-500">R: <span id="overall-r" class="text-white font-semibold">0.0</span></div>
+                            <div class="text-slate-500">W: <span id="overall-w" class="text-white font-semibold">0.0</span></div>
+                            <div class="text-slate-500">S: <span id="overall-s" class="text-white font-semibold">0.0</span></div>
+                            <div class="text-right">
+                                <div class="text-slate-500 text-sm">Overall</div>
+                                <div id="overall-score" class="text-4xl font-bold gradient-text">0.0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 保存按钮 -->
+                    <button type="submit" 
+                        class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                        保存成绩
+                    </button>
+                </form>
+            </div>
+
+            <!-- 成绩记录列表 -->
+            <div class="glass-effect rounded-2xl p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold text-slate-300">历史记录</h2>
+                    <button onclick="clearAllRecords()" class="text-red-400 hover:text-red-300 text-sm transition-colors">
+                        清空所有记录
+                    </button>
+                </div>
+                <div id="records-list" class="space-y-3">
+                    <!-- 动态内容 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 数据存储 ====================
+        const STORAGE_KEY = 'myscore_v1.1_records';
+
+        // 获取所有记录
+        function getRecords() {
+            const records = localStorage.getItem(STORAGE_KEY);
+            return records ? JSON.parse(records) : [];
+        }
+
+        // 保存记录
+        function saveRecord(record) {
+            const records = getRecords();
+            records.push(record);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        }
+
+        // 清空所有记录
+        function clearAllRecords() {
+            if (confirm('确定要清空所有成绩记录吗？此操作不可恢复。')) {
+                localStorage.removeItem(STORAGE_KEY);
+                updateUI();
+            }
+        }
+
+        // 删除单条记录
+        function deleteRecord(id) {
+            if (confirm('确定要删除这条记录吗？')) {
+                const records = getRecords().filter(r => r.id !== id);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+                updateUI();
+            }
+        }
+
+        // ==================== 评分逻辑 ====================
+        
+        // Listening 评分表
+        function calculateListeningScore(correctCount) {
+            const scoreTable = [
+                { range: [39, 40], score: 9.0 },
+                { range: [37, 38], score: 8.5 },
+                { range: [35, 36], score: 8.0 },
+                { range: [32, 34], score: 7.5 },
+                { range: [30, 31], score: 7.0 },
+                { range: [26, 29], score: 6.5 },
+                { range: [23, 25], score: 6.0 },
+                { range: [18, 22], score: 5.5 },
+                { range: [16, 17], score: 5.0 },
+                { range: [13, 15], score: 4.5 },
+                { range: [10, 12], score: 4.0 },
+                { range: [6, 9], score: 3.5 },
+                { range: [4, 5], score: 3.0 },
+                { range: [3, 3], score: 2.5 },
+                { range: [2, 2], score: 2.0 },
+                { range: [1, 1], score: 1.0 },
+                { range: [0, 0], score: 0.5 }
+            ];
+
+            for (const item of scoreTable) {
+                if (correctCount >= item.range[0] && correctCount <= item.range[1]) {
+                    return item.score;
+                }
+            }
+            return 0.0;
+        }
+
+        // Reading (Academic) 评分表
+        function calculateReadingScore(correctCount) {
+            const scoreTable = [
+                { range: [39, 40], score: 9.0 },
+                { range: [37, 38], score: 8.5 },
+                { range: [35, 36], score: 8.0 },
+                { range: [33, 34], score: 7.5 },
+                { range: [30, 32], score: 7.0 },
+                { range: [27, 29], score: 6.5 },
+                { range: [23, 26], score: 6.0 },
+                { range: [19, 22], score: 5.5 },
+                { range: [15, 18], score: 5.0 },
+                { range: [13, 14], score: 4.5 },
+                { range: [10, 12], score: 4.0 },
+                { range: [8, 9], score: 3.5 },
+                { range: [6, 7], score: 3.0 },
+                { range: [4, 5], score: 2.5 },
+                { range: [3, 3], score: 2.0 },
+                { range: [2, 2], score: 1.0 },
+                { range: [1, 1], score: 1.0 },
+                { range: [0, 0], score: 0.5 }
+            ];
+
+            for (const item of scoreTable) {
+                if (correctCount >= item.range[0] && correctCount <= item.range[1]) {
+                    return item.score;
+                }
+            }
+            return 0.0;
+        }
+
+        // 计算 Overall 分数（雅思官方规则）
+        function calculateOverall(l, r, w, s) {
+            const average = (l + r + w + s) / 4;
+            const decimal = average - Math.floor(average);
+            
+            // 特殊进位规则
+            if (decimal >= 0.25 && decimal < 0.5) {
+                return Math.floor(average) + 0.5;
+            } else if (decimal >= 0.75) {
+                return Math.floor(average) + 1.0;
+            } else {
+                // 四舍五入到半分
+                return Math.round(average * 2) / 2;
+            }
+        }
+
+        // Writing Task 计算 (Task2权重2/3, Task1权重1/3)
+        function calculateWritingScore(task1, task2) {
+            if (task1 === null || task2 === null) return null;
+            const score = (task2 * 2 + task1) / 3;
+            return Math.round(score * 2) / 2; // 四舍五入到半分
+        }
+
+        // ==================== UI 渲染 ====================
+        function showPage(pageName) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.add('hidden');
+            });
+            
+            document.getElementById(`page-${pageName}`).classList.remove('hidden');
+            
+            document.getElementById('nav-dashboard').className = pageName === 'dashboard' 
+                ? 'px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-all font-medium'
+                : 'px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-all font-medium';
+            document.getElementById('nav-entry').className = pageName === 'entry'
+                ? 'px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-all font-medium'
+                : 'px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-all font-medium';
+            
+            updateUI();
+        }
+
+        function updateUI() {
+            const records = getRecords();
+            updateDashboard(records);
+            updateRecordsList(records);
+        }
+
+        function updateDashboard(records) {
+            const recentScoreContent = document.getElementById('recent-score-content');
+            const totalCountEl = document.getElementById('total-count');
+            const highestOverallEl = document.getElementById('highest-overall');
+            const averageOverallEl = document.getElementById('average-overall');
+            
+            if (records.length === 0) {
+                recentScoreContent.innerHTML = `
+                    <div class="text-center py-8 text-slate-400">
+                        <div class="text-5xl mb-4">暂无数据</div>
+                        <p>还没有成绩记录</p>
+                        <p class="text-sm mt-2">点击"录入成绩"开始记录你的进步</p>
+                    </div>
+                `;
+                totalCountEl.textContent = '0';
+                highestOverallEl.textContent = '-';
+                averageOverallEl.textContent = '-';
+                return;
+            }
+            
+            const latest = records[records.length - 1];
+            recentScoreContent.innerHTML = `
+                <div class="mb-6">
+                    <div class="text-slate-400 text-sm">${latest.date}</div>
+                </div>
+                <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
+                    <div class="text-center mb-4">
+                        <div class="text-slate-500 text-sm mb-2">Overall 总分</div>
+                        <div class="text-5xl font-bold gradient-text">${latest.overall}</div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-4 text-center">
+                        <div>
+                            <div class="text-slate-500 text-xs mb-1">Listening</div>
+                            <div class="text-xl font-bold text-blue-400">${latest.listening.score}</div>
+                            <div class="text-slate-600 text-xs mt-1">${latest.listening.raw}/40</div>
+                        </div>
+                        <div>
+                            <div class="text-slate-500 text-xs mb-1">Reading</div>
+                            <div class="text-xl font-bold text-green-400">${latest.reading.score}</div>
+                            <div class="text-slate-600 text-xs mt-1">${latest.reading.raw}/40</div>
+                        </div>
+                        <div>
+                            <div class="text-slate-500 text-xs mb-1">Writing</div>
+                            <div class="text-xl font-bold text-yellow-400">${latest.writing.score}</div>
+                        </div>
+                        <div>
+                            <div class="text-slate-500 text-xs mb-1">Speaking</div>
+                            <div class="text-xl font-bold text-purple-400">${latest.speaking.score}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            totalCountEl.textContent = records.length;
+            
+            const overalls = records.map(r => r.overall);
+            const maxOverall = Math.max(...overalls);
+            const avgOverall = (overalls.reduce((a, b) => a + b, 0) / overalls.length).toFixed(1);
+            
+            highestOverallEl.textContent = maxOverall;
+            averageOverallEl.textContent = avgOverall;
+        }
+
+        function updateRecordsList(records) {
+            const recordsList = document.getElementById('records-list');
+            
+            if (records.length === 0) {
+                recordsList.innerHTML = `
+                    <div class="text-center py-8 text-slate-400">
+                        <div class="text-4xl mb-3">暂无记录</div>
+                        <p>还没有录入任何成绩</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const sortedRecords = [...records].reverse();
+            
+            recordsList.innerHTML = sortedRecords.map(record => `
+                <div class="bg-slate-800/50 rounded-lg p-4 border border-slate-700 hover:border-slate-600 transition-all">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="text-white font-medium mb-2">${record.date}</div>
+                            <div class="text-slate-500 text-sm mb-3">
+                                L: ${record.listening.score} | R: ${record.reading.score} | W: ${record.writing.score} | S: ${record.speaking.score}
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-slate-500 text-sm">Overall:</span>
+                                <span class="text-2xl font-bold gradient-text">${record.overall}</span>
+                            </div>
+                        </div>
+                        <button onclick="deleteRecord(${record.id})" 
+                            class="ml-4 text-slate-500 hover:text-red-400 transition-colors">
+                            删除
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ==================== Writing 详情展开/收起 ====================
+        function toggleWritingDetails() {
+            const details = document.getElementById('writing-details');
+            const button = document.querySelector('button[onclick="toggleWritingDetails()"]');
+            
+            if (details.classList.contains('expanded')) {
+                details.classList.remove('expanded');
+                button.textContent = '展开Task详情';
+            } else {
+                details.classList.add('expanded');
+                button.textContent = '收起Task详情';
+            }
+        }
+
+        // ==================== 表单处理 ====================
+        const listeningRawInput = document.getElementById('listening-raw');
+        const readingRawInput = document.getElementById('reading-raw');
+        const writingScoreInput = document.getElementById('writing-score');
+        const writingTask1Input = document.getElementById('writing-task1');
+        const writingTask2Input = document.getElementById('writing-task2');
+        const speakingScoreInput = document.getElementById('speaking-score');
+
+        // 实时预览 - Listening
+        listeningRawInput.addEventListener('input', function() {
+            const count = parseInt(this.value) || 0;
+            const score = calculateListeningScore(count);
+            document.getElementById('listening-score').textContent = score.toFixed(1);
+            updateOverallPreview();
+        });
+
+        // 实时预览 - Reading
+        readingRawInput.addEventListener('input', function() {
+            const count = parseInt(this.value) || 0;
+            const score = calculateReadingScore(count);
+            document.getElementById('reading-score').textContent = score.toFixed(1);
+            updateOverallPreview();
+        });
+
+        // 实时预览 - Writing
+        writingScoreInput.addEventListener('input', updateOverallPreview);
+        writingTask1Input.addEventListener('input', function() {
+            const task1 = parseFloat(this.value) || null;
+            const task2 = parseFloat(writingTask2Input.value) || null;
+            const calculated = calculateWritingScore(task1, task2);
+            document.getElementById('writing-calculated').textContent = calculated !== null ? calculated.toFixed(1) : '-';
+            
+            // 自动填入Writing总分框
+            if (calculated !== null) {
+                writingScoreInput.value = calculated;
+                updateOverallPreview();
+            }
+        });
+        writingTask2Input.addEventListener('input', function() {
+            const task1 = parseFloat(writingTask1Input.value) || null;
+            const task2 = parseFloat(this.value) || null;
+            const calculated = calculateWritingScore(task1, task2);
+            document.getElementById('writing-calculated').textContent = calculated !== null ? calculated.toFixed(1) : '-';
+            
+            // 自动填入Writing总分框
+            if (calculated !== null) {
+                writingScoreInput.value = calculated;
+                updateOverallPreview();
+            }
+        });
+
+        // 实时预览 - Speaking
+        speakingScoreInput.addEventListener('input', updateOverallPreview);
+
+        // 更新 Overall 预览
+        function updateOverallPreview() {
+            const l = parseFloat(document.getElementById('listening-score').textContent) || 0;
+            const r = parseFloat(document.getElementById('reading-score').textContent) || 0;
+            const w = parseFloat(writingScoreInput.value) || 0;
+            const s = parseFloat(speakingScoreInput.value) || 0;
+            
+            document.getElementById('overall-l').textContent = l.toFixed(1);
+            document.getElementById('overall-r').textContent = r.toFixed(1);
+            document.getElementById('overall-w').textContent = w.toFixed(1);
+            document.getElementById('overall-s').textContent = s.toFixed(1);
+            
+            const overall = calculateOverall(l, r, w, s);
+            document.getElementById('overall-score').textContent = overall.toFixed(1);
+        }
+
+        // 表单提交
+        document.getElementById('score-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const date = document.getElementById('exam-date').value;
+            const listeningRaw = parseInt(listeningRawInput.value);
+            const readingRaw = parseInt(readingRawInput.value);
+            const writingScore = parseFloat(writingScoreInput.value);
+            const speakingScore = parseFloat(speakingScoreInput.value);
+            
+            const listeningScore = calculateListeningScore(listeningRaw);
+            const readingScore = calculateReadingScore(readingRaw);
+            const overall = calculateOverall(listeningScore, readingScore, writingScore, speakingScore);
+            
+            const record = {
+                id: Date.now(),
+                date: date,
+                listening: { raw: listeningRaw, score: listeningScore },
+                reading: { raw: readingRaw, score: readingScore },
+                writing: { 
+                    score: writingScore, 
+                    task1: writingTask1Input.value ? parseFloat(writingTask1Input.value) : null,
+                    task2: writingTask2Input.value ? parseFloat(writingTask2Input.value) : null
+                },
+                speaking: { score: speakingScore },
+                overall: overall
+            };
+            
+            saveRecord(record);
+            updateUI();
+            
+            // 重置表单
+            this.reset();
+            document.getElementById('listening-score').textContent = '0.0';
+            document.getElementById('reading-score').textContent = '0.0';
+            document.getElementById('writing-calculated').textContent = '-';
+            updateOverallPreview();
+            
+            alert('成绩保存成功！');
+        });
+
+        // ==================== 初始化 ====================
+        function init() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('exam-date').value = today;
+            updateUI();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyScore V1.2 - 我的成绩单</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 明亮主题配色 */
+        :root {
+            --bg-main: #faf8f5;
+            --bg-card: #ffffff;
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --text-main: #1f2937;
+            --text-secondary: #6b7280;
+            --listening: #3b82f6;
+            --reading: #10b981;
+            --writing: #f59e0b;
+            --speaking: #8b5cf6;
+        }
+
+        body {
+            background: linear-gradient(135deg, #faf8f5 0%, #f3f0eb 100%);
+            min-height: 100vh;
+        }
+
+        .card-bright {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(16, 185, 129, 0.1);
+        }
+
+        .card-bright:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .gradient-text-bright {
+            background: linear-gradient(135deg, #10b981, #059669);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subject-card-listening {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 2px solid #3b82f6;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.15);
+        }
+
+        .subject-card-reading {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border: 2px solid #10b981;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);
+        }
+
+        .subject-card-writing {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border: 2px solid #f59e0b;
+            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
+        }
+
+        .subject-card-speaking {
+            background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+            border: 2px solid #8b5cf6;
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.15);
+        }
+
+        .subject-card {
+            transition: all 0.3s ease;
+            border-radius: 1rem;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        .input-bright {
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+
+        .input-bright:focus {
+            outline: none;
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .expandable-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .expandable-content.expanded {
+            max-height: 400px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+            border: 2px solid #e5e7eb;
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: #10b981;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15);
+        }
+    </style>
+</head>
+<body class="text-gray-900">
+    <div id="app" class="container mx-auto px-4 py-8 max-w-5xl">
+        <!-- 头部导航 -->
+        <header class="mb-8">
+            <div class="card-bright p-6 flex justify-between items-center">
+                <div>
+                    <h1 class="text-4xl font-bold gradient-text-bright">MyScore</h1>
+                    <p class="text-gray-500 text-sm mt-1">我的成绩单 - 雅思学术类 (V1.2 明亮版)</p>
+                </div>
+                <nav class="flex gap-3">
+                    <button onclick="showPage('dashboard')" id="nav-dashboard"
+                        class="px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-all font-medium shadow-md">
+                        仪表盘
+                    </button>
+                    <button onclick="showPage('entry')" id="nav-entry"
+                        class="px-5 py-2.5 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 transition-all font-medium">
+                        录入成绩
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- 仪表盘页面 -->
+        <div id="page-dashboard" class="page">
+            <!-- 最近成绩卡片 -->
+            <div id="recent-score-card" class="card-bright p-8 mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+                    最近成绩
+                </h2>
+                <div id="recent-score-content">
+                    <!-- 动态内容 -->
+                </div>
+            </div>
+
+            <!-- 统计概览 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="stat-card p-6">
+                    <div class="text-gray-500 text-sm mb-2 font-medium">总考试次数</div>
+                    <div id="total-count" class="text-4xl font-bold text-emerald-600">0</div>
+                </div>
+                <div class="stat-card p-6">
+                    <div class="text-gray-500 text-sm mb-2 font-medium">最佳Overall</div>
+                    <div id="highest-overall" class="text-4xl font-bold text-blue-600">-</div>
+                </div>
+                <div class="stat-card p-6">
+                    <div class="text-gray-500 text-sm mb-2 font-medium">平均Overall</div>
+                    <div id="average-overall" class="text-4xl font-bold text-purple-600">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 录入页面 -->
+        <div id="page-entry" class="page hidden">
+            <!-- 录入表单 -->
+            <div class="card-bright p-8 mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+                    录入雅思成绩
+                </h2>
+                <form id="score-form" class="space-y-6">
+                    <!-- 考试日期 -->
+                    <div>
+                        <label class="block text-gray-700 text-sm font-medium mb-2">考试日期</label>
+                        <input type="date" id="exam-date" required
+                            class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                    </div>
+
+                    <!-- 四科输入区域 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Listening -->
+                        <div class="subject-card subject-card-listening p-6">
+                            <h3 class="text-lg font-bold text-blue-700 mb-4">
+                                Listening
+                            </h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-blue-600 text-sm font-medium mb-2">正确题数 (0-40)</label>
+                                    <input type="number" id="listening-raw" min="0" max="40" required placeholder="请输入正确题数"
+                                        class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                </div>
+                                <div class="bg-white/70 rounded-lg p-4 border-2 border-blue-300">
+                                    <div class="text-blue-600 text-sm font-medium">折算分</div>
+                                    <div id="listening-score" class="text-3xl font-bold text-blue-700">0.0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reading -->
+                        <div class="subject-card subject-card-reading p-6">
+                            <h3 class="text-lg font-bold text-emerald-700 mb-4">
+                                Reading (Academic)
+                            </h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-emerald-600 text-sm font-medium mb-2">正确题数 (0-40)</label>
+                                    <input type="number" id="reading-raw" min="0" max="40" required placeholder="请输入正确题数"
+                                        class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                </div>
+                                <div class="bg-white/70 rounded-lg p-4 border-2 border-emerald-300">
+                                    <div class="text-emerald-600 text-sm font-medium">折算分</div>
+                                    <div id="reading-score" class="text-3xl font-bold text-emerald-700">0.0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Writing -->
+                        <div class="subject-card subject-card-writing p-6">
+                            <h3 class="text-lg font-bold text-amber-700 mb-4">
+                                Writing
+                            </h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-amber-600 text-sm font-medium mb-2">总分 (0-9，步长0.5)</label>
+                                    <input type="number" id="writing-score" min="0" max="9" step="0.5" required placeholder="请输入总分"
+                                        class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                </div>
+                                <button type="button" onclick="toggleWritingDetails()"
+                                    class="w-full text-amber-600 hover:text-amber-700 text-sm font-semibold transition-colors">
+                                    展开Task详情
+                                </button>
+                                <div id="writing-details" class="expandable-content">
+                                    <div class="pt-4 space-y-3 border-t-2 border-amber-300 mt-4">
+                                        <div>
+                                            <label class="block text-amber-600 text-sm font-medium mb-2">Task 1 (小作文, 权重1/3)</label>
+                                            <input type="number" id="writing-task1" min="0" max="9" step="0.5" placeholder="请输入Task1分数"
+                                                class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        </div>
+                                        <div>
+                                            <label class="block text-amber-600 text-sm font-medium mb-2">Task 2 (大作文, 权重2/3)</label>
+                                            <input type="number" id="writing-task2" min="0" max="9" step="0.5" placeholder="请输入Task2分数"
+                                                class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        </div>
+                                        <div class="bg-white/70 rounded-lg p-3 border-2 border-amber-300">
+                                            <div class="text-amber-600 text-sm font-medium">自动计算 (Task2×2+Task1)÷3</div>
+                                            <div id="writing-calculated" class="text-xl font-bold text-amber-700">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Speaking -->
+                        <div class="subject-card subject-card-speaking p-6">
+                            <h3 class="text-lg font-bold text-purple-700 mb-4">
+                                Speaking
+                            </h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-purple-600 text-sm font-medium mb-2">总分 (0-9，步长0.5)</label>
+                                    <input type="number" id="speaking-score" min="0" max="9" step="0.5" required placeholder="请输入总分"
+                                        class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Overall 预览 -->
+                    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-6 border-2 border-emerald-300">
+                        <div class="text-emerald-700 text-sm mb-3 font-semibold">Overall 总分预览</div>
+                        <div class="flex items-center justify-between flex-wrap gap-4">
+                            <div class="text-gray-600 font-medium">L: <span id="overall-l" class="text-blue-700 font-bold">0.0</span></div>
+                            <div class="text-gray-600 font-medium">R: <span id="overall-r" class="text-emerald-700 font-bold">0.0</span></div>
+                            <div class="text-gray-600 font-medium">W: <span id="overall-w" class="text-amber-700 font-bold">0.0</span></div>
+                            <div class="text-gray-600 font-medium">S: <span id="overall-s" class="text-purple-700 font-bold">0.0</span></div>
+                            <div class="text-right">
+                                <div class="text-emerald-600 text-sm font-medium">Overall</div>
+                                <div id="overall-score" class="text-5xl font-bold gradient-text-bright">0.0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 保存按钮 -->
+                    <button type="submit"
+                        class="w-full btn-primary text-white font-bold py-4 px-6 rounded-lg shadow-lg">
+                        保存成绩
+                    </button>
+                </form>
+            </div>
+
+            <!-- 成绩记录列表 -->
+            <div class="card-bright p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-semibold text-gray-800">
+                        历史记录
+                    </h2>
+                    <button onclick="clearAllRecords()" class="text-red-500 hover:text-red-600 text-sm font-semibold transition-colors">
+                        清空所有记录
+                    </button>
+                </div>
+                <div id="records-list" class="space-y-3">
+                    <!-- 动态内容 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 数据存储 ====================
+        const STORAGE_KEY = 'myscore_v1.2_records';
+
+        // 获取所有记录
+        function getRecords() {
+            const records = localStorage.getItem(STORAGE_KEY);
+            return records ? JSON.parse(records) : [];
+        }
+
+        // 保存记录
+        function saveRecord(record) {
+            const records = getRecords();
+            records.push(record);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        }
+
+        // 清空所有记录
+        function clearAllRecords() {
+            if (confirm('确定要清空所有成绩记录吗？此操作不可恢复。')) {
+                localStorage.removeItem(STORAGE_KEY);
+                updateUI();
+            }
+        }
+
+        // 删除单条记录
+        function deleteRecord(id) {
+            if (confirm('确定要删除这条记录吗？')) {
+                const records = getRecords().filter(r => r.id !== id);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+                updateUI();
+            }
+        }
+
+        // ==================== 评分逻辑 ====================
+
+        // Listening 评分表
+        function calculateListeningScore(correctCount) {
+            const scoreTable = [
+                { range: [39, 40], score: 9.0 },
+                { range: [37, 38], score: 8.5 },
+                { range: [35, 36], score: 8.0 },
+                { range: [32, 34], score: 7.5 },
+                { range: [30, 31], score: 7.0 },
+                { range: [26, 29], score: 6.5 },
+                { range: [23, 25], score: 6.0 },
+                { range: [18, 22], score: 5.5 },
+                { range: [16, 17], score: 5.0 },
+                { range: [13, 15], score: 4.5 },
+                { range: [10, 12], score: 4.0 },
+                { range: [6, 9], score: 3.5 },
+                { range: [4, 5], score: 3.0 },
+                { range: [3, 3], score: 2.5 },
+                { range: [2, 2], score: 2.0 },
+                { range: [1, 1], score: 1.0 },
+                { range: [0, 0], score: 0.5 }
+            ];
+
+            for (const item of scoreTable) {
+                if (correctCount >= item.range[0] && correctCount <= item.range[1]) {
+                    return item.score;
+                }
+            }
+            return 0.0;
+        }
+
+        // Reading (Academic) 评分表
+        function calculateReadingScore(correctCount) {
+            const scoreTable = [
+                { range: [39, 40], score: 9.0 },
+                { range: [37, 38], score: 8.5 },
+                { range: [35, 36], score: 8.0 },
+                { range: [33, 34], score: 7.5 },
+                { range: [30, 32], score: 7.0 },
+                { range: [27, 29], score: 6.5 },
+                { range: [23, 26], score: 6.0 },
+                { range: [19, 22], score: 5.5 },
+                { range: [15, 18], score: 5.0 },
+                { range: [13, 14], score: 4.5 },
+                { range: [10, 12], score: 4.0 },
+                { range: [8, 9], score: 3.5 },
+                { range: [6, 7], score: 3.0 },
+                { range: [4, 5], score: 2.5 },
+                { range: [3, 3], score: 2.0 },
+                { range: [2, 2], score: 1.0 },
+                { range: [1, 1], score: 1.0 },
+                { range: [0, 0], score: 0.5 }
+            ];
+
+            for (const item of scoreTable) {
+                if (correctCount >= item.range[0] && correctCount <= item.range[1]) {
+                    return item.score;
+                }
+            }
+            return 0.0;
+        }
+
+        // 计算 Overall 分数（雅思官方规则）
+        function calculateOverall(l, r, w, s) {
+            const average = (l + r + w + s) / 4;
+            const decimal = average - Math.floor(average);
+
+            // 特殊进位规则
+            if (decimal >= 0.25 && decimal < 0.5) {
+                return Math.floor(average) + 0.5;
+            } else if (decimal >= 0.75) {
+                return Math.floor(average) + 1.0;
+            } else {
+                // 四舍五入到半分
+                return Math.round(average * 2) / 2;
+            }
+        }
+
+        // Writing Task 计算 (Task2权重2/3, Task1权重1/3)
+        function calculateWritingScore(task1, task2) {
+            if (task1 === null || task2 === null) return null;
+            const score = (task2 * 2 + task1) / 3;
+            return Math.round(score * 2) / 2; // 四舍五入到半分
+        }
+
+        // ==================== UI 渲染 ====================
+        function showPage(pageName) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.add('hidden');
+            });
+
+            document.getElementById(`page-${pageName}`).classList.remove('hidden');
+
+            document.getElementById('nav-dashboard').className = pageName === 'dashboard'
+                ? 'px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-all font-medium shadow-md'
+                : 'px-5 py-2.5 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 transition-all font-medium';
+            document.getElementById('nav-entry').className = pageName === 'entry'
+                ? 'px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white transition-all font-medium shadow-md'
+                : 'px-5 py-2.5 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 transition-all font-medium';
+
+            updateUI();
+        }
+
+        function updateUI() {
+            const records = getRecords();
+            updateDashboard(records);
+            updateRecordsList(records);
+        }
+
+        function updateDashboard(records) {
+            const recentScoreContent = document.getElementById('recent-score-content');
+            const totalCountEl = document.getElementById('total-count');
+            const highestOverallEl = document.getElementById('highest-overall');
+            const averageOverallEl = document.getElementById('average-overall');
+
+            if (records.length === 0) {
+                recentScoreContent.innerHTML = `
+                    <div class="text-center py-12 text-gray-400">
+                        <div class="text-6xl mb-4">暂无数据</div>
+                        <p class="text-xl text-gray-600 font-medium">还没有成绩记录</p>
+                        <p class="text-sm mt-2 text-gray-500">点击"录入成绩"开始记录你的进步</p>
+                    </div>
+                `;
+                totalCountEl.textContent = '0';
+                highestOverallEl.textContent = '-';
+                averageOverallEl.textContent = '-';
+                return;
+            }
+
+            const latest = records[records.length - 1];
+            recentScoreContent.innerHTML = `
+                <div class="mb-6">
+                    <div class="text-gray-500 text-sm font-medium">${latest.date}</div>
+                </div>
+                <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-6 border-2 border-emerald-200">
+                    <div class="text-center mb-6">
+                        <div class="text-emerald-600 text-sm mb-2 font-semibold">Overall 总分</div>
+                        <div class="text-6xl font-bold gradient-text-bright">${latest.overall.toFixed(1)}</div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-4 text-center">
+                        <div class="bg-blue-50 rounded-lg p-3 border-2 border-blue-200">
+                            <div class="text-blue-600 text-xs mb-1 font-semibold">Listening</div>
+                            <div class="text-2xl font-bold text-blue-700">${latest.listening.score.toFixed(1)}</div>
+                            <div class="text-blue-400 text-xs mt-1">${latest.listening.raw}/40</div>
+                        </div>
+                        <div class="bg-emerald-50 rounded-lg p-3 border-2 border-emerald-200">
+                            <div class="text-emerald-600 text-xs mb-1 font-semibold">Reading</div>
+                            <div class="text-2xl font-bold text-emerald-700">${latest.reading.score.toFixed(1)}</div>
+                            <div class="text-emerald-400 text-xs mt-1">${latest.reading.raw}/40</div>
+                        </div>
+                        <div class="bg-amber-50 rounded-lg p-3 border-2 border-amber-200">
+                            <div class="text-amber-600 text-xs mb-1 font-semibold">Writing</div>
+                            <div class="text-2xl font-bold text-amber-700">${latest.writing.score.toFixed(1)}</div>
+                        </div>
+                        <div class="bg-purple-50 rounded-lg p-3 border-2 border-purple-200">
+                            <div class="text-purple-600 text-xs mb-1 font-semibold">Speaking</div>
+                            <div class="text-2xl font-bold text-purple-700">${latest.speaking.score.toFixed(1)}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            totalCountEl.textContent = records.length;
+
+            const overalls = records.map(r => r.overall);
+            const maxOverall = Math.max(...overalls);
+            const avgOverall = (overalls.reduce((a, b) => a + b, 0) / overalls.length).toFixed(1);
+
+            highestOverallEl.textContent = maxOverall.toFixed(1);
+            averageOverallEl.textContent = avgOverall;
+        }
+
+        function updateRecordsList(records) {
+            const recordsList = document.getElementById('records-list');
+
+            if (records.length === 0) {
+                recordsList.innerHTML = `
+                    <div class="text-center py-12 text-gray-400">
+                        <div class="text-5xl mb-3">暂无记录</div>
+                        <p class="text-lg text-gray-600 font-medium">还没有录入任何成绩</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const sortedRecords = [...records].reverse();
+
+            recordsList.innerHTML = sortedRecords.map(record => `
+                <div class="bg-gradient-to-r from-white to-gray-50 rounded-lg p-5 border-2 border-gray-200 hover:border-emerald-300 transition-all hover:shadow-md">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="text-gray-800 font-semibold mb-2 flex items-center gap-2">
+                                ${record.date}
+                            </div>
+                            <div class="text-gray-600 text-sm mb-3 flex gap-4 flex-wrap">
+                                <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded font-medium">L: ${record.listening.score.toFixed(1)}</span>
+                                <span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-medium">R: ${record.reading.score.toFixed(1)}</span>
+                                <span class="bg-amber-100 text-amber-700 px-2 py-1 rounded font-medium">W: ${record.writing.score.toFixed(1)}</span>
+                                <span class="bg-purple-100 text-purple-700 px-2 py-1 rounded font-medium">S: ${record.speaking.score.toFixed(1)}</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="text-gray-600 text-sm font-medium">Overall:</span>
+                                <span class="text-3xl font-bold gradient-text-bright">${record.overall.toFixed(1)}</span>
+                            </div>
+                        </div>
+                        <button onclick="deleteRecord(${record.id})"
+                            class="ml-4 text-gray-400 hover:text-red-500 transition-colors font-semibold">
+                            删除
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ==================== Writing 详情展开/收起 ====================
+        function toggleWritingDetails() {
+            const details = document.getElementById('writing-details');
+            const button = document.querySelector('button[onclick="toggleWritingDetails()"]');
+
+            if (details.classList.contains('expanded')) {
+                details.classList.remove('expanded');
+                button.textContent = '展开Task详情';
+            } else {
+                details.classList.add('expanded');
+                button.textContent = '收起Task详情';
+            }
+        }
+
+        // ==================== 表单处理 ====================
+        const listeningRawInput = document.getElementById('listening-raw');
+        const readingRawInput = document.getElementById('reading-raw');
+        const writingScoreInput = document.getElementById('writing-score');
+        const writingTask1Input = document.getElementById('writing-task1');
+        const writingTask2Input = document.getElementById('writing-task2');
+        const speakingScoreInput = document.getElementById('speaking-score');
+
+        // 实时预览 - Listening
+        listeningRawInput.addEventListener('input', function() {
+            const count = parseInt(this.value) || 0;
+            const score = calculateListeningScore(count);
+            document.getElementById('listening-score').textContent = score.toFixed(1);
+            updateOverallPreview();
+        });
+
+        // 实时预览 - Reading
+        readingRawInput.addEventListener('input', function() {
+            const count = parseInt(this.value) || 0;
+            const score = calculateReadingScore(count);
+            document.getElementById('reading-score').textContent = score.toFixed(1);
+            updateOverallPreview();
+        });
+
+        // 实时预览 - Writing
+        writingScoreInput.addEventListener('input', updateOverallPreview);
+        writingTask1Input.addEventListener('input', function() {
+            const task1 = parseFloat(this.value) || null;
+            const task2 = parseFloat(writingTask2Input.value) || null;
+            const calculated = calculateWritingScore(task1, task2);
+            document.getElementById('writing-calculated').textContent = calculated !== null ? calculated.toFixed(1) : '-';
+
+            // 自动填入Writing总分框
+            if (calculated !== null) {
+                writingScoreInput.value = calculated;
+                updateOverallPreview();
+            }
+        });
+        writingTask2Input.addEventListener('input', function() {
+            const task1 = parseFloat(writingTask1Input.value) || null;
+            const task2 = parseFloat(this.value) || null;
+            const calculated = calculateWritingScore(task1, task2);
+            document.getElementById('writing-calculated').textContent = calculated !== null ? calculated.toFixed(1) : '-';
+
+            // 自动填入Writing总分框
+            if (calculated !== null) {
+                writingScoreInput.value = calculated;
+                updateOverallPreview();
+            }
+        });
+
+        // 实时预览 - Speaking
+        speakingScoreInput.addEventListener('input', updateOverallPreview);
+
+        // 更新 Overall 预览
+        function updateOverallPreview() {
+            const l = parseFloat(document.getElementById('listening-score').textContent) || 0;
+            const r = parseFloat(document.getElementById('reading-score').textContent) || 0;
+            const w = parseFloat(writingScoreInput.value) || 0;
+            const s = parseFloat(speakingScoreInput.value) || 0;
+
+            document.getElementById('overall-l').textContent = l.toFixed(1);
+            document.getElementById('overall-r').textContent = r.toFixed(1);
+            document.getElementById('overall-w').textContent = w.toFixed(1);
+            document.getElementById('overall-s').textContent = s.toFixed(1);
+
+            const overall = calculateOverall(l, r, w, s);
+            document.getElementById('overall-score').textContent = overall.toFixed(1);
+        }
+
+        // 表单提交
+        document.getElementById('score-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const date = document.getElementById('exam-date').value;
+            const listeningRaw = parseInt(listeningRawInput.value);
+            const readingRaw = parseInt(readingRawInput.value);
+            const writingScore = parseFloat(writingScoreInput.value);
+            const speakingScore = parseFloat(speakingScoreInput.value);
+
+            const listeningScore = calculateListeningScore(listeningRaw);
+            const readingScore = calculateReadingScore(readingRaw);
+            const overall = calculateOverall(listeningScore, readingScore, writingScore, speakingScore);
+
+            const record = {
+                id: Date.now(),
+                date: date,
+                listening: { raw: listeningRaw, score: listeningScore },
+                reading: { raw: readingRaw, score: readingScore },
+                writing: {
+                    score: writingScore,
+                    task1: writingTask1Input.value ? parseFloat(writingTask1Input.value) : null,
+                    task2: writingTask2Input.value ? parseFloat(writingTask2Input.value) : null
+                },
+                speaking: { score: speakingScore },
+                overall: overall
+            };
+
+            saveRecord(record);
+            updateUI();
+
+            // 重置表单
+            this.reset();
+            document.getElementById('listening-score').textContent = '0.0';
+            document.getElementById('reading-score').textContent = '0.0';
+            document.getElementById('writing-calculated').textContent = '-';
+            updateOverallPreview();
+
+            alert('成绩保存成功！');
+        });
+
+        // ==================== 初始化 ====================
+        function init() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('exam-date').value = today;
+            updateUI();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

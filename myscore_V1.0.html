@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyScore - 我的成绩单</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 自定义样式补充 */
+        .glass-effect {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+        .input-glow:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-slate-900 min-h-screen text-gray-100">
+    <div id="app" class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- 头部导航 -->
+        <header class="mb-8">
+            <div class="glass-effect rounded-2xl p-6 flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold gradient-text">MyScore</h1>
+                    <p class="text-slate-400 text-sm mt-1">我的成绩单 - 雅思听力追踪</p>
+                </div>
+                <nav class="flex gap-3">
+                    <button onclick="showPage('dashboard')" id="nav-dashboard" 
+                        class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-all font-medium">
+                        仪表盘
+                    </button>
+                    <button onclick="showPage('entry')" id="nav-entry"
+                        class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-all font-medium">
+                        录入成绩
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- 仪表盘页面 -->
+        <div id="page-dashboard" class="page">
+            <!-- 最近成绩卡片 -->
+            <div id="recent-score-card" class="glass-effect rounded-2xl p-8 mb-6 card-hover transition-all duration-300">
+                <h2 class="text-xl font-semibold text-slate-300 mb-6">📊 最近成绩</h2>
+                <div id="recent-score-content">
+                    <!-- 动态内容 -->
+                </div>
+            </div>
+
+            <!-- 统计概览 -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="glass-effect rounded-xl p-6 card-hover transition-all duration-300">
+                    <div class="text-slate-400 text-sm mb-2">总考试次数</div>
+                    <div id="total-count" class="text-3xl font-bold text-blue-400">0</div>
+                </div>
+                <div class="glass-effect rounded-xl p-6 card-hover transition-all duration-300">
+                    <div class="text-slate-400 text-sm mb-2">最高分</div>
+                    <div id="highest-score" class="text-3xl font-bold text-green-400">-</div>
+                </div>
+                <div class="glass-effect rounded-xl p-6 card-hover transition-all duration-300">
+                    <div class="text-slate-400 text-sm mb-2">平均分</div>
+                    <div id="average-score" class="text-3xl font-bold text-purple-400">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 录入页面 -->
+        <div id="page-entry" class="page hidden">
+            <!-- 录入表单 -->
+            <div class="glass-effect rounded-2xl p-8 mb-6">
+                <h2 class="text-xl font-semibold text-slate-300 mb-6">📝 录入雅思听力成绩</h2>
+                <form id="score-form" class="space-y-6">
+                    <div>
+                        <label class="block text-slate-400 text-sm mb-2">考试日期</label>
+                        <input type="date" id="exam-date" required
+                            class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white input-glow focus:outline-none focus:border-blue-500 transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 text-sm mb-2">科目</label>
+                        <select id="exam-subject" required
+                            class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white input-glow focus:outline-none focus:border-blue-500 transition-all">
+                            <option value="雅思听力">雅思听力</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-slate-400 text-sm mb-2">正确题数 (0-40)</label>
+                        <input type="number" id="correct-count" min="0" max="40" required placeholder="请输入正确题数"
+                            class="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-3 text-white input-glow focus:outline-none focus:border-blue-500 transition-all">
+                    </div>
+                    
+                    <!-- 实时预览 -->
+                    <div class="bg-slate-800/50 rounded-lg p-4 border border-slate-700">
+                        <div class="text-slate-400 text-sm mb-2">分数预览</div>
+                        <div class="flex items-center gap-4">
+                            <div>
+                                <span class="text-slate-500 text-sm">原始分：</span>
+                                <span id="preview-raw" class="text-white font-semibold">0</span>
+                            </div>
+                            <div class="text-slate-600">→</div>
+                            <div>
+                                <span class="text-slate-500 text-sm">折算分：</span>
+                                <span id="preview-converted" class="text-2xl font-bold gradient-text">0.0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" 
+                        class="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                        💾 保存成绩
+                    </button>
+                </form>
+            </div>
+
+            <!-- 成绩记录列表 -->
+            <div class="glass-effect rounded-2xl p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold text-slate-300">📋 历史记录</h2>
+                    <button onclick="clearAllRecords()" class="text-red-400 hover:text-red-300 text-sm transition-colors">
+                        清空所有记录
+                    </button>
+                </div>
+                <div id="records-list" class="space-y-3">
+                    <!-- 动态内容 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 数据存储 ====================
+        const STORAGE_KEY = 'myscore_records';
+
+        // 获取所有记录
+        function getRecords() {
+            const records = localStorage.getItem(STORAGE_KEY);
+            return records ? JSON.parse(records) : [];
+        }
+
+        // 保存记录
+        function saveRecord(record) {
+            const records = getRecords();
+            records.push(record);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+        }
+
+        // 清空所有记录
+        function clearAllRecords() {
+            if (confirm('确定要清空所有成绩记录吗？此操作不可恢复。')) {
+                localStorage.removeItem(STORAGE_KEY);
+                updateUI();
+            }
+        }
+
+        // ==================== 评分逻辑（预留扩展位置）====================
+        function calculateIeltsListeningScore(correctCount) {
+            // 雅思听力评分表（硬编码版本）
+            // 预留位置：后续可修改为从配置文件读取或动态生成
+            
+            const scoreTable = [
+                { range: [39, 40], score: 9.0 },
+                { range: [37, 38], score: 8.5 },
+                { range: [35, 36], score: 8.0 },
+                { range: [32, 34], score: 7.5 },
+                { range: [30, 31], score: 7.0 },
+                { range: [26, 29], score: 6.5 },
+                { range: [23, 25], score: 6.0 },
+                { range: [18, 22], score: 5.5 },
+                { range: [16, 17], score: 5.0 },
+                { range: [13, 15], score: 4.5 },
+                { range: [10, 12], score: 4.0 },
+                { range: [6, 9], score: 3.5 },
+                { range: [4, 5], score: 3.0 },
+                { range: [3, 3], score: 2.5 },
+                { range: [2, 2], score: 2.0 },
+                { range: [1, 1], score: 1.0 },
+                { range: [0, 0], score: 0.5 }
+            ];
+
+            for (const item of scoreTable) {
+                if (correctCount >= item.range[0] && correctCount <= item.range[1]) {
+                    return item.score;
+                }
+            }
+            return 0.0;
+        }
+
+        // ==================== UI 渲染 ====================
+        function showPage(pageName) {
+            // 隐藏所有页面
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.add('hidden');
+            });
+            
+            // 显示目标页面
+            document.getElementById(`page-${pageName}`).classList.remove('hidden');
+            
+            // 更新导航按钮样式
+            document.getElementById('nav-dashboard').className = pageName === 'dashboard' 
+                ? 'px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-all font-medium'
+                : 'px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-all font-medium';
+            document.getElementById('nav-entry').className = pageName === 'entry'
+                ? 'px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 transition-all font-medium'
+                : 'px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 transition-all font-medium';
+            
+            // 更新UI
+            updateUI();
+        }
+
+        function updateUI() {
+            const records = getRecords();
+            
+            // 更新仪表盘
+            updateDashboard(records);
+            
+            // 更新记录列表
+            updateRecordsList(records);
+        }
+
+        function updateDashboard(records) {
+            const recentScoreContent = document.getElementById('recent-score-content');
+            const totalCountEl = document.getElementById('total-count');
+            const highestScoreEl = document.getElementById('highest-score');
+            const averageScoreEl = document.getElementById('average-score');
+            
+            if (records.length === 0) {
+                recentScoreContent.innerHTML = `
+                    <div class="text-center py-8 text-slate-400">
+                        <div class="text-5xl mb-4">📭</div>
+                        <p>还没有成绩记录</p>
+                        <p class="text-sm mt-2">点击"录入成绩"开始记录你的进步</p>
+                    </div>
+                `;
+                totalCountEl.textContent = '0';
+                highestScoreEl.textContent = '-';
+                averageScoreEl.textContent = '-';
+                return;
+            }
+            
+            // 最新记录
+            const latest = records[records.length - 1];
+            recentScoreContent.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-slate-400 text-sm">${latest.date}</div>
+                        <div class="text-lg font-semibold text-white mt-1">${latest.subject}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-slate-400 text-sm">正确题数</div>
+                        <div class="text-xl font-semibold text-blue-400 mt-1">${latest.rawScore} / 40</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-slate-400 text-sm">折算分</div>
+                        <div class="text-4xl font-bold gradient-text mt-1">${latest.convertedScore}</div>
+                    </div>
+                </div>
+            `;
+            
+            // 统计数据
+            totalCountEl.textContent = records.length;
+            
+            const scores = records.map(r => r.convertedScore);
+            const maxScore = Math.max(...scores);
+            const avgScore = (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
+            
+            highestScoreEl.textContent = maxScore;
+            averageScoreEl.textContent = avgScore;
+        }
+
+        function updateRecordsList(records) {
+            const recordsList = document.getElementById('records-list');
+            
+            if (records.length === 0) {
+                recordsList.innerHTML = `
+                    <div class="text-center py-8 text-slate-400">
+                        <div class="text-4xl mb-3">📝</div>
+                        <p>暂无记录</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 按日期倒序排列
+            const sortedRecords = [...records].reverse();
+            
+            recordsList.innerHTML = sortedRecords.map(record => `
+                <div class="bg-slate-800/50 rounded-lg p-4 border border-slate-700 hover:border-slate-600 transition-all">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="text-white font-medium">${record.subject}</div>
+                            <div class="text-slate-400 text-sm mt-1">${record.date}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-slate-400 text-sm">正确题数</div>
+                            <div class="text-blue-400 font-semibold">${record.rawScore} / 40</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-slate-400 text-sm">折算分</div>
+                            <div class="text-2xl font-bold gradient-text">${record.convertedScore}</div>
+                        </div>
+                        <button onclick="deleteRecord(${record.id})" 
+                            class="ml-4 text-slate-500 hover:text-red-400 transition-colors">
+                            ✕
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteRecord(id) {
+            if (confirm('确定要删除这条记录吗？')) {
+                const records = getRecords().filter(r => r.id !== id);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+                updateUI();
+            }
+        }
+
+        // ==================== 表单处理 ====================
+        const scoreForm = document.getElementById('score-form');
+        const correctCountInput = document.getElementById('correct-count');
+        const previewRaw = document.getElementById('preview-raw');
+        const previewConverted = document.getElementById('preview-converted');
+
+        // 实时预览
+        correctCountInput.addEventListener('input', function() {
+            const count = parseInt(this.value) || 0;
+            const score = calculateIeltsListeningScore(count);
+            previewRaw.textContent = count;
+            previewConverted.textContent = score.toFixed(1);
+        });
+
+        // 表单提交
+        scoreForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const date = document.getElementById('exam-date').value;
+            const subject = document.getElementById('exam-subject').value;
+            const rawScore = parseInt(correctCountInput.value);
+            const convertedScore = calculateIeltsListeningScore(rawScore);
+            
+            const record = {
+                id: Date.now(),
+                date: date,
+                subject: subject,
+                rawScore: rawScore,
+                convertedScore: convertedScore
+            };
+            
+            saveRecord(record);
+            updateUI();
+            
+            // 重置表单
+            scoreForm.reset();
+            previewRaw.textContent = '0';
+            previewConverted.textContent = '0.0';
+            
+            // 显示成功提示
+            alert('✅ 成绩保存成功！');
+        });
+
+        // ==================== 初始化 ====================
+        function init() {
+            // 设置默认日期为今天
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('exam-date').value = today;
+            
+            // 初始化UI
+            updateUI();
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
