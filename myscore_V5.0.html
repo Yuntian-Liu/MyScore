@@ -6,76 +6,30 @@
     <title>MyScore V5.0 - 智能成绩管家</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        
-        :root {
-            --primary: #6366f1;
-            --primary-light: #818cf8;
-            --primary-dark: #4f46e5;
-            --secondary: #06b6d4;
-            --accent: #f472b6;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --error: #ef4444;
-            --bg-gradient-start: #0f172a;
-            --bg-gradient-mid: #1e1b4b;
-            --bg-gradient-end: #312e81;
-        }
+        * { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans SC', sans-serif; }
         
         body {
-            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-mid) 50%, var(--bg-gradient-end) 100%);
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
             min-height: 100vh;
             color: #f8fafc;
         }
         
-        /* 玻璃拟态卡片 */
+        .hidden { display: none !important; }
+        
         .glass-card {
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 1.5rem;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s ease;
         }
         
         .glass-card:hover {
             background: rgba(255, 255, 255, 0.08);
             border-color: rgba(255, 255, 255, 0.2);
-            transform: translateY(-4px);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 40px rgba(99, 102, 241, 0.1);
         }
         
-        /* 发光边框效果 */
-        .glow-border {
-            position: relative;
-        }
-        
-        .glow-border::before {
-            content: '';
-            position: absolute;
-            inset: -1px;
-            border-radius: inherit;
-            padding: 1px;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.5), rgba(6, 182, 212, 0.5), rgba(244, 114, 182, 0.5));
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-        
-        .glow-border:hover::before {
-            opacity: 1;
-        }
-        
-        /* 渐变文字 */
         .gradient-text {
             background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
             -webkit-background-clip: text;
@@ -83,65 +37,39 @@
             background-clip: text;
         }
         
-        .gradient-text-cyan {
-            background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        /* 导航按钮 */
         .nav-btn {
-            position: relative;
             padding: 0.75rem 1.5rem;
             border-radius: 1rem;
             font-weight: 500;
             transition: all 0.3s ease;
-            overflow: hidden;
+            background: transparent;
+            border: 1px solid transparent;
+            color: #94a3b8;
+            cursor: pointer;
         }
         
-        .nav-btn::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(6, 182, 212, 0.2));
-            opacity: 0;
-            transition: opacity 0.3s ease;
+        .nav-btn:hover { color: #f8fafc; background: rgba(255,255,255,0.05); }
+        .nav-btn.active { 
+            background: rgba(99, 102, 241, 0.3); 
+            border-color: rgba(99, 102, 241, 0.5);
+            color: #f8fafc;
         }
         
-        .nav-btn:hover::before,
-        .nav-btn.active::before {
-            opacity: 1;
-        }
-        
-        .nav-btn.active {
-            background: rgba(99, 102, 241, 0.3);
-            border: 1px solid rgba(99, 102, 241, 0.5);
-            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
-        }
-        
-        /* 输入框样式 */
         .input-glass {
             background: rgba(15, 23, 42, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 0.75rem;
             padding: 0.875rem 1rem;
             color: #f8fafc;
-            transition: all 0.3s ease;
             width: 100%;
+            outline: none;
         }
         
         .input-glass:focus {
-            outline: none;
             border-color: rgba(99, 102, 241, 0.5);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), 0 0 20px rgba(99, 102, 241, 0.1);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
         
-        .input-glass::placeholder {
-            color: rgba(148, 163, 184, 0.6);
-        }
-        
-        /* 主按钮 */
         .btn-primary {
             background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
             border: none;
@@ -149,47 +77,22 @@
             padding: 1rem 2rem;
             color: white;
             font-weight: 600;
+            cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
         }
         
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 100%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4); }
         
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4), 0 0 20px rgba(99, 102, 241, 0.2);
-        }
-        
-        .btn-primary:hover::before {
-            opacity: 1;
-        }
-        
-        /* 次要按钮 */
         .btn-secondary {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 0.75rem;
             padding: 0.875rem 1.5rem;
             color: #f8fafc;
-            font-weight: 500;
+            cursor: pointer;
             transition: all 0.3s ease;
         }
         
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.3);
-            transform: translateY(-2px);
-        }
-        
-        /* 考试类型选择卡片 */
         .exam-type-card {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -203,27 +106,19 @@
         .exam-type-card:hover {
             background: rgba(255, 255, 255, 0.06);
             border-color: rgba(99, 102, 241, 0.4);
-            transform: translateY(-2px);
         }
         
         .exam-type-card.active {
             background: rgba(99, 102, 241, 0.15);
             border-color: rgba(99, 102, 241, 0.6);
-            box-shadow: 0 0 30px rgba(99, 102, 241, 0.2);
         }
         
-        /* 手风琴样式 */
         .accordion-item {
             background: rgba(15, 23, 42, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 1rem;
             margin-bottom: 0.75rem;
             overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        .accordion-item:hover {
-            border-color: rgba(255, 255, 255, 0.15);
         }
         
         .accordion-header {
@@ -232,42 +127,27 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.3s ease;
         }
         
         .accordion-content {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: max-height 0.3s ease;
         }
         
-        .accordion-content.expanded {
-            max-height: 1000px;
-        }
+        .accordion-content.expanded { max-height: 1000px; }
         
-        .accordion-arrow {
-            transition: transform 0.3s ease;
-            color: rgba(148, 163, 184, 0.8);
-        }
+        .accordion-arrow { transition: transform 0.3s ease; }
+        .accordion-arrow.expanded { transform: rotate(180deg); }
         
-        .accordion-arrow.expanded {
-            transform: rotate(180deg);
-        }
-        
-        /* Tab 样式 */
         .dashboard-tab {
             padding: 0.75rem 1.5rem;
             border-radius: 0.75rem;
             font-weight: 500;
-            color: rgba(148, 163, 184, 0.8);
-            transition: all 0.3s ease;
+            color: #94a3b8;
             cursor: pointer;
             border: 1px solid transparent;
-        }
-        
-        .dashboard-tab:hover {
-            color: #f8fafc;
-            background: rgba(255, 255, 255, 0.05);
+            background: transparent;
         }
         
         .dashboard-tab.active {
@@ -276,71 +156,25 @@
             border-color: rgba(99, 102, 241, 0.4);
         }
         
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.4s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* 统计卡片 */
         .stat-card {
             background: rgba(15, 23, 42, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 1rem;
             padding: 1.5rem;
-            transition: all 0.3s ease;
         }
         
-        .stat-card:hover {
-            border-color: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-        }
-        
-        /* 分数展示 */
-        .score-display {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(6, 182, 212, 0.1) 100%);
-            border: 1px solid rgba(99, 102, 241, 0.2);
-            border-radius: 1rem;
-            padding: 1.5rem;
-        }
-        
-        /* 图表容器 */
-        .chart-container {
-            background: rgba(15, 23, 42, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 1rem;
-            padding: 1.5rem;
-        }
-        
-        /* 历史记录项 */
         .record-item {
             background: rgba(15, 23, 42, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 1rem;
             padding: 1.25rem;
-            transition: all 0.3s ease;
+            margin-bottom: 0.75rem;
         }
         
-        .record-item:hover {
-            background: rgba(15, 23, 42, 0.6);
-            border-color: rgba(99, 102, 241, 0.3);
-            transform: translateX(4px);
-        }
-        
-        /* 模态框 */
         .modal-overlay {
             position: fixed;
             inset: 0;
             background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(8px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -350,10 +184,7 @@
             transition: all 0.3s ease;
         }
         
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
+        .modal-overlay.active { opacity: 1; visibility: visible; }
         
         .modal-content {
             background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
@@ -364,295 +195,87 @@
             width: 90%;
             max-height: 85vh;
             overflow-y: auto;
-            transform: scale(0.9) translateY(20px);
-            transition: all 0.3s ease;
         }
         
-        .modal-overlay.active .modal-content {
-            transform: scale(1) translateY(0);
-        }
+        .empty-state { text-align: center; padding: 3rem; color: #64748b; }
+        .empty-state svg { width: 64px; height: 64px; margin-bottom: 1rem; opacity: 0.3; }
         
-        /* 徽章 */
-        .badge {
+        .score-tag {
             display: inline-flex;
-            align-items: center;
-            padding: 0.375rem 0.875rem;
+            padding: 0.25rem 0.75rem;
             border-radius: 9999px;
             font-size: 0.875rem;
             font-weight: 500;
-        }
-        
-        .badge-blue {
-            background: rgba(59, 130, 246, 0.15);
-            color: #60a5fa;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-        }
-        
-        .badge-emerald {
-            background: rgba(16, 185, 129, 0.15);
-            color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-        }
-        
-        .badge-purple {
-            background: rgba(139, 92, 246, 0.15);
-            color: #a78bfa;
-            border: 1px solid rgba(139, 92, 246, 0.3);
-        }
-        
-        .badge-amber {
-            background: rgba(245, 158, 11, 0.15);
-            color: #fbbf24;
-            border: 1px solid rgba(245, 158, 11, 0.3);
-        }
-        
-        .badge-pink {
-            background: rgba(236, 72, 153, 0.15);
-            color: #f472b6;
-            border: 1px solid rgba(236, 72, 153, 0.3);
-        }
-        
-        /* 开关按钮 */
-        .toggle-switch {
-            position: relative;
-            width: 48px;
-            height: 26px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 9999px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .toggle-switch.active {
-            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
-        }
-        
-        .toggle-switch::after {
-            content: '';
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-        }
-        
-        .toggle-switch.active::after {
-            left: 25px;
-        }
-        
-        /* 滚动条样式 */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.3);
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: rgba(99, 102, 241, 0.5);
-            border-radius: 4px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(99, 102, 241, 0.7);
-        }
-        
-        /* 空状态 */
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: rgba(148, 163, 184, 0.6);
-        }
-        
-        .empty-state-icon {
-            width: 64px;
-            height: 64px;
-            margin: 0 auto 1rem;
-            opacity: 0.3;
-        }
-        
-        /* 响应式 */
-        @media (max-width: 768px) {
-            .glass-card {
-                border-radius: 1rem;
-            }
-            
-            .modal-content {
-                padding: 1.5rem;
-                margin: 1rem;
-            }
-        }
-        
-        /* 科目主题色 */
-        .subject-listening { --subject-color: #3b82f6; --subject-bg: rgba(59, 130, 246, 0.1); }
-        .subject-reading { --subject-color: #10b981; --subject-bg: rgba(16, 185, 129, 0.1); }
-        .subject-writing { --subject-color: #f59e0b; --subject-bg: rgba(245, 158, 11, 0.1); }
-        .subject-speaking { --subject-color: #a855f7; --subject-bg: rgba(168, 85, 247, 0.1); }
-        .subject-translation { --subject-color: #ef4444; --subject-bg: rgba(239, 68, 68, 0.1); }
-        
-        .subject-themed {
-            border-left: 3px solid var(--subject-color);
-            background: linear-gradient(90deg, var(--subject-bg) 0%, transparent 100%);
-        }
-        
-        /* 脉冲动画 */
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.3); }
-            50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.5); }
-        }
-        
-        .pulse-glow {
-            animation: pulse-glow 2s ease-in-out infinite;
-        }
-        
-        /* 分数标签 */
-        .score-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-        
-        .score-tag-small {
-            font-size: 0.75rem;
-            padding: 0.125rem 0.5rem;
-        }
-        
-        /* 公式编辑器 */
-        .formula-box {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            border-radius: 0.75rem;
-            padding: 1rem;
-            font-family: 'Consolas', 'Monaco', monospace;
-            color: #a5b4fc;
-        }
-        
-        /* 提示信息 */
-        .tooltip {
-            position: relative;
-        }
-        
-        .tooltip::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%) translateY(-8px);
-            padding: 0.5rem 1rem;
-            background: rgba(15, 23, 42, 0.95);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            white-space: nowrap;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            z-index: 10;
-        }
-        
-        .tooltip:hover::after {
-            opacity: 1;
-            visibility: visible;
+            margin-right: 0.5rem;
         }
     </style>
 </head>
 <body>
-    <div id="app" class="min-h-screen">
+    <div id="app">
         <!-- 头部导航 -->
-        <header class="sticky top-0 z-50 backdrop-blur-xl bg-slate-900/70 border-b border-white/10">
-            <div class="container mx-auto px-4 py-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        <header style="position: sticky; top: 0; z-index: 50; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <div style="max-width: 1200px; margin: 0 auto; padding: 1rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div style="width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #6366f1, #9333ea); display: flex; align-items: center; justify-content: center;">
+                            <svg width="24" height="24" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                             </svg>
                         </div>
                         <div>
-                            <h1 class="text-2xl font-bold gradient-text">MyScore</h1>
-                            <p class="text-xs text-slate-400">V5.0 智能成绩管家</p>
+                            <h1 style="font-size: 1.5rem; font-weight: bold;" class="gradient-text">MyScore</h1>
+                            <p style="font-size: 0.75rem; color: #64748b;">V5.0 智能成绩管家</p>
                         </div>
                     </div>
-                    <nav class="flex items-center gap-2">
-                        <button onclick="showPage('dashboard')" id="nav-dashboard" class="nav-btn active">
-                            <span class="relative z-10 flex items-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
-                                </svg>
-                                <span class="hidden sm:inline">仪表盘</span>
-                            </span>
-                        </button>
-                        <button onclick="showPage('entry')" id="nav-entry" class="nav-btn">
-                            <span class="relative z-10 flex items-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                </svg>
-                                <span class="hidden sm:inline">录入成绩</span>
-                            </span>
-                        </button>
-                        <button onclick="showPage('custom')" id="nav-custom" class="nav-btn">
-                            <span class="relative z-10 flex items-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path>
-                                </svg>
-                                <span class="hidden sm:inline">自定义考试</span>
-                            </span>
-                        </button>
+                    <nav style="display: flex; gap: 0.5rem;">
+                        <button class="nav-btn active" id="nav-dashboard" onclick="showPage('dashboard')">仪表盘</button>
+                        <button class="nav-btn" id="nav-entry" onclick="showPage('entry')">录入成绩</button>
+                        <button class="nav-btn" id="nav-custom" onclick="showPage('custom')">自定义考试</button>
                     </nav>
                 </div>
             </div>
         </header>
 
-        <main class="container mx-auto px-4 py-8 max-w-6xl">
+        <main style="max-width: 1200px; margin: 0 auto; padding: 2rem 1rem;">
             <!-- 仪表盘页面 -->
-            <div id="page-dashboard" class="page space-y-6">
+            <div id="page-dashboard" class="page">
                 <!-- 概览卡片 -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="glass-card glow-border p-6">
-                        <div class="flex items-center justify-between">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="glass-card" style="padding: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <p class="text-slate-400 text-sm mb-1">总考试次数</p>
-                                <p id="total-count" class="text-4xl font-bold gradient-text-cyan">0</p>
+                                <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.25rem;">总考试次数</p>
+                                <p id="total-count" style="font-size: 2rem; font-weight: bold; color: #22d3ee;">0</p>
                             </div>
-                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
-                                <svg class="w-7 h-7 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(34, 211, 238, 0.2); display: flex; align-items: center; justify-content: center;">
+                                <svg width="24" height="24" fill="none" stroke="#22d3ee" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                 </svg>
                             </div>
                         </div>
                     </div>
-                    <div class="glass-card glow-border p-6">
-                        <div class="flex items-center justify-between">
+                    <div class="glass-card" style="padding: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <p class="text-slate-400 text-sm mb-1">考试类型</p>
-                                <p id="exam-types-count" class="text-4xl font-bold gradient-text">0</p>
+                                <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.25rem;">考试类型</p>
+                                <p id="exam-types-count" style="font-size: 2rem; font-weight: bold;" class="gradient-text">0</p>
                             </div>
-                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
-                                <svg class="w-7 h-7 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(99, 102, 241, 0.2); display: flex; align-items: center; justify-content: center;">
+                                <svg width="24" height="24" fill="none" stroke="#818cf8" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                                 </svg>
                             </div>
                         </div>
                     </div>
-                    <div class="glass-card glow-border p-6">
-                        <div class="flex items-center justify-between">
+                    <div class="glass-card" style="padding: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <p class="text-slate-400 text-sm mb-1">最近考试</p>
-                                <p id="latest-exam-date" class="text-2xl font-bold text-white">-</p>
+                                <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 0.25rem;">最近考试</p>
+                                <p id="latest-exam-date" style="font-size: 1.25rem; font-weight: bold;">-</p>
                             </div>
-                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500/20 to-rose-500/20 flex items-center justify-center">
-                                <svg class="w-7 h-7 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(236, 72, 153, 0.2); display: flex; align-items: center; justify-content: center;">
+                                <svg width="24" height="24" fill="none" stroke="#f472b6" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                 </svg>
                             </div>
                         </div>
@@ -660,254 +283,136 @@
                 </div>
 
                 <!-- 最近成绩 -->
-                <div class="glass-card glow-border p-6">
-                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
-                        <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                        </svg>
-                        最近成绩
-                    </h2>
-                    <div id="recent-score-content"></div>
+                <div class="glass-card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">📊 最近成绩</h2>
+                    <div id="recent-score-content">
+                        <div class="empty-state">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <p>还没有成绩记录</p>
+                            <button onclick="showPage('entry')" style="margin-top: 1rem; color: #818cf8; cursor: pointer; background: none; border: none;">开始录入 →</button>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- 考试类型统计 Tab -->
-                <div class="glass-card p-4">
-                    <div id="dashboard-tabs" class="flex flex-wrap gap-2 mb-4">
-                        <button onclick="switchDashboardTab('overview')" id="tab-overview" class="dashboard-tab active">概览</button>
+                <!-- Tab 统计 -->
+                <div class="glass-card" style="padding: 1rem; margin-bottom: 1.5rem;">
+                    <div id="dashboard-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                        <button class="dashboard-tab active" onclick="switchDashboardTab('overview')">概览</button>
                     </div>
-                    
-                    <div id="tab-content-overview" class="tab-content active">
+                    <div id="tab-content-overview">
                         <div class="empty-state">
-                            <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                            </svg>
                             <p>选择上方考试类型查看详细统计</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- 数据管理 -->
-                <div class="glass-card glow-border p-6">
-                    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
-                        <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
-                        </svg>
-                        数据管理
-                    </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="glass-card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">💾 数据管理</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
                         <div class="stat-card">
-                            <div class="flex items-start justify-between mb-4">
-                                <div>
-                                    <h3 class="font-semibold text-lg mb-1">导出备份</h3>
-                                    <p class="text-sm text-slate-400">将所有成绩导出为 JSON 文件</p>
-                                </div>
-                                <div class="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <button onclick="exportData()" class="btn-secondary w-full flex items-center justify-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                                </svg>
-                                导出数据
-                            </button>
-                            <p class="text-xs text-slate-500 mt-2">共 <span id="record-count">0</span> 条记录</p>
+                            <h3 style="font-weight: 600; margin-bottom: 0.5rem;">导出备份</h3>
+                            <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 1rem;">导出所有成绩和设置</p>
+                            <button class="btn-secondary" onclick="exportData()" style="width: 100%;">导出数据</button>
+                            <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.5rem;">共 <span id="record-count">0</span> 条记录</p>
                         </div>
                         <div class="stat-card">
-                            <div class="flex items-start justify-between mb-4">
-                                <div>
-                                    <h3 class="font-semibold text-lg mb-1">导入备份</h3>
-                                    <p class="text-sm text-slate-400">从 JSON 文件恢复成绩记录</p>
-                                </div>
-                                <div class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <label class="btn-primary w-full flex items-center justify-center gap-2 cursor-pointer">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                                </svg>
+                            <h3 style="font-weight: 600; margin-bottom: 0.5rem;">导入备份</h3>
+                            <p style="color: #64748b; font-size: 0.875rem; margin-bottom: 1rem;">从文件恢复数据</p>
+                            <label class="btn-primary" style="display: block; text-align: center; cursor: pointer;">
                                 选择文件
-                                <input type="file" id="import-file-input" class="hidden" accept=".json" onchange="handleFileSelect(event)">
+                                <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importData(this)">
                             </label>
-                            <p id="file-status" class="text-xs text-slate-500 mt-2">暂未选择文件</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- 历史记录 -->
-                <div class="glass-card glow-border p-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-semibold flex items-center gap-2">
-                            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            历史记录
-                        </h2>
-                        <button onclick="clearAllRecords()" class="text-rose-400 hover:text-rose-300 text-sm font-medium transition-colors flex items-center gap-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                            清空所有
-                        </button>
+                <div class="glass-card" style="padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h2 style="font-size: 1.25rem; font-weight: 600;">📜 历史记录</h2>
+                        <button onclick="clearAllRecords()" style="color: #f87171; background: none; border: none; cursor: pointer;">清空所有</button>
                     </div>
-                    <div id="records-list" class="space-y-3"></div>
+                    <div id="records-list"></div>
                 </div>
             </div>
 
             <!-- 录入成绩页面 -->
-            <div id="page-entry" class="page hidden space-y-6">
-                <!-- 考试类型选择 -->
-                <div class="glass-card glow-border p-6">
-                    <h2 class="text-lg font-semibold mb-4">选择考试类型</h2>
-                    <div id="exam-type-selector" class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <!-- 动态生成 -->
-                    </div>
+            <div id="page-entry" class="page hidden">
+                <div class="glass-card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">选择考试类型</h2>
+                    <div id="exam-type-selector" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;"></div>
                 </div>
-
-                <!-- 表单容器 -->
-                <div id="entry-form-container" class="glass-card glow-border p-6">
+                <div id="entry-form-container" class="glass-card" style="padding: 1.5rem;">
                     <div class="empty-state">
-                        <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
-                        </svg>
                         <p>请选择上方考试类型开始录入</p>
                     </div>
                 </div>
             </div>
 
             <!-- 自定义考试页面 -->
-            <div id="page-custom" class="page hidden space-y-6">
-                <div class="glass-card glow-border p-6">
-                    <div class="flex items-center justify-between mb-6">
+            <div id="page-custom" class="page hidden">
+                <div class="glass-card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                         <div>
-                            <h2 class="text-xl font-semibold mb-1">自定义考试类型</h2>
-                            <p class="text-sm text-slate-400">创建你自己的考试评分系统</p>
+                            <h2 style="font-size: 1.25rem; font-weight: 600;">自定义考试类型</h2>
+                            <p style="color: #64748b; font-size: 0.875rem;">创建你自己的考试评分系统</p>
                         </div>
-                        <button onclick="openCreateExamModal()" class="btn-primary flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                            </svg>
-                            新建考试类型
-                        </button>
+                        <button class="btn-primary" onclick="openCreateModal()">+ 新建考试</button>
                     </div>
-                    
-                    <div id="custom-exam-list" class="space-y-4">
-                        <!-- 动态生成 -->
-                    </div>
-                </div>
-
-                <!-- 使用说明 -->
-                <div class="glass-card p-6">
-                    <h3 class="font-semibold mb-3 flex items-center gap-2">
-                        <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        使用说明
-                    </h3>
-                    <div class="space-y-2 text-sm text-slate-400">
-                        <p>• <strong class="text-slate-300">直接输入</strong>：直接输入最终分数，无需计算</p>
-                        <p>• <strong class="text-slate-300">查找表</strong>：根据原始分查找对应的最终分数（如雅思听力的正确题数→分数）</p>
-                        <p>• <strong class="text-slate-300">公式计算</strong>：使用自定义公式计算分数（如：原始分×7.1）</p>
-                        <p>• 创建后可以在「录入成绩」页面使用自定义的考试类型</p>
-                    </div>
+                    <div id="custom-exam-list"></div>
                 </div>
             </div>
         </main>
 
-        <!-- 创建考试类型模态框 -->
-        <div id="create-exam-modal" class="modal-overlay">
-            <div class="modal-content">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-2xl font-bold gradient-text">新建考试类型</h2>
-                    <button onclick="closeCreateExamModal()" class="text-slate-400 hover:text-white transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
+        <!-- 创建考试模态框 -->
+        <div id="create-modal" class="modal-overlay" onclick="closeModalOnBackdrop(event)">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2 class="gradient-text" style="font-size: 1.5rem; font-weight: bold;">新建考试类型</h2>
+                    <button onclick="closeCreateModal()" style="background: none; border: none; color: #64748b; cursor: pointer; font-size: 1.5rem;">×</button>
                 </div>
-                
-                <form id="create-exam-form" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-2">考试名称</label>
-                        <input type="text" id="new-exam-name" required placeholder="如：托福、GRE、模拟考试" class="input-glass">
+                <form id="create-exam-form" onsubmit="submitCreateForm(event)">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem;">考试名称</label>
+                        <input type="text" id="new-exam-name" required class="input-glass" placeholder="如：托福、GRE">
                     </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium mb-2">描述（可选）</label>
-                        <input type="text" id="new-exam-desc" placeholder="简短描述这个考试" class="input-glass">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem;">描述（可选）</label>
+                        <input type="text" id="new-exam-desc" class="input-glass" placeholder="简短描述">
                     </div>
-
-                    <div class="border-t border-white/10 pt-4">
-                        <div class="flex items-center justify-between mb-4">
-                            <label class="text-sm font-medium">科目设置</label>
-                            <button type="button" onclick="addSubjectRow()" class="text-sm text-indigo-400 hover:text-indigo-300 flex items-center gap-1">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                </svg>
-                                添加科目
-                            </button>
+                    <div style="margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <label>科目设置</label>
+                            <button type="button" onclick="addSubject()" style="color: #818cf8; background: none; border: none; cursor: pointer;">+ 添加科目</button>
                         </div>
-                        <div id="subjects-container" class="space-y-3">
-                            <!-- 动态生成科目行 -->
-                        </div>
+                        <div id="subjects-list"></div>
                     </div>
-
-                    <div class="border-t border-white/10 pt-4">
-                        <label class="flex items-center gap-3 cursor-pointer">
-                            <div class="toggle-switch" id="total-score-toggle" onclick="toggleTotalScore()"></div>
-                            <span class="text-sm">计算总分</span>
-                        </label>
-                        <p class="text-xs text-slate-500 mt-1 ml-14">开启后将根据各科分数自动计算总分</p>
-                    </div>
-
-                    <div class="flex gap-3 pt-4">
-                        <button type="button" onclick="closeCreateExamModal()" class="btn-secondary flex-1">取消</button>
-                        <button type="submit" class="btn-primary flex-1">创建</button>
+                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                        <button type="button" class="btn-secondary" onclick="closeCreateModal()" style="flex: 1;">取消</button>
+                        <button type="submit" class="btn-primary" style="flex: 1;">创建</button>
                     </div>
                 </form>
             </div>
         </div>
 
-        <!-- 查看评分规则模态框 -->
-        <div id="view-rules-modal" class="modal-overlay">
-            <div class="modal-content">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 class="text-2xl font-bold gradient-text">评分规则</h2>
-                    <button onclick="closeViewRulesModal()" class="text-slate-400 hover:text-white transition-colors">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-                <div id="rules-content" class="space-y-4"></div>
-            </div>
-        </div>
-
-        <!-- 页脚 -->
-        <footer class="py-8 text-center">
-            <p class="text-slate-500 text-sm">Copyright <span class="italic text-slate-400">&copy;LYT</span>，2026 All Rights Reserved</p>
-            <p class="text-slate-600 text-xs mt-1">MyScore V5.0 - 智能成绩管家</p>
+        <footer style="text-align: center; padding: 2rem; color: #475569;">
+            <p>Copyright © LYT, 2026 All Rights Reserved</p>
+            <p style="font-size: 0.75rem;">MyScore V5.0</p>
         </footer>
     </div>
 
     <script>
-        // ==================== 全局变量 ====================
+        // ==================== 数据存储 ====================
         const STORAGE_KEYS = {
             RECORDS: 'myscore_v5_records',
-            EXAM_TYPES: 'myscore_v5_exam_types'
+            CUSTOM_EXAMS: 'myscore_v5_custom_exams'
         };
-        
-        let currentExamType = null;
-        let currentSubjectRows = [];
-        let chartInstances = {};
 
-        // ==================== 预设考试类型 ====================
-        const DEFAULT_EXAM_TYPES = {
+        // 内置考试类型
+        const BUILTIN_EXAMS = {
             ielts: {
                 id: 'ielts',
                 name: '雅思',
@@ -915,93 +420,12 @@
                 icon: '📋',
                 builtin: true,
                 subjects: [
-                    {
-                        id: 'listening',
-                        name: 'Listening',
-                        shortName: 'L',
-                        color: '#3b82f6',
-                        inputType: 'lookup',
-                        lookupTable: [
-                            { min: 39, max: 40, score: 9.0 },
-                            { min: 37, max: 38, score: 8.5 },
-                            { min: 35, max: 36, score: 8.0 },
-                            { min: 32, max: 34, score: 7.5 },
-                            { min: 30, max: 31, score: 7.0 },
-                            { min: 26, max: 29, score: 6.5 },
-                            { min: 23, max: 25, score: 6.0 },
-                            { min: 18, max: 22, score: 5.5 },
-                            { min: 16, max: 17, score: 5.0 },
-                            { min: 13, max: 15, score: 4.5 },
-                            { min: 10, max: 12, score: 4.0 },
-                            { min: 6, max: 9, score: 3.5 },
-                            { min: 4, max: 5, score: 3.0 },
-                            { min: 3, max: 3, score: 2.5 },
-                            { min: 2, max: 2, score: 2.0 },
-                            { min: 1, max: 1, score: 1.0 },
-                            { min: 0, max: 0, score: 0.5 }
-                        ],
-                        inputLabel: '正确题数',
-                        inputMin: 0,
-                        inputMax: 40,
-                        scoreDecimals: 1
-                    },
-                    {
-                        id: 'reading',
-                        name: 'Reading',
-                        shortName: 'R',
-                        color: '#10b981',
-                        inputType: 'lookup',
-                        lookupTable: [
-                            { min: 39, max: 40, score: 9.0 },
-                            { min: 37, max: 38, score: 8.5 },
-                            { min: 35, max: 36, score: 8.0 },
-                            { min: 33, max: 34, score: 7.5 },
-                            { min: 30, max: 32, score: 7.0 },
-                            { min: 27, max: 29, score: 6.5 },
-                            { min: 23, max: 26, score: 6.0 },
-                            { min: 19, max: 22, score: 5.5 },
-                            { min: 15, max: 18, score: 5.0 },
-                            { min: 13, max: 14, score: 4.5 },
-                            { min: 10, max: 12, score: 4.0 },
-                            { min: 8, max: 9, score: 3.5 },
-                            { min: 6, max: 7, score: 3.0 },
-                            { min: 4, max: 5, score: 2.5 },
-                            { min: 3, max: 3, score: 2.5 },
-                            { min: 2, max: 2, score: 2.0 },
-                            { min: 1, max: 1, score: 1.0 },
-                            { min: 0, max: 0, score: 0.5 }
-                        ],
-                        inputLabel: '正确题数',
-                        inputMin: 0,
-                        inputMax: 40,
-                        scoreDecimals: 1
-                    },
-                    {
-                        id: 'writing',
-                        name: 'Writing',
-                        shortName: 'W',
-                        color: '#f59e0b',
-                        inputType: 'direct',
-                        scoreMin: 0,
-                        scoreMax: 9,
-                        scoreStep: 0.5,
-                        scoreDecimals: 1
-                    },
-                    {
-                        id: 'speaking',
-                        name: 'Speaking',
-                        shortName: 'S',
-                        color: '#a855f7',
-                        inputType: 'direct',
-                        scoreMin: 0,
-                        scoreMax: 9,
-                        scoreStep: 0.5,
-                        scoreDecimals: 1
-                    }
+                    { id: 'listening', name: 'Listening', shortName: 'L', color: '#3b82f6', type: 'lookup', min: 0, max: 40, decimals: 1 },
+                    { id: 'reading', name: 'Reading', shortName: 'R', color: '#10b981', type: 'lookup', min: 0, max: 40, decimals: 1 },
+                    { id: 'writing', name: 'Writing', shortName: 'W', color: '#f59e0b', type: 'direct', min: 0, max: 9, step: 0.5, decimals: 1 },
+                    { id: 'speaking', name: 'Speaking', shortName: 'S', color: '#a855f7', type: 'direct', min: 0, max: 9, step: 0.5, decimals: 1 }
                 ],
-                calculateTotal: true,
-                totalFormula: 'average', // average 或 sum
-                totalRounding: 'ielts' // ielts 特殊四舍五入
+                calcOverall: true
             },
             cet4: {
                 id: 'cet4',
@@ -1010,64 +434,20 @@
                 icon: '📚',
                 builtin: true,
                 subjects: [
-                    {
-                        id: 'listening',
-                        name: '听力',
-                        shortName: '听',
-                        color: '#3b82f6',
-                        inputType: 'sections',
-                        sections: [
-                            { id: 'sectionA', name: '短对话/新闻', points: 7.1, maxCount: 8 },
-                            { id: 'sectionB', name: '长对话', points: 7.1, maxCount: 7 },
-                            { id: 'sectionC', name: '短文', points: 14.2, maxCount: 10 }
-                        ],
-                        formula: 'roundUp(sum * 7.1)',
-                        scoreDecimals: 0
-                    },
-                    {
-                        id: 'reading',
-                        name: '阅读',
-                        shortName: '读',
-                        color: '#10b981',
-                        inputType: 'sections',
-                        sections: [
-                            { id: 'wordBank', name: '选词填空', points: 3.55, maxCount: 10 },
-                            { id: 'skimming', name: '长篇阅读', points: 7.1, maxCount: 10 },
-                            { id: 'reading', name: '仔细阅读', points: 14.2, maxCount: 10 }
-                        ],
-                        formula: 'roundUp(sum)',
-                        scoreDecimals: 0
-                    },
-                    {
-                        id: 'writing',
-                        name: '写作',
-                        shortName: '写',
-                        color: '#f59e0b',
-                        inputType: 'formula',
-                        inputLabel: '原始分 (0-15)',
-                        inputMin: 0,
-                        inputMax: 15,
-                        inputStep: 0.5,
-                        formula: 'roundUp(raw * 7.1)',
-                        scoreDecimals: 0
-                    },
-                    {
-                        id: 'translation',
-                        name: '翻译',
-                        shortName: '译',
-                        color: '#ef4444',
-                        inputType: 'formula',
-                        inputLabel: '原始分 (0-15)',
-                        inputMin: 0,
-                        inputMax: 15,
-                        inputStep: 0.5,
-                        formula: 'roundUp(raw * 7.1)',
-                        scoreDecimals: 0
-                    }
+                    { id: 'listening', name: '听力', shortName: '听', color: '#3b82f6', type: 'sections', sections: [
+                        { name: '短对话', points: 7.1, max: 8 },
+                        { name: '长对话', points: 7.1, max: 7 },
+                        { name: '短文', points: 14.2, max: 10 }
+                    ], decimals: 0 },
+                    { id: 'reading', name: '阅读', shortName: '读', color: '#10b981', type: 'sections', sections: [
+                        { name: '选词填空', points: 3.55, max: 10 },
+                        { name: '长篇阅读', points: 7.1, max: 10 },
+                        { name: '仔细阅读', points: 14.2, max: 10 }
+                    ], decimals: 0 },
+                    { id: 'writing', name: '写作', shortName: '写', color: '#f59e0b', type: 'formula', min: 0, max: 15, multiplier: 7.1, decimals: 0 },
+                    { id: 'translation', name: '翻译', shortName: '译', color: '#ef4444', type: 'formula', min: 0, max: 15, multiplier: 7.1, decimals: 0 }
                 ],
-                calculateTotal: true,
-                totalFormula: 'sum',
-                maxTotal: 710
+                calcOverall: true
             },
             cet6: {
                 id: 'cet6',
@@ -1076,1375 +456,520 @@
                 icon: '🎓',
                 builtin: true,
                 subjects: [
-                    {
-                        id: 'listening',
-                        name: '听力',
-                        shortName: '听',
-                        color: '#3b82f6',
-                        inputType: 'sections',
-                        sections: [
-                            { id: 'sectionA', name: '长对话', points: 7.1, maxCount: 8 },
-                            { id: 'sectionB', name: '听力篇章', points: 7.1, maxCount: 7 },
-                            { id: 'sectionC', name: '讲座/报道', points: 14.2, maxCount: 10 }
-                        ],
-                        formula: 'roundUp(sum)',
-                        scoreDecimals: 0
-                    },
-                    {
-                        id: 'reading',
-                        name: '阅读',
-                        shortName: '读',
-                        color: '#10b981',
-                        inputType: 'sections',
-                        sections: [
-                            { id: 'wordBank', name: '选词填空', points: 3.55, maxCount: 10 },
-                            { id: 'skimming', name: '长篇阅读', points: 7.1, maxCount: 10 },
-                            { id: 'reading', name: '仔细阅读', points: 14.2, maxCount: 10 }
-                        ],
-                        formula: 'roundUp(sum)',
-                        scoreDecimals: 0
-                    },
-                    {
-                        id: 'writing',
-                        name: '写作',
-                        shortName: '写',
-                        color: '#f59e0b',
-                        inputType: 'formula',
-                        inputLabel: '原始分 (0-15)',
-                        inputMin: 0,
-                        inputMax: 15,
-                        inputStep: 0.5,
-                        formula: 'roundUp(raw * 7.1)',
-                        scoreDecimals: 0
-                    },
-                    {
-                        id: 'translation',
-                        name: '翻译',
-                        shortName: '译',
-                        color: '#ef4444',
-                        inputType: 'formula',
-                        inputLabel: '原始分 (0-15)',
-                        inputMin: 0,
-                        inputMax: 15,
-                        inputStep: 0.5,
-                        formula: 'roundUp(raw * 7.1)',
-                        scoreDecimals: 0
-                    }
+                    { id: 'listening', name: '听力', shortName: '听', color: '#3b82f6', type: 'sections', sections: [
+                        { name: '长对话', points: 7.1, max: 8 },
+                        { name: '听力篇章', points: 7.1, max: 7 },
+                        { name: '讲座', points: 14.2, max: 10 }
+                    ], decimals: 0 },
+                    { id: 'reading', name: '阅读', shortName: '读', color: '#10b981', type: 'sections', sections: [
+                        { name: '选词填空', points: 3.55, max: 10 },
+                        { name: '长篇阅读', points: 7.1, max: 10 },
+                        { name: '仔细阅读', points: 14.2, max: 10 }
+                    ], decimals: 0 },
+                    { id: 'writing', name: '写作', shortName: '写', color: '#f59e0b', type: 'formula', min: 0, max: 15, multiplier: 7.1, decimals: 0 },
+                    { id: 'translation', name: '翻译', shortName: '译', color: '#ef4444', type: 'formula', min: 0, max: 15, multiplier: 7.1, decimals: 0 }
                 ],
-                calculateTotal: true,
-                totalFormula: 'sum',
-                maxTotal: 710
+                calcOverall: true
             }
         };
 
-        // ==================== 数据存储函数 ====================
+        // 查找表
+        const LOOKUP_TABLES = {
+            listening: [{min:39,max:40,score:9.0},{min:37,max:38,score:8.5},{min:35,max:36,score:8.0},{min:32,max:34,score:7.5},{min:30,max:31,score:7.0},{min:26,max:29,score:6.5},{min:23,max:25,score:6.0},{min:18,max:22,score:5.5},{min:16,max:17,score:5.0},{min:13,max:15,score:4.5},{min:10,max:12,score:4.0},{min:6,max:9,score:3.5},{min:4,max:5,score:3.0},{min:3,max:3,score:2.5},{min:2,max:2,score:2.0},{min:1,max:1,score:1.0},{min:0,max:0,score:0.5}],
+            reading: [{min:39,max:40,score:9.0},{min:37,max:38,score:8.5},{min:35,max:36,score:8.0},{min:33,max:34,score:7.5},{min:30,max:32,score:7.0},{min:27,max:29,score:6.5},{min:23,max:26,score:6.0},{min:19,max:22,score:5.5},{min:15,max:18,score:5.0},{min:13,max:14,score:4.5},{min:10,max:12,score:4.0},{min:8,max:9,score:3.5},{min:6,max:7,score:3.0},{min:4,max:5,score:2.5},{min:3,max:3,score:2.5},{min:2,max:2,score:2.0},{min:1,max:1,score:1.0},{min:0,max:0,score:0.5}]
+        };
+
+        // ==================== 工具函数 ====================
         function getRecords() {
             const data = localStorage.getItem(STORAGE_KEYS.RECORDS);
             return data ? JSON.parse(data) : [];
         }
 
-        function saveRecord(record) {
-            const records = getRecords();
-            records.push(record);
+        function saveRecords(records) {
             localStorage.setItem(STORAGE_KEYS.RECORDS, JSON.stringify(records));
         }
 
-        function deleteRecord(id) {
-            if (confirm('确定要删除这条记录吗？')) {
-                const records = getRecords().filter(r => r.id !== id);
-                localStorage.setItem(STORAGE_KEYS.RECORDS, JSON.stringify(records));
-                updateUI();
-            }
+        function getCustomExams() {
+            const data = localStorage.getItem(STORAGE_KEYS.CUSTOM_EXAMS);
+            return data ? JSON.parse(data) : {};
         }
 
-        function clearAllRecords() {
-            if (confirm('确定要清空所有成绩记录吗？此操作不可恢复！')) {
-                localStorage.removeItem(STORAGE_KEYS.RECORDS);
-                updateUI();
-            }
+        function saveCustomExams(exams) {
+            localStorage.setItem(STORAGE_KEYS.CUSTOM_EXAMS, JSON.stringify(exams));
         }
 
-        function getExamTypes() {
-            const custom = localStorage.getItem(STORAGE_KEYS.EXAM_TYPES);
-            const customTypes = custom ? JSON.parse(custom) : {};
-            return { ...DEFAULT_EXAM_TYPES, ...customTypes };
+        function getAllExams() {
+            return { ...BUILTIN_EXAMS, ...getCustomExams() };
         }
 
-        function saveExamType(examType) {
-            const types = JSON.parse(localStorage.getItem(STORAGE_KEYS.EXAM_TYPES) || '{}');
-            types[examType.id] = examType;
-            localStorage.setItem(STORAGE_KEYS.EXAM_TYPES, JSON.stringify(types));
-        }
+        function roundUp(n) { return Math.ceil(n); }
 
-        function deleteExamType(id) {
-            if (id === 'ielts' || id === 'cet4' || id === 'cet6') {
-                alert('内置考试类型不能删除！');
-                return;
-            }
-            if (confirm('确定要删除这个考试类型吗？相关成绩记录也会被删除！')) {
-                const types = JSON.parse(localStorage.getItem(STORAGE_KEYS.EXAM_TYPES) || '{}');
-                delete types[id];
-                localStorage.setItem(STORAGE_KEYS.EXAM_TYPES, JSON.stringify(types));
-                
-                // 删除相关记录
-                const records = getRecords().filter(r => r.examType !== id);
-                localStorage.setItem(STORAGE_KEYS.RECORDS, JSON.stringify(records));
-                
-                updateUI();
-                renderCustomExamList();
-            }
-        }
-
-        // ==================== 分数计算函数 ====================
-        function roundUp(num) {
-            return Math.ceil(num);
-        }
-
-        function calculateIeltsOverall(scores) {
-            // scores 是数组
-            const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+        function calcIeltsOverall(scores) {
+            const avg = scores.reduce((a,b)=>a+b,0)/scores.length;
             const dec = avg - Math.floor(avg);
-            
-            if (dec >= 0.25 && dec < 0.5) {
-                return Math.floor(avg) + 0.5;
-            }
-            if (dec >= 0.75) {
-                return Math.floor(avg) + 1.0;
-            }
-            return Math.round(avg * 2) / 2;
+            if (dec >= 0.25 && dec < 0.5) return Math.floor(avg) + 0.5;
+            if (dec >= 0.75) return Math.floor(avg) + 1.0;
+            return Math.round(avg*2)/2;
         }
 
-        function lookupScore(value, table) {
-            const num = parseFloat(value);
+        function lookupScore(raw, type) {
+            const table = LOOKUP_TABLES[type];
+            const val = parseInt(raw) || 0;
             for (const item of table) {
-                if (num >= item.min && num <= item.max) {
-                    return item.score;
-                }
+                if (val >= item.min && val <= item.max) return item.score;
             }
             return 0;
         }
 
-        function calculateSubjectScore(subject, inputs) {
-            switch (subject.inputType) {
-                case 'direct':
-                    return parseFloat(inputs[subject.id]) || 0;
-                
-                case 'lookup':
-                    return lookupScore(inputs[subject.id], subject.lookupTable);
-                
-                case 'sections':
-                    let sum = 0;
-                    for (const section of subject.sections) {
-                        const count = parseInt(inputs[`${subject.id}_${section.id}`]) || 0;
-                        sum += count * section.points;
-                    }
-                    if (subject.formula) {
-                        // 简单公式处理
-                        if (subject.formula.includes('roundUp')) {
-                            return roundUp(sum);
-                        }
-                    }
-                    return Math.round(sum);
-                
-                case 'formula':
-                    const raw = parseFloat(inputs[subject.id]) || 0;
-                    if (subject.formula) {
-                        if (subject.formula.includes('roundUp')) {
-                            const multiplier = parseFloat(subject.formula.match(/\d+\.?\d*/)?.[0] || 1);
-                            return roundUp(raw * multiplier);
-                        }
-                    }
-                    return raw;
-                
-                default:
-                    return 0;
+        // ==================== 页面切换 ====================
+        function showPage(page) {
+            // 隐藏所有页面
+            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+            // 显示目标页面
+            document.getElementById('page-' + page).classList.remove('hidden');
+            // 更新导航按钮
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('nav-' + page).classList.add('active');
+            
+            // 页面特定初始化
+            if (page === 'dashboard') {
+                renderDashboard();
+            } else if (page === 'entry') {
+                renderExamSelector();
+                document.getElementById('entry-form-container').innerHTML = '<div class="empty-state"><p>请选择上方考试类型开始录入</p></div>';
+            } else if (page === 'custom') {
+                renderCustomList();
             }
         }
 
-        function calculateTotal(examType, subjectScores) {
-            if (!examType.calculateTotal) return null;
-            
-            const scores = Object.values(subjectScores);
-            if (scores.length === 0) return 0;
-            
-            if (examType.totalFormula === 'average') {
-                if (examType.totalRounding === 'ielts') {
-                    return calculateIeltsOverall(scores);
-                }
-                const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-                return Math.round(avg * 10) / 10;
-            }
-            
-            return scores.reduce((a, b) => a + b, 0);
-        }
-
-        // ==================== UI 更新函数 ====================
-        function updateUI() {
+        // ==================== 仪表盘 ====================
+        function renderDashboard() {
             const records = getRecords();
-            const examTypes = getExamTypes();
+            const exams = getAllExams();
             
-            updateOverview(records, examTypes);
-            updateRecordsList(records, examTypes);
-            updateDashboardTabs(records, examTypes);
-            updateRecordCount(records.length);
-            updateExamTypeSelector(examTypes);
-            renderCustomExamList();
-        }
-
-        function updateOverview(records, examTypes) {
+            // 统计
             document.getElementById('total-count').textContent = records.length;
-            
-            const uniqueTypes = [...new Set(records.map(r => r.examType))];
-            document.getElementById('exam-types-count').textContent = uniqueTypes.length;
+            const types = [...new Set(records.map(r => r.examType))];
+            document.getElementById('exam-types-count').textContent = types.length;
+            document.getElementById('record-count').textContent = records.length;
             
             if (records.length > 0) {
-                const latest = records[records.length - 1];
-                document.getElementById('latest-exam-date').textContent = latest.date || '-';
+                document.getElementById('latest-exam-date').textContent = records[records.length-1].date;
             } else {
                 document.getElementById('latest-exam-date').textContent = '-';
             }
             
-            updateRecentScore(records, examTypes);
-        }
-
-        function updateRecentScore(records, examTypes) {
-            const container = document.getElementById('recent-score-content');
-            
+            // 最近成绩
+            const recentDiv = document.getElementById('recent-score-content');
             if (records.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        <p>还没有成绩记录</p>
-                        <button onclick="showPage('entry')" class="mt-4 text-indigo-400 hover:text-indigo-300 text-sm">开始录入 →</button>
-                    </div>
-                `;
-                return;
-            }
-            
-            const latest = records[records.length - 1];
-            const examType = examTypes[latest.examType];
-            
-            if (!examType) {
-                container.innerHTML = '<p class="text-slate-400">考试类型已删除</p>';
-                return;
-            }
-            
-            let subjectsHtml = '';
-            for (const subject of examType.subjects) {
-                const score = latest.scores[subject.id];
-                const decimals = subject.scoreDecimals || 1;
-                subjectsHtml += `
-                    <div class="text-center p-3 rounded-xl" style="background: ${subject.color}15; border: 1px solid ${subject.color}30;">
-                        <div class="text-xs mb-1" style="color: ${subject.color}">${subject.name}</div>
-                        <div class="text-2xl font-bold" style="color: ${subject.color}">${(score || 0).toFixed(decimals)}</div>
-                    </div>
-                `;
-            }
-            
-            container.innerHTML = `
-                <div class="space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-slate-400 text-sm">${latest.date}</p>
-                            <p class="text-lg font-semibold">${examType.icon} ${examType.name}</p>
-                        </div>
-                        ${latest.total !== null ? `
-                            <div class="text-right">
-                                <p class="text-slate-400 text-sm">总分</p>
-                                <p class="text-4xl font-bold gradient-text">${latest.total.toFixed(examType.subjects[0]?.scoreDecimals || 0)}</p>
-                            </div>
-                        ` : ''}
-                    </div>
-                    <div class="grid grid-cols-2 md:grid-cols-${Math.min(examType.subjects.length, 4)} gap-3">
-                        ${subjectsHtml}
-                    </div>
-                </div>
-            `;
-        }
-
-
-        function updateRecordsList(records, examTypes) {
-            const container = document.getElementById('records-list');
-            
-            if (records.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <p>暂无历史记录</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = [...records].reverse().map(r => {
-                const examType = examTypes[r.examType];
-                if (!examType) {
-                    return `
-                        <div class="record-item opacity-50">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-slate-400 text-sm">${r.date}</p>
-                                    <p class="text-slate-300">未知考试类型</p>
-                                </div>
-                                <button onclick="deleteRecord(${r.id})" class="text-slate-500 hover:text-rose-400 transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                const subjectBadges = examType.subjects.map(s => {
-                    const score = r.scores[s.id];
-                    const decimals = s.scoreDecimals || 1;
-                    return `<span class="score-tag score-tag-small" style="background: ${s.color}20; color: ${s.color}; border: 1px solid ${s.color}40;">${s.shortName}: ${(score || 0).toFixed(decimals)}</span>`;
-                }).join('');
-                
-                return `
-                    <div class="record-item">
-                        <div class="flex items-start justify-between">
-                            <div class="flex-1">
-                                <div class="flex items-center gap-3 mb-2">
-                                    <span class="text-xl">${examType.icon}</span>
-                                    <div>
-                                        <p class="font-semibold">${examType.name}</p>
-                                        <p class="text-slate-400 text-sm">${r.date}</p>
-                                    </div>
-                                </div>
-                                <div class="flex flex-wrap gap-2">
-                                    ${subjectBadges}
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-4">
-                                ${r.total !== null ? `
-                                    <div class="text-right">
-                                        <p class="text-xs text-slate-400">总分</p>
-                                        <p class="text-2xl font-bold" style="background: linear-gradient(135deg, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${r.total.toFixed(examType.subjects[0]?.scoreDecimals || 0)}</p>
-                                    </div>
-                                ` : ''}
-                                <button onclick="deleteRecord(${r.id})" class="text-slate-500 hover:text-rose-400 transition-colors p-1">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function updateRecordCount(count) {
-            const el = document.getElementById('record-count');
-            if (el) el.textContent = count;
-        }
-
-        function updateDashboardTabs(records, examTypes) {
-            const tabsContainer = document.getElementById('dashboard-tabs');
-            const existingTabs = tabsContainer.querySelectorAll('.dashboard-tab:not(#tab-overview)');
-            existingTabs.forEach(t => t.remove());
-            
-            const uniqueTypes = [...new Set(records.map(r => r.examType))];
-            
-            for (const typeId of uniqueTypes) {
-                const examType = examTypes[typeId];
-                if (!examType) continue;
-                
-                const btn = document.createElement('button');
-                btn.className = 'dashboard-tab';
-                btn.id = `tab-${typeId}`;
-                btn.innerHTML = `${examType.icon} ${examType.name}`;
-                btn.onclick = () => switchDashboardTab(typeId);
-                tabsContainer.appendChild(btn);
-            }
-        }
-
-        function updateExamTypeSelector(examTypes) {
-            const container = document.getElementById('exam-type-selector');
-            
-            container.innerHTML = Object.values(examTypes).map(type => `
-                <div class="exam-type-card ${currentExamType === type.id ? 'active' : ''}" onclick="selectExamType('${type.id}')">
-                    <div class="text-3xl mb-2">${type.icon}</div>
-                    <div class="font-semibold text-sm">${type.name}</div>
-                    <div class="text-xs text-slate-400 mt-1">${type.desc || ''}</div>
-                </div>
-            `).join('');
-        }
-
-        // ==================== 页面切换 ====================
-        function showPage(pageName) {
-            document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
-            document.getElementById(`page-${pageName}`).classList.remove('hidden');
-            
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`nav-${pageName}`).classList.add('active');
-            
-            if (pageName === 'dashboard') {
-                updateUI();
-            } else if (pageName === 'custom') {
-                renderCustomExamList();
-            }
-        }
-
-        function switchDashboardTab(tabName) {
-            document.querySelectorAll('.dashboard-tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(`tab-${tabName}`).classList.add('active');
-            
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
-            if (tabName === 'overview') {
-                document.getElementById('tab-content-overview').classList.add('active');
+                recentDiv.innerHTML = '<div class="empty-state"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg><p>还没有成绩记录</p><button onclick="showPage(\'entry\')" style="margin-top:1rem;color:#818cf8;background:none;border:none;cursor:pointer;">开始录入 →</button></div>';
             } else {
-                renderExamTypeStats(tabName);
-            }
-        }
-
-        // ==================== 考试统计渲染 ====================
-        function renderExamTypeStats(examTypeId) {
-            const examTypes = getExamTypes();
-            const examType = examTypes[examTypeId];
-            const records = getRecords().filter(r => r.examType === examTypeId);
-            
-            // 移除旧的tab content
-            const oldContent = document.getElementById(`tab-content-${examTypeId}`);
-            if (oldContent) oldContent.remove();
-            
-            const container = document.createElement('div');
-            container.id = `tab-content-${examTypeId}`;
-            container.className = 'tab-content';
-            
-            if (records.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                        <p>暂无${examType.name}数据</p>
-                    </div>
-                `;
-            } else {
-                // 计算统计数据
-                const sorted = [...records].sort((a, b) => new Date(a.date) - new Date(b.date));
-                
-                // 统计卡片
-                let statCards = '';
-                
-                if (examType.calculateTotal) {
-                    const totals = records.map(r => r.total);
-                    const best = Math.max(...totals);
-                    const avg = totals.reduce((a, b) => a + b, 0) / totals.length;
-                    
-                    statCards += `
-                        <div class="stat-card">
-                            <p class="text-slate-400 text-sm mb-1">最佳总分</p>
-                            <p class="text-3xl font-bold" style="background: linear-gradient(135deg, #22d3ee, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${best.toFixed(examType.subjects[0]?.scoreDecimals || 0)}</p>
-                        </div>
-                        <div class="stat-card">
-                            <p class="text-slate-400 text-sm mb-1">平均总分</p>
-                            <p class="text-3xl font-bold" style="background: linear-gradient(135deg, #c084fc, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">${avg.toFixed(examType.subjects[0]?.scoreDecimals || 0)}</p>
-                        </div>
-                    `;
-                }
-                
-                statCards += `
-                    <div class="stat-card">
-                        <p class="text-slate-400 text-sm mb-1">考试次数</p>
-                        <p class="text-3xl font-bold gradient-text">${records.length}</p>
-                    </div>
-                    <div class="stat-card">
-                        <p class="text-slate-400 text-sm mb-1">最近考试</p>
-                        <p class="text-lg font-bold text-white">${records[records.length - 1].date}</p>
-                    </div>
-                `;
-                
-                // 科目统计
-                const subjectStats = examType.subjects.map(s => {
-                    const scores = records.map(r => r.scores[s.id]).filter(v => v !== undefined);
-                    if (scores.length === 0) return '';
-                    
-                    const best = Math.max(...scores);
-                    const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-                    const decimals = s.scoreDecimals || 1;
-                    
-                    return `
-                        <div class="stat-card">
-                            <div class="flex items-center gap-2 mb-2">
-                                <div class="w-3 h-3 rounded-full" style="background: ${s.color}"></div>
-                                <p class="text-slate-400 text-sm">${s.name}</p>
-                            </div>
-                            <p class="text-2xl font-bold" style="color: ${s.color}">${best.toFixed(decimals)}</p>
-                            <p class="text-xs text-slate-500">最佳 / 平均 ${avg.toFixed(decimals)}</p>
-                        </div>
-                    `;
-                }).join('');
-                
-                // 图表
-                const chartId = `chart-${examTypeId}`;
-                
-                container.innerHTML = `
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                        ${statCards}
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        ${subjectStats}
-                    </div>
-                    <div class="chart-container">
-                        <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
-                            <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
-                            </svg>
-                            分数趋势
-                        </h3>
-                        <div class="relative h-80">
-                            <canvas id="${chartId}"></canvas>
-                        </div>
-                    </div>
-                `;
-                
-                // 渲染图表
-                setTimeout(() => renderChart(chartId, examType, sorted), 100);
-            }
-            
-            document.querySelector('#page-dashboard .glass-card:nth-child(3)').appendChild(container);
-            container.classList.add('active');
-        }
-
-        function renderChart(canvasId, examType, records) {
-            const ctx = document.getElementById(canvasId);
-            if (!ctx) return;
-            
-            // 销毁旧图表
-            if (chartInstances[canvasId]) {
-                chartInstances[canvasId].destroy();
-            }
-            
-            const datasets = [];
-            
-            // 总分数据集
-            if (examType.calculateTotal) {
-                datasets.push({
-                    label: '总分',
-                    data: records.map(r => r.total),
-                    borderColor: '#6366f1',
-                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 5
-                });
-            }
-            
-            // 各科目数据集
-            for (const subject of examType.subjects) {
-                datasets.push({
-                    label: subject.name,
-                    data: records.map(r => r.scores[subject.id]),
-                    borderColor: subject.color,
-                    backgroundColor: subject.color + '20',
-                    borderWidth: 2,
-                    tension: 0.4,
-                    pointRadius: 4
-                });
-            }
-            
-            chartInstances[canvasId] = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: records.map(r => r.date),
-                    datasets: datasets
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                usePointStyle: true,
-                                color: '#94a3b8'
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.05)'
-                            },
-                            ticks: {
-                                color: '#64748b'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.05)'
-                            },
-                            ticks: {
-                                color: '#64748b'
-                            }
-                        }
+                const latest = records[records.length-1];
+                const exam = exams[latest.examType];
+                let html = '<div style="margin-bottom:0.5rem;color:#64748b;">' + latest.date + ' - ' + (exam ? exam.name : '未知') + '</div><div style="display:flex;gap:1rem;flex-wrap:wrap;">';
+                if (exam) {
+                    for (const s of exam.subjects) {
+                        const score = latest.scores[s.id] || 0;
+                        html += '<div style="background:' + s.color + '20;border:1px solid ' + s.color + '40;padding:0.75rem 1rem;border-radius:0.75rem;text-align:center;"><div style="font-size:0.75rem;color:' + s.color + ';">' + s.name + '</div><div style="font-size:1.5rem;font-weight:bold;color:' + s.color + ';">' + score.toFixed(s.decimals) + '</div></div>';
                     }
                 }
-            });
+                html += '</div>';
+                if (latest.total !== null) {
+                    html += '<div style="margin-top:1rem;padding:1rem;background:rgba(99,102,241,0.1);border-radius:0.75rem;text-align:center;"><div style="font-size:0.875rem;color:#64748b;">总分</div><div style="font-size:2.5rem;font-weight:bold;" class="gradient-text">' + latest.total.toFixed(1) + '</div></div>';
+                }
+                recentDiv.innerHTML = html;
+            }
+            
+            // Tabs
+            const tabsDiv = document.getElementById('dashboard-tabs');
+            let tabsHtml = '<button class="dashboard-tab active" onclick="switchDashboardTab(\'overview\')">概览</button>';
+            for (const typeId of types) {
+                const exam = exams[typeId];
+                if (exam) {
+                    tabsHtml += '<button class="dashboard-tab" onclick="switchDashboardTab(\'' + typeId + '\')">' + exam.icon + ' ' + exam.name + '</button>';
+                }
+            }
+            tabsDiv.innerHTML = tabsHtml;
+            
+            // 历史记录
+            const listDiv = document.getElementById('records-list');
+            if (records.length === 0) {
+                listDiv.innerHTML = '<div class="empty-state" style="padding:2rem;"><p>暂无历史记录</p></div>';
+            } else {
+                let listHtml = '';
+                for (let i = records.length - 1; i >= 0; i--) {
+                    const r = records[i];
+                    const exam = exams[r.examType];
+                    if (!exam) continue;
+                    let badges = '';
+                    for (const s of exam.subjects) {
+                        const score = r.scores[s.id] || 0;
+                        badges += '<span class="score-tag" style="background:' + s.color + '20;color:' + s.color + ';border:1px solid ' + s.color + '40;">' + s.shortName + ': ' + score.toFixed(s.decimals) + '</span>';
+                    }
+                    listHtml += '<div class="record-item"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;"><span>' + exam.icon + '</span><span style="font-weight:600;">' + exam.name + '</span><span style="color:#64748b;font-size:0.875rem;">' + r.date + '</span></div><div>' + badges + '</div></div><div style="display:flex;align-items:center;gap:1rem;">' + (r.total !== null ? '<div style="text-align:right;"><div style="font-size:0.75rem;color:#64748b;">总分</div><div style="font-size:1.5rem;font-weight:bold;" class="gradient-text">' + r.total.toFixed(1) + '</div></div>' : '') + '<button onclick="deleteRecord(' + r.id + ')" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:1.25rem;">×</button></div></div></div>';
+                }
+                listDiv.innerHTML = listHtml;
+            }
+        }
+
+        function switchDashboardTab(tab) {
+            document.querySelectorAll('.dashboard-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const container = document.getElementById('tab-content-overview');
+            if (tab === 'overview') {
+                container.innerHTML = '<div class="empty-state"><p>选择上方考试类型查看详细统计</p></div>';
+                return;
+            }
+            
+            const exams = getAllExams();
+            const exam = exams[tab];
+            const records = getRecords().filter(r => r.examType === tab);
+            
+            if (records.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>暂无' + exam.name + '数据</p></div>';
+                return;
+            }
+            
+            let html = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem;">';
+            html += '<div class="stat-card"><p style="color:#64748b;font-size:0.875rem;">考试次数</p><p style="font-size:2rem;font-weight:bold;" class="gradient-text">' + records.length + '</p></div>';
+            html += '<div class="stat-card"><p style="color:#64748b;font-size:0.875rem;">最近考试</p><p style="font-size:1.25rem;font-weight:bold;">' + records[records.length-1].date + '</p></div>';
+            if (exam.calcOverall) {
+                const totals = records.map(r => r.total);
+                html += '<div class="stat-card"><p style="color:#64748b;font-size:0.875rem;">最佳总分</p><p style="font-size:2rem;font-weight:bold;color:#22d3ee;">' + Math.max(...totals).toFixed(1) + '</p></div>';
+                html += '<div class="stat-card"><p style="color:#64748b;font-size:0.875rem;">平均总分</p><p style="font-size:2rem;font-weight:bold;color:#c084fc;">' + (totals.reduce((a,b)=>a+b,0)/totals.length).toFixed(1) + '</p></div>';
+            }
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function deleteRecord(id) {
+            if (!confirm('确定删除这条记录？')) return;
+            const records = getRecords().filter(r => r.id !== id);
+            saveRecords(records);
+            renderDashboard();
+        }
+
+        function clearAllRecords() {
+            if (!confirm('确定清空所有记录？此操作不可恢复！')) return;
+            localStorage.removeItem(STORAGE_KEYS.RECORDS);
+            renderDashboard();
         }
 
 
-        // ==================== 录入成绩功能 ====================
+        // ==================== 录入成绩 ====================
+        let currentExamType = null;
+
+        function renderExamSelector() {
+            const exams = getAllExams();
+            const container = document.getElementById('exam-type-selector');
+            let html = '';
+            for (const [id, exam] of Object.entries(exams)) {
+                html += '<div class="exam-type-card" onclick="selectExamType(\'' + id + '\')"><div style="font-size:2rem;margin-bottom:0.5rem;">' + exam.icon + '</div><div style="font-weight:600;">' + exam.name + '</div><div style="font-size:0.75rem;color:#64748b;">' + exam.desc + '</div></div>';
+            }
+            container.innerHTML = html;
+        }
+
         function selectExamType(typeId) {
             currentExamType = typeId;
-            const examTypes = getExamTypes();
-            const examType = examTypes[typeId];
+            const exams = getAllExams();
+            const exam = exams[typeId];
             
-            updateExamTypeSelector(examTypes);
-            renderEntryForm(examType);
-        }
-
-        function renderEntryForm(examType) {
-            const container = document.getElementById('entry-form-container');
-            
-            let subjectsHtml = '';
-            for (let i = 0; i < examType.subjects.length; i++) {
-                const subject = examType.subjects[i];
-                const isFirst = i === 0;
-                subjectsHtml += renderSubjectAccordion(subject, isFirst);
-            }
-            
-            container.innerHTML = `
-                <form id="score-entry-form" class="space-y-4">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-3">
-                            <span class="text-3xl">${examType.icon}</span>
-                            <div>
-                                <h3 class="text-xl font-semibold">录入${examType.name}成绩</h3>
-                                <p class="text-sm text-slate-400">${examType.desc || ''}</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium mb-2">考试日期</label>
-                        <input type="date" id="entry-date" required class="input-glass md:w-64">
-                    </div>
-                    
-                    ${subjectsHtml}
-                    
-                    <div id="total-preview" class="score-display ${examType.calculateTotal ? '' : 'hidden'}">
-                        <div class="flex items-center justify-between">
-                            <span class="text-slate-300">总分预览</span>
-                            <span id="total-score-value" class="text-4xl font-bold gradient-text">-</span>
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="btn-primary w-full flex items-center justify-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                        保存成绩
-                    </button>
-                </form>
-            `;
-            
-            // 设置默认日期
-            document.getElementById('entry-date').value = new Date().toISOString().split('T')[0];
-            
-            // 绑定输入事件
-            bindEntryFormEvents(examType);
-            
-            // 绑定提交事件
-            document.getElementById('score-entry-form').addEventListener('submit', (e) => {
-                e.preventDefault();
-                submitEntryForm(examType);
+            // 更新选中状态
+            document.querySelectorAll('.exam-type-card').forEach((card, idx) => {
+                const keys = Object.keys(exams);
+                if (keys[idx] === typeId) card.classList.add('active');
+                else card.classList.remove('active');
             });
-        }
-
-        function renderSubjectAccordion(subject, isExpanded) {
-            let inputHtml = '';
             
-            switch (subject.inputType) {
-                case 'direct':
-                    inputHtml = `
-                        <div>
-                            <label class="block text-sm text-slate-400 mb-2">分数 (${subject.scoreMin}-${subject.scoreMax})</label>
-                            <input type="number" id="subject-${subject.id}" 
-                                min="${subject.scoreMin}" max="${subject.scoreMax}" step="${subject.scoreStep || 0.5}"
-                                class="input-glass" placeholder="输入分数">
-                        </div>
-                    `;
-                    break;
-                
-                case 'lookup':
-                    inputHtml = `
-                        <div>
-                            <label class="block text-sm text-slate-400 mb-2">${subject.inputLabel} (${subject.inputMin}-${subject.inputMax})</label>
-                            <input type="number" id="subject-${subject.id}" 
-                                min="${subject.inputMin}" max="${subject.inputMax}" step="1"
-                                class="input-glass" placeholder="输入原始分">
-                        </div>
-                        <div class="mt-3 p-3 rounded-lg" style="background: ${subject.color}15; border: 1px solid ${subject.color}30;">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm" style="color: ${subject.color}">折算分数</span>
-                                <span id="score-${subject.id}" class="text-2xl font-bold" style="color: ${subject.color}">-</span>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                
-                case 'sections':
-                    const sectionsHtml = subject.sections.map(sec => `
-                        <div>
-                            <label class="block text-sm text-slate-400 mb-2">${sec.name} (${sec.points}分/题)</label>
-                            <input type="number" id="subject-${subject.id}-${sec.id}" 
-                                min="0" max="${sec.maxCount}" step="1"
-                                class="input-glass" placeholder="0-${sec.maxCount}题">
-                        </div>
-                    `).join('');
-                    
-                    inputHtml = `
-                        <div class="grid grid-cols-1 md:grid-cols-${subject.sections.length} gap-3">
-                            ${sectionsHtml}
-                        </div>
-                        <div class="mt-3 p-3 rounded-lg" style="background: ${subject.color}15; border: 1px solid ${subject.color}30;">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm" style="color: ${subject.color}">科目总分</span>
-                                <span id="score-${subject.id}" class="text-2xl font-bold" style="color: ${subject.color}">-</span>
-                            </div>
-                        </div>
-                    `;
-                    break;
-                
-                case 'formula':
-                    inputHtml = `
-                        <div>
-                            <label class="block text-sm text-slate-400 mb-2">${subject.inputLabel}</label>
-                            <input type="number" id="subject-${subject.id}" 
-                                min="${subject.inputMin}" max="${subject.inputMax}" step="${subject.inputStep || 0.5}"
-                                class="input-glass" placeholder="输入原始分">
-                        </div>
-                        <div class="mt-3 p-3 rounded-lg" style="background: ${subject.color}15; border: 1px solid ${subject.color}30;">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm" style="color: ${subject.color}">折算分数</span>
-                                <span id="score-${subject.id}" class="text-2xl font-bold" style="color: ${subject.color}">-</span>
-                            </div>
-                        </div>
-                    `;
-                    break;
-            }
+            // 渲染表单
+            let html = '<form onsubmit="submitScore(event)"><div style="margin-bottom:1rem;"><label style="display:block;margin-bottom:0.5rem;">考试日期</label><input type="date" id="score-date" required class="input-glass" style="max-width:200px;"></div>';
             
-            return `
-                <div class="accordion-item subject-themed" style="--subject-color: ${subject.color}">
-                    <div class="accordion-header" onclick="toggleAccordion('subject-content-${subject.id}')">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold" style="background: ${subject.color}">
-                                ${subject.shortName}
-                            </div>
-                            <div>
-                                <h4 class="font-semibold">${subject.name}</h4>
-                                <span id="status-${subject.id}" class="text-xs text-slate-400">未填写</span>
-                            </div>
-                        </div>
-                        <svg id="arrow-subject-content-${subject.id}" class="accordion-arrow ${isExpanded ? 'expanded' : ''} w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </div>
-                    <div id="subject-content-${subject.id}" class="accordion-content ${isExpanded ? 'expanded' : ''}">
-                        <div class="p-4 pt-0">
-                            ${inputHtml}
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function bindEntryFormEvents(examType) {
-            const inputs = {};
-            
-            for (const subject of examType.subjects) {
-                switch (subject.inputType) {
-                    case 'direct':
-                        const directInput = document.getElementById(`subject-${subject.id}`);
-                        if (directInput) {
-                            directInput.addEventListener('input', () => {
-                                updateSubjectStatus(subject.id, directInput.value ? '已填写' : '未填写');
-                                updateTotalPreview(examType);
-                            });
-                        }
-                        break;
-                    
-                    case 'lookup':
-                        const lookupInput = document.getElementById(`subject-${subject.id}`);
-                        if (lookupInput) {
-                            lookupInput.addEventListener('input', () => {
-                                const score = lookupScore(lookupInput.value, subject.lookupTable);
-                                document.getElementById(`score-${subject.id}`).textContent = score.toFixed(subject.scoreDecimals || 1);
-                                updateSubjectStatus(subject.id, lookupInput.value ? '已填写' : '未填写');
-                                updateTotalPreview(examType);
-                            });
-                        }
-                        break;
-                    
-                    case 'sections':
-                        for (const section of subject.sections) {
-                            const secInput = document.getElementById(`subject-${subject.id}-${section.id}`);
-                            if (secInput) {
-                                secInput.addEventListener('input', () => {
-                                    // 计算该科目总分
-                                    let sum = 0;
-                                    for (const s of subject.sections) {
-                                        const val = parseInt(document.getElementById(`subject-${subject.id}-${s.id}`)?.value) || 0;
-                                        sum += val * s.points;
-                                    }
-                                    
-                                    if (subject.formula && subject.formula.includes('roundUp')) {
-                                        sum = roundUp(sum);
-                                    }
-                                    
-                                    document.getElementById(`score-${subject.id}`).textContent = sum;
-                                    
-                                    const hasValue = subject.sections.some(s => document.getElementById(`subject-${subject.id}-${s.id}`)?.value);
-                                    updateSubjectStatus(subject.id, hasValue ? '已填写' : '未填写');
-                                    updateTotalPreview(examType);
-                                });
-                            }
-                        }
-                        break;
-                    
-                    case 'formula':
-                        const formulaInput = document.getElementById(`subject-${subject.id}`);
-                        if (formulaInput) {
-                            formulaInput.addEventListener('input', () => {
-                                const raw = parseFloat(formulaInput.value) || 0;
-                                let score = raw;
-                                
-                                if (subject.formula) {
-                                    const multiplier = parseFloat(subject.formula.match(/\d+\.?\d*/)?.[0] || 1);
-                                    score = roundUp(raw * multiplier);
-                                }
-                                
-                                document.getElementById(`score-${subject.id}`).textContent = score;
-                                updateSubjectStatus(subject.id, formulaInput.value ? '已填写' : '未填写');
-                                updateTotalPreview(examType);
-                            });
-                        }
-                        break;
+            for (let i = 0; i < exam.subjects.length; i++) {
+                const s = exam.subjects[i];
+                const isOpen = i === 0 ? 'expanded' : '';
+                const arrowClass = i === 0 ? 'expanded' : '';
+                
+                html += '<div class="accordion-item" style="border-left:3px solid ' + s.color + ';"><div class="accordion-header" onclick="toggleAccordion(this)"><div style="display:flex;align-items:center;gap:0.75rem;"><div style="width:36px;height:36px;border-radius:8px;background:' + s.color + ';display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;">' + s.shortName + '</div><div><div style="font-weight:600;">' + s.name + '</div></div></div><svg class="accordion-arrow ' + arrowClass + '" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></div><div class="accordion-content ' + isOpen + '"><div style="padding:0 1rem 1rem;">';
+                
+                if (s.type === 'direct') {
+                    html += '<input type="number" id="sub-' + s.id + '" min="' + s.min + '" max="' + s.max + '" step="' + (s.step || 1) + '" class="input-glass" placeholder="' + s.min + '-' + s.max + '" oninput="updatePreview()">';
+                } else if (s.type === 'lookup') {
+                    html += '<input type="number" id="sub-' + s.id + '" min="' + s.min + '" max="' + s.max + '" class="input-glass" placeholder="正确题数 (' + s.min + '-' + s.max + ')" oninput="updatePreview()"><div style="margin-top:0.5rem;padding:0.75rem;background:' + s.color + '15;border-radius:0.5rem;"><span style="color:' + s.color + '">折算分: </span><strong id="calc-' + s.id + '" style="color:' + s.color + ';">-</strong></div>';
+                } else if (s.type === 'sections') {
+                    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.5rem;">';
+                    for (const sec of s.sections) {
+                        html += '<div><label style="font-size:0.75rem;color:#64748b;">' + sec.name + '</label><input type="number" id="sub-' + s.id + '-' + sec.name + '" min="0" max="' + sec.max + '" class="input-glass" placeholder="0-' + sec.max + '" oninput="updatePreview()"></div>';
+                    }
+                    html += '</div><div style="margin-top:0.5rem;padding:0.75rem;background:' + s.color + '15;border-radius:0.5rem;"><span style="color:' + s.color + '">总分: </span><strong id="calc-' + s.id + '" style="color:' + s.color + ';">-</strong></div>';
+                } else if (s.type === 'formula') {
+                    html += '<input type="number" id="sub-' + s.id + '" min="' + s.min + '" max="' + s.max + '" step="0.5" class="input-glass" placeholder="原始分 (' + s.min + '-' + s.max + ')" oninput="updatePreview()"><div style="margin-top:0.5rem;padding:0.75rem;background:' + s.color + '15;border-radius:0.5rem;"><span style="color:' + s.color + '">折算分: </span><strong id="calc-' + s.id + '" style="color:' + s.color + ';">-</strong></div>';
                 }
+                
+                html += '</div></div></div>';
             }
-        }
-
-        function updateSubjectStatus(subjectId, status) {
-            const el = document.getElementById(`status-${subjectId}`);
-            if (el) el.textContent = status;
-        }
-
-        function updateTotalPreview(examType) {
-            if (!examType.calculateTotal) return;
             
+            if (exam.calcOverall) {
+                html += '<div style="margin:1.5rem 0;padding:1.5rem;background:rgba(99,102,241,0.1);border-radius:1rem;border:1px solid rgba(99,102,241,0.3);"><div style="display:flex;justify-content:space-between;align-items:center;"><span>总分预览</span><span id="preview-total" style="font-size:2.5rem;font-weight:bold;" class="gradient-text">-</span></div></div>';
+            }
+            
+            html += '<button type="submit" class="btn-primary" style="width:100%;">保存成绩</button></form>';
+            
+            document.getElementById('entry-form-container').innerHTML = html;
+            document.getElementById('score-date').value = new Date().toISOString().split('T')[0];
+        }
+
+        function toggleAccordion(header) {
+            const content = header.nextElementSibling;
+            const arrow = header.querySelector('.accordion-arrow');
+            content.classList.toggle('expanded');
+            arrow.classList.toggle('expanded');
+        }
+
+        function updatePreview() {
+            if (!currentExamType) return;
+            const exams = getAllExams();
+            const exam = exams[currentExamType];
             const scores = {};
-            for (const subject of examType.subjects) {
-                const scoreEl = document.getElementById(`score-${subject.id}`);
-                if (scoreEl && scoreEl.textContent !== '-') {
-                    scores[subject.id] = parseFloat(scoreEl.textContent);
-                } else if (subject.inputType === 'direct') {
-                    const input = document.getElementById(`subject-${subject.id}`);
-                    if (input) scores[subject.id] = parseFloat(input.value) || 0;
+            
+            for (const s of exam.subjects) {
+                if (s.type === 'direct') {
+                    scores[s.id] = parseFloat(document.getElementById('sub-' + s.id)?.value) || 0;
+                } else if (s.type === 'lookup') {
+                    const raw = document.getElementById('sub-' + s.id)?.value || '';
+                    const score = raw ? lookupScore(raw, s.id) : 0;
+                    scores[s.id] = score;
+                    document.getElementById('calc-' + s.id).textContent = score.toFixed(s.decimals);
+                } else if (s.type === 'sections') {
+                    let sum = 0;
+                    for (const sec of s.sections) {
+                        const count = parseInt(document.getElementById('sub-' + s.id + '-' + sec.name)?.value) || 0;
+                        sum += count * sec.points;
+                    }
+                    scores[s.id] = roundUp(sum);
+                    document.getElementById('calc-' + s.id).textContent = scores[s.id];
+                } else if (s.type === 'formula') {
+                    const raw = parseFloat(document.getElementById('sub-' + s.id)?.value) || 0;
+                    scores[s.id] = roundUp(raw * s.multiplier);
+                    document.getElementById('calc-' + s.id).textContent = scores[s.id];
                 }
             }
             
-            const total = calculateTotal(examType, scores);
-            const totalEl = document.getElementById('total-score-value');
-            if (totalEl && total !== null) {
-                totalEl.textContent = total.toFixed(examType.subjects[0]?.scoreDecimals || 0);
+            if (exam.calcOverall) {
+                let total = 0;
+                if (exam.id === 'ielts') {
+                    total = calcIeltsOverall(Object.values(scores));
+                } else {
+                    total = Object.values(scores).reduce((a,b)=>a+b,0);
+                }
+                document.getElementById('preview-total').textContent = total.toFixed(1);
             }
         }
 
-        function submitEntryForm(examType) {
-            const date = document.getElementById('entry-date').value;
+        function submitScore(e) {
+            e.preventDefault();
+            if (!currentExamType) return;
+            
+            const exams = getAllExams();
+            const exam = exams[currentExamType];
             const scores = {};
             
-            for (const subject of examType.subjects) {
-                const scoreEl = document.getElementById(`score-${subject.id}`);
-                if (scoreEl && scoreEl.textContent !== '-') {
-                    scores[subject.id] = parseFloat(scoreEl.textContent);
-                } else if (subject.inputType === 'direct') {
-                    const input = document.getElementById(`subject-${subject.id}`);
-                    scores[subject.id] = parseFloat(input?.value) || 0;
+            for (const s of exam.subjects) {
+                if (s.type === 'direct') {
+                    scores[s.id] = parseFloat(document.getElementById('sub-' + s.id)?.value) || 0;
+                } else if (s.type === 'lookup') {
+                    scores[s.id] = lookupScore(document.getElementById('sub-' + s.id)?.value, s.id);
+                } else if (s.type === 'sections') {
+                    let sum = 0;
+                    for (const sec of s.sections) {
+                        const count = parseInt(document.getElementById('sub-' + s.id + '-' + sec.name)?.value) || 0;
+                        sum += count * sec.points;
+                    }
+                    scores[s.id] = roundUp(sum);
+                } else if (s.type === 'formula') {
+                    const raw = parseFloat(document.getElementById('sub-' + s.id)?.value) || 0;
+                    scores[s.id] = roundUp(raw * s.multiplier);
+                }
+            }
+            
+            let total = null;
+            if (exam.calcOverall) {
+                if (exam.id === 'ielts') {
+                    total = calcIeltsOverall(Object.values(scores));
+                } else {
+                    total = Object.values(scores).reduce((a,b)=>a+b,0);
                 }
             }
             
             const record = {
                 id: Date.now(),
-                examType: examType.id,
-                date: date,
+                examType: currentExamType,
+                date: document.getElementById('score-date').value,
                 scores: scores,
-                total: examType.calculateTotal ? calculateTotal(examType, scores) : null
+                total: total
             };
             
-            saveRecord(record);
-            
-            // 重置表单
-            document.getElementById('score-entry-form').reset();
-            document.querySelectorAll('[id^="score-"]').forEach(el => el.textContent = '-');
-            document.querySelectorAll('[id^="status-"]').forEach(el => el.textContent = '未填写');
-            document.getElementById('entry-date').value = new Date().toISOString().split('T')[0];
-            document.getElementById('total-score-value').textContent = '-';
-            
-            // 展开第一个手风琴
-            const firstAccordion = document.querySelector('.accordion-content');
-            if (firstAccordion) firstAccordion.classList.add('expanded');
+            const records = getRecords();
+            records.push(record);
+            saveRecords(records);
             
             alert('成绩保存成功！');
-            
-            // 切到仪表盘
             showPage('dashboard');
         }
 
-        function toggleAccordion(contentId) {
-            const content = document.getElementById(contentId);
-            const arrow = document.getElementById(`arrow-${contentId}`);
-            
-            if (content) {
-                content.classList.toggle('expanded');
-            }
-            if (arrow) {
-                arrow.classList.toggle('expanded');
-            }
-        }
 
+        // ==================== 自定义考试 ====================
+        let customSubjects = [];
 
-        // ==================== 自定义考试功能 ====================
-        function renderCustomExamList() {
+        function renderCustomList() {
+            const exams = getCustomExams();
             const container = document.getElementById('custom-exam-list');
-            const examTypes = getExamTypes();
             
-            const customTypes = Object.values(examTypes).filter(t => !t.builtin);
-            
-            if (customTypes.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state py-8">
-                        <svg class="empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
-                        </svg>
-                        <p>还没有自定义考试类型</p>
-                        <p class="text-xs mt-2">点击上方按钮创建你的第一个考试类型</p>
-                    </div>
-                `;
+            if (Object.keys(exams).length === 0) {
+                container.innerHTML = '<div class="empty-state" style="padding:2rem;"><p>还没有自定义考试类型</p><p style="font-size:0.875rem;margin-top:0.5rem;">点击右上角按钮创建</p></div>';
                 return;
             }
             
-            container.innerHTML = customTypes.map(type => `
-                <div class="record-item">
-                    <div class="flex items-start justify-between">
-                        <div class="flex items-center gap-4">
-                            <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2));">
-                                ${type.icon}
-                            </div>
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <h3 class="font-semibold text-lg">${type.name}</h3>
-                                    <span class="badge badge-purple text-xs">自定义</span>
-                                </div>
-                                <p class="text-sm text-slate-400">${type.desc || '无描述'}</p>
-                                <div class="flex flex-wrap gap-2 mt-2">
-                                    ${type.subjects.map(s => `
-                                        <span class="text-xs px-2 py-1 rounded-full" style="background: ${s.color}20; color: ${s.color}; border: 1px solid ${s.color}40;">${s.name}</span>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <button onclick="viewExamRules('${type.id}')" class="p-2 rounded-lg hover:bg-white/5 text-slate-400 hover:text-white transition-colors" title="查看规则">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                </svg>
-                            </button>
-                            <button onclick="deleteExamType('${type.id}')" class="p-2 rounded-lg hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors" title="删除">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+            let html = '';
+            for (const [id, exam] of Object.entries(exams)) {
+                let subjectsHtml = '';
+                for (const s of exam.subjects) {
+                    subjectsHtml += '<span style="display:inline-block;padding:0.25rem 0.75rem;border-radius:9999px;font-size:0.75rem;margin-right:0.5rem;background:' + s.color + '20;color:' + s.color + ';">' + s.name + '</span>';
+                }
+                html += '<div class="record-item"><div style="display:flex;justify-content:space-between;align-items:center;"><div style="display:flex;align-items:center;gap:1rem;"><div style="font-size:2rem;">' + exam.icon + '</div><div><div style="font-weight:600;">' + exam.name + '</div><div style="font-size:0.875rem;color:#64748b;">' + (exam.desc || '无描述') + '</div><div style="margin-top:0.5rem;">' + subjectsHtml + '</div></div></div><button onclick="deleteCustomExam(\'' + id + '\')" style="background:none;border:none;color:#64748b;cursor:pointer;font-size:1.25rem;">×</button></div></div>';
+            }
+            container.innerHTML = html;
         }
 
-        // ==================== 模态框功能 ====================
-        function openCreateExamModal() {
-            currentSubjectRows = [];
+        function openCreateModal() {
+            customSubjects = [];
             document.getElementById('create-exam-form').reset();
-            document.getElementById('total-score-toggle').classList.remove('active');
-            renderSubjectRows();
-            document.getElementById('create-exam-modal').classList.add('active');
+            document.getElementById('subjects-list').innerHTML = '';
+            document.getElementById('create-modal').classList.add('active');
         }
 
-        function closeCreateExamModal() {
-            document.getElementById('create-exam-modal').classList.remove('active');
+        function closeCreateModal() {
+            document.getElementById('create-modal').classList.remove('active');
         }
 
-        function viewExamRules(examTypeId) {
-            const examTypes = getExamTypes();
-            const examType = examTypes[examTypeId];
+        function closeModalOnBackdrop(e) {
+            if (e.target.id === 'create-modal') closeCreateModal();
+        }
+
+        function addSubject() {
+            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#a855f7', '#ef4444', '#06b6d4'];
+            const color = colors[customSubjects.length % colors.length];
+            customSubjects.push({ name: '', short: '', color: color, type: 'direct', min: 0, max: 100 });
+            renderSubjectsList();
+        }
+
+        function renderSubjectsList() {
+            const container = document.getElementById('subjects-list');
+            if (customSubjects.length === 0) {
+                container.innerHTML = '<p style="color:#64748b;text-align:center;padding:1rem;">点击上方按钮添加科目</p>';
+                return;
+            }
             
-            if (!examType) return;
-            
-            const content = document.getElementById('rules-content');
-            
-            let subjectsHtml = examType.subjects.map(s => {
-                let ruleDesc = '';
-                switch (s.inputType) {
-                    case 'direct':
-                        ruleDesc = `直接输入分数，范围 ${s.scoreMin}-${s.scoreMax}`;
-                        break;
-                    case 'lookup':
-                        ruleDesc = `根据${s.inputLabel}查表转换`;
-                        break;
-                    case 'sections':
-                        ruleDesc = `分${s.sections.length}个部分计分：${s.sections.map(sec => `${sec.name}(${sec.points}分/题)`).join('、')}`;
-                        if (s.formula) ruleDesc += `，然后${s.formula.includes('roundUp') ? '向上取整' : '计算'}`;
-                        break;
-                    case 'formula':
-                        ruleDesc = `输入${s.inputLabel}，通过公式 ${s.formula || 'x'} 计算`;
-                        break;
+            let html = '';
+            for (let i = 0; i < customSubjects.length; i++) {
+                const s = customSubjects[i];
+                html += '<div style="padding:1rem;background:rgba(15,23,42,0.5);border-radius:0.75rem;margin-bottom:0.75rem;">';
+                html += '<div style="display:grid;grid-template-columns:1fr 1fr auto;gap:0.5rem;margin-bottom:0.5rem;">';
+                html += '<input type="text" placeholder="科目名称" value="' + s.name + '" onchange="customSubjects[' + i + '].name=this.value" class="input-glass">';
+                html += '<input type="text" placeholder="简称" value="' + s.short + '" onchange="customSubjects[' + i + '].short=this.value" class="input-glass" style="max-width:80px;">';
+                html += '<input type="color" value="' + s.color + '" onchange="customSubjects[' + i + '].color=this.value" style="width:40px;height:40px;border:none;border-radius:0.5rem;cursor:pointer;">';
+                html += '</div>';
+                html += '<select onchange="customSubjects[' + i + '].type=this.value;renderSubjectsList()" class="input-glass" style="margin-bottom:0.5rem;">';
+                html += '<option value="direct" ' + (s.type==='direct'?'selected':'') + '>直接输入分数</option>';
+                html += '<option value="lookup" ' + (s.type==='lookup'?'selected':'') + '>查找表转换</option>';
+                html += '<option value="sections" ' + (s.type==='sections'?'selected':'') + '>分部分计分</option>';
+                html += '<option value="formula" ' + (s.type==='formula'?'selected':'') + '>公式计算</option>';
+                html += '</select>';
+                
+                if (s.type === 'direct' || s.type === 'lookup') {
+                    html += '<div style="display:flex;gap:0.5rem;"><input type="number" placeholder="最小值" value="' + s.min + '" onchange="customSubjects[' + i + '].min=parseFloat(this.value)" class="input-glass"><input type="number" placeholder="最大值" value="' + s.max + '" onchange="customSubjects[' + i + '].max=parseFloat(this.value)" class="input-glass"></div>';
+                } else if (s.type === 'formula') {
+                    html += '<div style="display:flex;gap:0.5rem;"><input type="number" placeholder="原始分最大值" value="' + (s.max||15) + '" onchange="customSubjects[' + i + '].max=parseFloat(this.value)" class="input-glass"><input type="number" placeholder="乘数" value="' + (s.multiplier||7.1) + '" onchange="customSubjects[' + i + '].multiplier=parseFloat(this.value)" class="input-glass"></div>';
+                } else if (s.type === 'sections') {
+                    if (!s.sections) s.sections = [{name:'部分1',points:1,max:10}];
+                    html += '<div id="sections-' + i + '">';
+                    for (let j = 0; j < s.sections.length; j++) {
+                        const sec = s.sections[j];
+                        html += '<div style="display:flex;gap:0.5rem;margin-bottom:0.25rem;"><input type="text" placeholder="名称" value="' + sec.name + '" onchange="customSubjects[' + i + '].sections[' + j + '].name=this.value" class="input-glass" style="flex:1;"><input type="number" placeholder="分值" value="' + sec.points + '" onchange="customSubjects[' + i + '].sections[' + j + '].points=parseFloat(this.value)" class="input-glass" style="width:80px;"><input type="number" placeholder="最大题数" value="' + sec.max + '" onchange="customSubjects[' + i + '].sections[' + j + '].max=parseInt(this.value)" class="input-glass" style="width:80px;"></div>';
+                    }
+                    html += '</div><button type="button" onclick="addSection(' + i + ')" style="color:#818cf8;background:none;border:none;cursor:pointer;font-size:0.875rem;">+ 添加部分</button>';
                 }
                 
-                return `
-                    <div class="p-4 rounded-xl" style="background: ${s.color}10; border: 1px solid ${s.color}30;">
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold" style="background: ${s.color}">${s.shortName}</div>
-                            <span class="font-semibold">${s.name}</span>
-                        </div>
-                        <p class="text-sm text-slate-400">${ruleDesc}</p>
-                    </div>
-                `;
-            }).join('');
-            
-            content.innerHTML = `
-                <div class="flex items-center gap-4 mb-6">
-                    <span class="text-4xl">${examType.icon}</span>
-                    <div>
-                        <h3 class="text-xl font-semibold">${examType.name}</h3>
-                        <p class="text-slate-400">${examType.desc || '无描述'}</p>
-                    </div>
-                </div>
-                
-                <div class="mb-4">
-                    <span class="text-sm text-slate-400">计分方式</span>
-                    <p class="font-medium">${examType.calculateTotal ? (examType.totalFormula === 'average' ? '计算平均分' : '计算总分') : '不计算总分'}</p>
-                </div>
-                
-                <div class="space-y-3">
-                    <h4 class="font-medium text-slate-300">科目设置</h4>
-                    ${subjectsHtml}
-                </div>
-            `;
-            
-            document.getElementById('view-rules-modal').classList.add('active');
-        }
-
-        function closeViewRulesModal() {
-            document.getElementById('view-rules-modal').classList.remove('active');
-        }
-
-        // ==================== 创建考试类型表单 ====================
-        function addSubjectRow() {
-            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#a855f7', '#ef4444', '#06b6d4', '#f472b6', '#84cc16'];
-            const color = colors[currentSubjectRows.length % colors.length];
-            
-            currentSubjectRows.push({
-                id: 'subject_' + Date.now(),
-                name: '',
-                shortName: '',
-                color: color,
-                inputType: 'direct'
-            });
-            
-            renderSubjectRows();
-        }
-
-        function removeSubjectRow(index) {
-            currentSubjectRows.splice(index, 1);
-            renderSubjectRows();
-        }
-
-        function updateSubjectRow(index, field, value) {
-            currentSubjectRows[index][field] = value;
-        }
-
-        function renderSubjectRows() {
-            const container = document.getElementById('subjects-container');
-            
-            if (currentSubjectRows.length === 0) {
-                container.innerHTML = '<p class="text-sm text-slate-500 text-center py-4">点击上方按钮添加科目</p>';
-                return;
+                html += '<button type="button" onclick="removeSubject(' + i + ')" style="color:#f87171;background:none;border:none;cursor:pointer;font-size:0.875rem;margin-top:0.5rem;">删除科目</button>';
+                html += '</div>';
             }
-            
-            container.innerHTML = currentSubjectRows.map((row, index) => `
-                <div class="p-4 rounded-xl border border-white/10 bg-slate-800/50">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-                        <div>
-                            <label class="text-xs text-slate-400 block mb-1">科目名称</label>
-                            <input type="text" value="${row.name}" onchange="updateSubjectRow(${index}, 'name', this.value)" 
-                                placeholder="如：听力" class="input-glass text-sm py-2">
-                        </div>
-                        <div>
-                            <label class="text-xs text-slate-400 block mb-1">简称</label>
-                            <input type="text" value="${row.shortName}" onchange="updateSubjectRow(${index}, 'shortName', this.value)" 
-                                placeholder="如：L" class="input-glass text-sm py-2">
-                        </div>
-                        <div>
-                            <label class="text-xs text-slate-400 block mb-1">颜色</label>
-                            <input type="color" value="${row.color}" onchange="updateSubjectRow(${index}, 'color', this.value)" 
-                                class="w-full h-10 rounded-lg cursor-pointer bg-transparent">
-                        </div>
-                        <div>
-                            <label class="text-xs text-slate-400 block mb-1">计分方式</label>
-                            <select onchange="updateSubjectRow(${index}, 'inputType', this.value); renderSubjectRows();" 
-                                class="input-glass text-sm py-2">
-                                <option value="direct" ${row.inputType === 'direct' ? 'selected' : ''}>直接输入</option>
-                                <option value="lookup" ${row.inputType === 'lookup' ? 'selected' : ''}>查找表</option>
-                                <option value="sections" ${row.inputType === 'sections' ? 'selected' : ''}>分部分计分</option>
-                                <option value="formula" ${row.inputType === 'formula' ? 'selected' : ''}>公式计算</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    ${renderSubjectOptions(row, index)}
-                    
-                    <div class="flex justify-end">
-                        <button type="button" onclick="removeSubjectRow(${index})" class="text-sm text-rose-400 hover:text-rose-300 flex items-center gap-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                            删除
-                        </button>
-                    </div>
-                </div>
-            `).join('');
+            container.innerHTML = html;
         }
 
-        function renderSubjectOptions(row, index) {
-            switch (row.inputType) {
-                case 'direct':
-                    return `
-                        <div class="grid grid-cols-3 gap-3">
-                            <div>
-                                <label class="text-xs text-slate-400 block mb-1">最低分</label>
-                                <input type="number" value="${row.scoreMin || 0}" onchange="updateSubjectRow(${index}, 'scoreMin', parseFloat(this.value))" class="input-glass text-sm py-2">
-                            </div>
-                            <div>
-                                <label class="text-xs text-slate-400 block mb-1">最高分</label>
-                                <input type="number" value="${row.scoreMax || 100}" onchange="updateSubjectRow(${index}, 'scoreMax', parseFloat(this.value))" class="input-glass text-sm py-2">
-                            </div>
-                            <div>
-                                <label class="text-xs text-slate-400 block mb-1">步长</label>
-                                <input type="number" value="${row.scoreStep || 1}" step="0.1" onchange="updateSubjectRow(${index}, 'scoreStep', parseFloat(this.value))" class="input-glass text-sm py-2">
-                            </div>
-                        </div>
-                    `;
-                
-                case 'lookup':
-                    return `
-                        <div class="grid grid-cols-3 gap-3 mb-2">
-                            <div>
-                                <label class="text-xs text-slate-400 block mb-1">输入标签</label>
-                                <input type="text" value="${row.inputLabel || '原始分'}" onchange="updateSubjectRow(${index}, 'inputLabel', this.value)" class="input-glass text-sm py-2">
-                            </div>
-                            <div>
-                                <label class="text-xs text-slate-400 block mb-1">最小值</label>
-                                <input type="number" value="${row.inputMin || 0}" onchange="updateSubjectRow(${index}, 'inputMin', parseInt(this.value))" class="input-glass text-sm py-2">
-                            </div>
-                            <div>
-                                <label class="text-xs text-slate-400 block mb-1">最大值</label>
-                                <input type="number" value="${row.inputMax || 40}" onchange="updateSubjectRow(${index}, 'inputMax', parseInt(this.value))" class="input-glass text-sm py-2">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="text-xs text-slate-400 block mb-1">查找表 (格式: 原始分-分数, 每行一个范围)</label>
-                            <textarea onchange="updateSubjectRow(${index}, 'lookupTableText', this.value)" 
-                                placeholder="39-40=9.0&#10;37-38=8.5&#10;35-36=8.0" 
-                                class="input-glass text-sm py-2 h-24 font-mono text-xs">${row.lookupTableText || ''}</textarea>
-                        </div>
-                    `;
-                
-                case 'sections':
-                    const sections = row.sections || [{ id: 'sec1', name: '', points: 1, maxCount: 10 }];
-                    return `
-                        <div class="space-y-2">
-                            ${sections.map((sec, secIndex) => `
-                                <div class="grid grid-cols-3 gap-2">
-                                    <input type="text" value="${sec.name}" placeholder="部分名称" 
-                                        onchange="updateSection(${index}, ${secIndex}, 'name', this.value)"
-                                        class="input-glass text-sm py-2">
-                                    <input type="number" value="${sec.points}" placeholder="每题分值" step="0.1"
-                                        onchange="updateSection(${index}, ${secIndex}, 'points', parseFloat(this.value))"
-                                        class="input-glass text-sm py-2">
-                                    <input type="number" value="${sec.maxCount}" placeholder="最大题数"
-                                        onchange="updateSection(${index}, ${secIndex}, 'maxCount', parseInt(this.value))"
-                                        class="input-glass text-sm py-2">
-                                </div>
-                            `).join('')}
-                            <button type="button" onclick="addSection(${index})" class="text-xs text-indigo-400 hover:text-indigo-300">
-                                + 添加部分
-                            </button>
-                            <div class="flex items-center gap-2 mt-2">
-                                <input type="checkbox" id="roundup-${index}" ${row.roundUp ? 'checked' : ''} 
-                                    onchange="updateSubjectRow(${index}, 'roundUp', this.checked)"
-                                    class="w-4 h-4 rounded border-slate-600 bg-slate-700 text-indigo-500">
-                                <label for="roundup-${index}" class="text-xs text-slate-400">向上取整</label>
-                            </div>
-                        </div>
-                    `;
-                
-                case 'formula':
-                    return `
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="text-xs text-slate-400 block mb-1">输入标签</label>
-                                <input type="text" value="${row.inputLabel || '原始分'}" onchange="updateSubjectRow(${index}, 'inputLabel', this.value)" class="input-glass text-sm py-2">
-                            </div>
-                            <div>
-                                <label class="text-xs text-slate-400 block mb-1">乘数系数</label>
-                                <input type="number" value="${row.multiplier || 1}" step="0.1" 
-                                    onchange="updateSubjectRow(${index}, 'multiplier', parseFloat(this.value))" class="input-glass text-sm py-2">
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2 mt-2">
-                            <input type="checkbox" id="roundup-${index}" ${row.roundUp ? 'checked' : ''} 
-                                onchange="updateSubjectRow(${index}, 'roundUp', this.checked)"
-                                class="w-4 h-4 rounded border-slate-600 bg-slate-700 text-indigo-500">
-                            <label for="roundup-${index}" class="text-xs text-slate-400">向上取整</label>
-                        </div>
-                    `;
-                
-                default:
-                    return '';
-            }
+        function addSection(subjectIdx) {
+            customSubjects[subjectIdx].sections.push({name:'',points:1,max:10});
+            renderSubjectsList();
         }
 
-        function addSection(subjectIndex) {
-            const row = currentSubjectRows[subjectIndex];
-            if (!row.sections) row.sections = [];
-            row.sections.push({
-                id: 'sec_' + Date.now(),
-                name: '',
-                points: 1,
-                maxCount: 10
-            });
-            renderSubjectRows();
+        function removeSubject(idx) {
+            customSubjects.splice(idx, 1);
+            renderSubjectsList();
         }
 
-        function updateSection(subjectIndex, sectionIndex, field, value) {
-            currentSubjectRows[subjectIndex].sections[sectionIndex][field] = value;
-        }
-
-        function toggleTotalScore() {
-            document.getElementById('total-score-toggle').classList.toggle('active');
-        }
-
-        // 表单提交
-        document.getElementById('create-exam-form').addEventListener('submit', function(e) {
+        function submitCreateForm(e) {
             e.preventDefault();
             
-            const name = document.getElementById('new-exam-name').value.trim();
-            const desc = document.getElementById('new-exam-desc').value.trim();
-            const calculateTotal = document.getElementById('total-score-toggle').classList.contains('active');
-            
-            if (currentSubjectRows.length === 0) {
+            if (customSubjects.length === 0) {
                 alert('请至少添加一个科目！');
                 return;
             }
             
-            // 验证并处理科目数据
-            const subjects = currentSubjectRows.map(row => {
-                const subject = {
-                    id: row.id,
-                    name: row.name || '未命名',
-                    shortName: row.shortName || row.name?.[0] || 'X',
-                    color: row.color,
-                    inputType: row.inputType,
-                    scoreDecimals: 1
-                };
-                
-                switch (row.inputType) {
-                    case 'direct':
-                        subject.scoreMin = row.scoreMin || 0;
-                        subject.scoreMax = row.scoreMax || 100;
-                        subject.scoreStep = row.scoreStep || 1;
-                        break;
-                    
-                    case 'lookup':
-                        subject.inputLabel = row.inputLabel || '原始分';
-                        subject.inputMin = row.inputMin || 0;
-                        subject.inputMax = row.inputMax || 100;
-                        // 解析查找表
-                        subject.lookupTable = [];
-                        if (row.lookupTableText) {
-                            const lines = row.lookupTableText.split('\n');
-                            for (const line of lines) {
-                                const match = line.match(/(\d+)-(\d+)[:=]?(\d+\.?\d*)/);
-                                if (match) {
-                                    subject.lookupTable.push({
-                                        min: parseInt(match[1]),
-                                        max: parseInt(match[2]),
-                                        score: parseFloat(match[3])
-                                    });
-                                }
-                            }
-                        }
-                        break;
-                    
-                    case 'sections':
-                        subject.sections = row.sections || [];
-                        subject.formula = row.roundUp ? 'roundUp(sum)' : 'sum';
-                        break;
-                    
-                    case 'formula':
-                        subject.inputLabel = row.inputLabel || '原始分';
-                        subject.inputMin = 0;
-                        subject.inputMax = 100;
-                        subject.inputStep = 0.5;
-                        subject.formula = row.roundUp ? `roundUp(raw * ${row.multiplier || 1})` : `raw * ${row.multiplier || 1}`;
-                        break;
+            for (const s of customSubjects) {
+                if (!s.name || !s.short) {
+                    alert('请填写所有科目的名称和简称！');
+                    return;
                 }
-                
-                return subject;
-            });
+            }
             
-            const examType = {
+            const exam = {
                 id: 'custom_' + Date.now(),
-                name: name,
-                desc: desc,
+                name: document.getElementById('new-exam-name').value,
+                desc: document.getElementById('new-exam-desc').value,
                 icon: '📝',
                 builtin: false,
-                subjects: subjects,
-                calculateTotal: calculateTotal,
-                totalFormula: 'sum'
+                subjects: customSubjects,
+                calcOverall: true
             };
             
-            saveExamType(examType);
-            closeCreateExamModal();
-            renderCustomExamList();
-            updateExamTypeSelector(getExamTypes());
+            const exams = getCustomExams();
+            exams[exam.id] = exam;
+            saveCustomExams(exams);
             
+            closeCreateModal();
+            renderCustomList();
             alert('考试类型创建成功！');
-        });
+        }
+
+        function deleteCustomExam(id) {
+            if (!confirm('确定删除这个考试类型？相关成绩也会被删除！')) return;
+            const exams = getCustomExams();
+            delete exams[id];
+            saveCustomExams(exams);
+            
+            // 删除相关记录
+            const records = getRecords().filter(r => r.examType !== id);
+            saveRecords(records);
+            
+            renderCustomList();
+        }
 
 
         // ==================== 数据导入导出 ====================
         function exportData() {
             const records = getRecords();
-            const examTypes = JSON.parse(localStorage.getItem(STORAGE_KEYS.EXAM_TYPES) || '{}');
+            const customExams = getCustomExams();
             
-            if (records.length === 0 && Object.keys(examTypes).length === 0) {
+            if (records.length === 0 && Object.keys(customExams).length === 0) {
                 alert('暂无数据可导出！');
                 return;
             }
@@ -2453,109 +978,72 @@
                 version: '5.0',
                 exportDate: new Date().toISOString(),
                 records: records,
-                customExamTypes: examTypes
+                customExams: customExams
             };
             
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `MyScore_Backup_${new Date().toISOString().slice(0, 10).replace(/-/g, '')}.json`;
+            a.download = 'MyScore_Backup_' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '.json';
             a.click();
             URL.revokeObjectURL(url);
             
-            alert(`数据导出成功！\n成绩记录: ${records.length} 条\n自定义考试类型: ${Object.keys(examTypes).length} 个`);
+            alert('导出成功！\n记录: ' + records.length + ' 条\n自定义考试: ' + Object.keys(customExams).length + ' 个');
         }
 
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            const statusEl = document.getElementById('file-status');
-            
-            if (!file) {
-                statusEl.textContent = '暂未选择文件';
-                statusEl.className = 'text-xs text-slate-500 mt-2';
-                return;
-            }
-            
-            statusEl.textContent = `已选择: ${file.name}`;
-            statusEl.className = 'text-xs text-emerald-400 mt-2';
+        function importData(input) {
+            const file = input.files[0];
+            if (!file) return;
             
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
                     
-                    // 验证数据格式
-                    if (!data.version || !data.records) {
-                        throw new Error('文件格式不正确');
-                    }
+                    if (!data.version) throw new Error('文件格式不正确');
                     
-                    // 导入成绩记录
-                    const existingRecords = getRecords();
-                    const existingIds = new Set(existingRecords.map(r => r.id));
-                    
-                    let newRecordCount = 0;
-                    let dupRecordCount = 0;
-                    
-                    for (const record of data.records) {
-                        if (!existingIds.has(record.id)) {
-                            existingRecords.push(record);
-                            existingIds.add(record.id);
-                            newRecordCount++;
-                        } else {
-                            dupRecordCount++;
-                        }
-                    }
-                    
-                    localStorage.setItem(STORAGE_KEYS.RECORDS, JSON.stringify(existingRecords));
-                    
-                    // 导入自定义考试类型
-                    let newTypeCount = 0;
-                    if (data.customExamTypes) {
-                        const existingTypes = JSON.parse(localStorage.getItem(STORAGE_KEYS.EXAM_TYPES) || '{}');
-                        
-                        for (const [id, type] of Object.entries(data.customExamTypes)) {
-                            if (!existingTypes[id]) {
-                                existingTypes[id] = type;
-                                newTypeCount++;
+                    // 导入记录
+                    let newRecords = 0;
+                    if (data.records) {
+                        const existing = getRecords();
+                        const existingIds = new Set(existing.map(r => r.id));
+                        for (const r of data.records) {
+                            if (!existingIds.has(r.id)) {
+                                existing.push(r);
+                                newRecords++;
                             }
                         }
-                        
-                        localStorage.setItem(STORAGE_KEYS.EXAM_TYPES, JSON.stringify(existingTypes));
+                        saveRecords(existing);
                     }
                     
-                    updateUI();
+                    // 导入自定义考试
+                    let newExams = 0;
+                    if (data.customExams) {
+                        const existing = getCustomExams();
+                        for (const [id, exam] of Object.entries(data.customExams)) {
+                            if (!existing[id]) {
+                                existing[id] = exam;
+                                newExams++;
+                            }
+                        }
+                        saveCustomExams(existing);
+                    }
                     
-                    alert(`导入成功！\n新成绩记录: ${newRecordCount} 条\n重复记录: ${dupRecordCount} 条\n新考试类型: ${newTypeCount} 个`);
-                    
-                    statusEl.textContent = '导入成功！';
+                    alert('导入成功！\n新记录: ' + newRecords + ' 条\n新考试类型: ' + newExams + ' 个');
+                    renderDashboard();
                 } catch (err) {
                     alert('导入失败: ' + err.message);
-                    statusEl.textContent = '导入失败';
-                    statusEl.className = 'text-xs text-rose-400 mt-2';
                 }
             };
             reader.readAsText(file);
-            
-            // 清空input以便可以重复选择同一文件
-            event.target.value = '';
+            input.value = '';
         }
 
         // ==================== 初始化 ====================
-        function init() {
-            updateUI();
-            
-            // 点击模态框外部关闭
-            document.querySelectorAll('.modal-overlay').forEach(modal => {
-                modal.addEventListener('click', (e) => {
-                    if (e.target === modal) {
-                        modal.classList.remove('active');
-                    }
-                });
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', function() {
+            renderDashboard();
+        });
     </script>
 </body>
 </html>
