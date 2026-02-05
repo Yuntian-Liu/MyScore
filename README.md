@@ -1,11 +1,17 @@
+<div align="center">
+
 # MyScore - AI 智能成绩管理系统
 
-![Version](https://img.shields.io/badge/Version-V6.2_AI_Edition-059669?style=for-the-badge&logo=googlegemini&logoColor=white)
-![AI Model](https://img.shields.io/badge/AI_Core-DeepSeek_V3-blue?style=for-the-badge&logo=openai&logoColor=white)
-![Build](https://img.shields.io/badge/Build-Netlify_Functions-00C7B7?style=for-the-badge&logo=netlify&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-orange?style=for-the-badge)
+<p>
+    <img src="https://img.shields.io/badge/v6.2-AI_Edition-10b981?style=flat-square&logo=rocket&logoColor=white" alt="Version">
+    <img src="https://img.shields.io/badge/Model-DeepSeek_V3.2-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
+    <img src="https://img.shields.io/badge/Deployed_on-Netlify-00C7B7?style=flat-square&logo=netlify&logoColor=white" alt="Netlify">
+    <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=flat-square" alt="License">
+</p>
 
 > **"不仅仅是记录分数，更是你的毒舌复习教练。"**
+
+</div>
 
 一个功能完善且具备 **AI 交互能力** 的考试成绩管理系统。在支持雅思、大学英语四六级以及自定义考试的基础上，接入了 DeepSeek 大模型，为你提供“毒舌”但精准的复习建议。
 
@@ -60,8 +66,6 @@
 ---
 
 ## 📂 项目结构
-
-```bash
 MyScore/
 ├── index.html              # V6.2 主程序 (前端 UI + 交互逻辑)
 ├── netlify/
