@@ -111,7 +111,7 @@ MyScore/
 Copyright © LYT, 2026 All Rights Reserved
 联系方式：liuyuntian@ytun.team
 
-![Made with Love](https://img.shields.io/badge/Made_with-❤️_by_Liu Yuntian-ff69b4?style=flat-square)
+![Made with Love](https://img.shields.io/badge/Made_with-❤️_by_Yuntian-ff69b4?style=flat-square)
 
 ---
 
