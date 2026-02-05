@@ -3,7 +3,7 @@
 # MyScore - AI 智能成绩管理系统
 
 <p>
-    <img src="https://img.shields.io/badge/v6.2-AI_Edition-10b981?style=flat-square&logo=rocket&logoColor=white" alt="Version">
+    <img src="https://img.shields.io/badge/v6.3-AI_Edition-10b981?style=flat-square&logo=rocket&logoColor=white" alt="Version">
     <img src="https://img.shields.io/badge/Model-DeepSeek_V3.2-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
     <img src="https://img.shields.io/badge/Deployed_on-Netlify-00C7B7?style=flat-square&logo=netlify&logoColor=white" alt="Netlify">
     <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=flat-square" alt="License">
@@ -16,6 +16,15 @@
 一个功能完善且具备 **AI 交互能力** 的考试成绩管理系统。在支持雅思、大学英语四六级以及自定义考试的基础上，接入了 DeepSeek 大模型，为你提供“毒舌”但精准的复习建议。
 
 ---
+### V6.3 (Stable)
+- ✅ **紧急修复**：修复了严重的 DOM 嵌套错误，解决了录入和自定义页面无法加载的 Bug。
+- ✅ **品牌升级**：更新页脚版权信息 (Designed by Liu Yuntian @ YTUN)。
+- ✅ **系统稳定**：确认 AI 回怼与桌面宠物功能在修复后运行正常。
+
+### V6.2
+- ✅ **新增 AI 回怼功能**：支持用户反驳 AI 评价，实现多轮对话。
+- ✅ **新增桌面宠物**：右下角常驻互动。
+- ...
 
 ## ✨ 核心特性
 
