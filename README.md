@@ -1,21 +1,29 @@
-<div align="center">
+﻿<div align="center">
 
-# MyScore - AI 智能成绩管理系统
+# MyScore - AI 智能成绩管理系统 · V7.0 发布版
 
 <p>
-    <img src="https://img.shields.io/badge/v6.3-AI_Edition-10b981?style=flat-square&logo=rocket&logoColor=white" alt="Version">
+    <img src="https://img.shields.io/badge/v7.0-AI_Edition-10b981?style=flat-square&logo=rocket&logoColor=white" alt="Version">
     <img src="https://img.shields.io/badge/Model-DeepSeek_V3.2-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
     <img src="https://img.shields.io/badge/Deployed_on-Netlify-00C7B7?style=flat-square&logo=netlify&logoColor=white" alt="Netlify">
     <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=flat-square" alt="License">
 </p>
 
-> **"不仅仅是记录分数，更是你的毒舌复习教练。"**
+> **"不止记录分数，更陪你复盘、答疑与成长。"**
 
 </div>
 
-一个功能完善且具备 **AI 交互能力** 的考试成绩管理系统。在支持雅思、大学英语四六级以及自定义考试的基础上，接入了 DeepSeek 大模型，为你提供“毒舌”但精准的复习建议。
+一个功能完善且具备 **AI 交互能力** 的考试成绩管理系统。当前为 **V7.0 发布版**，在支持雅思、大学英语四六级以及自定义考试的基础上，接入 DeepSeek 大模型，并新增「版本日志系统 + 突突er伴学助手」双入口交互能力。
 
 ---
+### V7.0 (Current)
+- ✅ **版本日志系统升级**：支持首次打开自动弹窗 + 左下角悬浮入口（悬浮提示“版本日志”）。
+- ✅ **伴学助手突突er上线**：新增独立入口与悬浮聊天面板，支持连续对话与情绪陪伴。
+- ✅ **对话体验增强**：支持 Enter 发送、Shift+Enter 换行、Esc 关闭、会话本地持久化。
+- ✅ **快捷操作**：新增“一键生成今日学习计划”与“清空对话”。
+- ✅ **消息提醒**：面板关闭时收到突突er回复会显示图标小红点，打开面板自动清除。
+- ✅ **AI 兼容增强**：扩展 `comment.js` 增加 `mode: companion`，并保持原毒舌老师逻辑兼容。
+
 ### V6.3 (Stable)
 - ✅ **紧急修复**：修复了严重的 DOM 嵌套错误，解决了录入和自定义页面无法加载的 Bug。
 - ✅ **品牌升级**：更新页脚版权信息 (Designed by Liu Yuntian @ YTUN)。
@@ -28,10 +36,12 @@
 
 ## ✨ 核心特性
 
-### 🤖 AI 智能交互 (V6.x 新增)
+### 🤖 AI 智能交互 (V7.x 新增)
 - **毒舌老师**: 每次录入成绩，AI 都会根据你的分数走势（进步/退步）给出犀利评价。
 - **回怼模式**: 觉得老师说得不对？点击 **"💬 不服/回嘴"** 按钮，和 AI 展开辩论！它会根据你的理由进行更有趣的反击。
 - **桌面宠物**: 右下角的 Emoji 老师会根据你的最近成绩自动变脸（😎 考好了 / 😡 考砸了），点击还能“戳一戳”互动。
+- **突突er 伴学助手**: 左下角悬浮入口唤起聊天面板，可陪聊、答疑、做计划，不与毒舌老师冲突。
+- **版本日志入口**: 首次打开自动弹出更新日志，后续可通过左下角悬浮图标再次查看。
 
 ### 📊 支持的考试类型
 #### 雅思考试 (IELTS)
@@ -57,7 +67,7 @@
 
 ## 🚀 部署与使用
 
-> **注意**：V6.x 版本包含后端函数，**无法直接双击 HTML 运行 AI 功能**，推荐部署至 Netlify。
+> **注意**：V7.x 版本包含后端函数，**无法直接双击 HTML 运行 AI 功能**，推荐部署至 Netlify。
 
 ### 1. 部署到 Netlify
 1. Fork 本项目到你的 GitHub。
@@ -69,22 +79,29 @@
 
 ### 2. 日常使用
 1. **录入成绩**: 选择考试类型 -> 填写日期 -> 录入分数 -> 保存。
-2. **AI 互动**: 保存后，毒舌老师会自动评价；点击“回嘴”可开启多轮对话。
+2. **AI 互动**: 保存后，毒舌老师会自动评价；点击“回嘴”可开启多轮对话；点击左下角“唤起突突er”可进入伴学对话。
 3. **查看统计**: 点击"仪表盘"查看趋势图表。
 
 ---
 
 ## 📂 项目结构
 MyScore/
-├── index.html              # V6.2 主程序 (前端 UI + 交互逻辑)
+├── index.html              # V7.0 主程序 (前端 UI + 交互逻辑)
 ├── netlify/
 │   └── functions/
-│       └── comment.js      # Serverless 后端函数 (处理 AI 对话)
-├── Versions_history/       # 历史版本归档 (V1.0 - V5.3)
+│       └── comment.js      # Serverless 后端函数 (处理毒舌评价 + companion伴学对话)
+├── Versions_history/       # 历史版本归档 (V1.0 - V7.0)
 └── README.md               # 项目文档
 ## 🎯 版本历史
 
-### V6.2 (当前版本)
+### V7.0 (当前版本)
+- ✅ 新增版本日志首次自动弹窗与悬浮入口。
+- ✅ 新增突突er伴学助手悬浮入口与聊天面板。
+- ✅ 新增突突er快捷操作：一键生成今日学习计划、清空对话。
+- ✅ 新增突突er未读小红点提醒（面板关闭时生效）。
+- ✅ 扩展 Netlify AI 中转函数：支持 `mode: companion`。
+
+### V6.2
 - ✅ **新增 AI 回怼功能**：支持用户反驳 AI 评价，实现多轮对话。
 - ✅ **新增战斗 UI**：回嘴时界面切换为红色“战斗状态”。
 - ✅ 修复成绩列表容器丢失的 Bug。
@@ -113,7 +130,7 @@ MyScore/
 ## 📝 注意事项
 
 - **API Key 安全**: 请务必在 Netlify 环境变量中配置 Key，不要直接写在代码里。
-- **数据兼容性**: V6.x 数据与 V5.x 格式完全兼容，直接导入旧版备份即可。
+- **数据兼容性**: V7.x 数据与 V5.x 格式完全兼容，直接导入旧版备份即可。
 
 ## 📄 许可证
 

@@ -1,6 +1,4 @@
-// 文件路径: netlify/functions/comment.js
-
-export default async (req, context) => {
+﻿export default async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("OK", {
       headers: {
@@ -17,60 +15,95 @@ export default async (req, context) => {
 
   try {
     const body = await req.json();
-    // 这里多接收了两个参数：userRebuttal (你的回嘴), previousComment (AI上一句说的话)
-    const { examType, currentScore, historyScores, userRebuttal, previousComment } = body;
+    const {
+      mode,
+      examType,
+      currentScore,
+      historyScores,
+      userRebuttal,
+      previousComment,
+      userMessage,
+      conversationHistory,
+    } = body;
 
     const apiKey = Netlify.env.get("AI_API_KEY");
-    if (!apiKey) throw new Error("API Key 未配置");
+    if (!apiKey) {
+      throw new Error("AI_API_KEY is not configured");
+    }
 
     const apiUrl = "https://api.deepseek.com/chat/completions";
+    let messages = [];
+    let temperature = 1.1;
+    let maxTokens = 180;
 
-    // === 核心逻辑分流 ===
-    let systemPrompt = "";
-    let userContent = "";
+    if (mode === "companion") {
+      const safeHistory = Array.isArray(conversationHistory)
+        ? conversationHistory
+            .filter((m) => m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
+            .slice(-12)
+        : [];
 
-    if (userRebuttal) {
-      // 模式二：吵架模式
-      systemPrompt = `你是一个毒舌老师。刚才学生对你的评价表示不服，正在回嘴。
-      请根据学生的反驳，结合他的成绩，狠狠地、幽默地怼回去。
-      - 逻辑要自洽，不要被学生带偏。
-      - 语气要傲娇、犀利。
-      - 字数 50 字以内，带 emoji。`;
-      
-      userContent = `考试：${examType}，分数：${currentScore}。
-      你之前说："${previousComment}"
-      学生回嘴说："${userRebuttal}"
-      请反击：`;
+      messages = [
+        {
+          role: "system",
+          content:
+            "你是突突er，一位温暖、克制、可靠的中文伴学AI。你的任务是倾听、安慰、鼓励执行、解答学习问题。语气真诚，不说教，不毒舌。优先给出可执行建议（最多3条）。如用户在倾诉，先共情再建议。单次回复尽量控制在120字内。",
+        },
+        ...safeHistory,
+      ];
+
+      if (typeof userMessage === "string" && userMessage.trim()) {
+        messages.push({ role: "user", content: userMessage.trim() });
+      } else {
+        messages.push({
+          role: "user",
+          content: "请先自我介绍，并告诉我你可以如何陪我学习。",
+        });
+      }
+
+      temperature = 0.9;
+      maxTokens = 220;
     } else {
-      // 模式一：正常评价模式 (保持不变)
-      systemPrompt = `你是一个说话幽默、带点"毒舌"属性的严厉老师。
-      请根据学生的成绩给出一句简短的评价（50字以内）。
-      - 进步了：用略带惊讶但傲娇的语气夸奖。
-      - 退步了：用幽默的比喻损一下，并给出复习建议。
-      - 必须包含1-2个emoji。`;
-      
-      userContent = `考试：${examType}，本次：${currentScore}，历史：${historyScores.join(" -> ")}`;
+      let systemPrompt = "";
+      let userContent = "";
+
+      if (userRebuttal) {
+        systemPrompt =
+          "你是毒舌老师。学生刚刚回嘴了，请结合成绩给出犀利、幽默、短句式反击。保持逻辑清晰，语气傲娇。50字以内，带1-2个emoji。";
+        userContent = `考试：${examType}，分数：${currentScore}。你之前说：“${previousComment || ""}”。学生回嘴：“${userRebuttal}”。请回击：`;
+        temperature = 1.3;
+        maxTokens = 150;
+      } else {
+        const scores = Array.isArray(historyScores) ? historyScores.join(" -> ") : "";
+        systemPrompt =
+          "你是幽默、毒舌但不恶毒的老师。根据成绩给一句简短评价。进步就傲娇夸，退步就幽默提醒并给复习建议。50字以内，带1-2个emoji。";
+        userContent = `考试：${examType}，本次：${currentScore}，历史：${scores}`;
+        temperature = 1.1;
+        maxTokens = 150;
+      }
+
+      messages = [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userContent },
+      ];
     }
 
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: "deepseek-chat",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userContent }
-        ],
-        temperature: 1.4, // 吵架的时候可以让它更疯一点
-        max_tokens: 150
-      })
+        messages,
+        temperature,
+        max_tokens: maxTokens,
+      }),
     });
 
     const data = await response.json();
-    const aiComment = data.choices?.[0]?.message?.content || "老师被气晕了...";
+    const aiComment = data?.choices?.[0]?.message?.content || "我在这，先深呼吸一下。";
 
     return new Response(JSON.stringify({ comment: aiComment }), {
       headers: {
@@ -78,11 +111,10 @@ export default async (req, context) => {
         "Access-Control-Allow-Origin": "*",
       },
     });
-
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { "Access-Control-Allow-Origin": "*" }
+      headers: { "Access-Control-Allow-Origin": "*" },
     });
   }
 };
