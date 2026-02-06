@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
@@ -507,7 +507,7 @@
                 <div id="entry-form-container" class="card" style="padding: 2rem;">
                     <div class="empty-state">
                         <svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 1rem;">
-                            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                            <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                         <p style="color: #6b7280;">请选择上方考试类型开始录入</p>
                     </div>
@@ -718,7 +718,7 @@
                 writingTask1 = null;
                 writingTask2 = null;
                 renderExamSelector();
-                document.getElementById('entry-form-container').innerHTML = '<div class="empty-state"><svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom:1rem;"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg><p style="color:#6b7280;">请选择上方考试类型开始录入</p></div>';
+                document.getElementById('entry-form-container').innerHTML = '<div class="empty-state"><svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom:1rem;"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg><p style="color:#6b7280;margin-bottom:1rem;">还没有成绩记录</p><button onclick="showPage(\'entry\')" style="color:#10b981;font-weight:600;background:none;border:none;cursor:pointer;">开始录入 →</button></div>';
             }
             else if (p === 'custom') renderCustomList();
         }
@@ -1636,8 +1636,86 @@ const SASSY_QUOTES = [
     "再戳我，我就把你的成绩发给你爸妈。📱",
     "只有弱者才会在意别人的评价，强者都在刷题。📚",
     "哟，这不是那位总分 5.5 的选手吗？😏",
-    "这就是你对待学习的态度？再戳一下试试？👊"
-];
+    "这就是你对待学习的态度？再戳一下试试？👊",
+    "你知道吗？你的成绩让我怀疑你是不是在梦游考试。😴",
+    "别看了，成绩不会自己变高，快去学习！📖",
+    "你离成功只差一个字：努力。",
+    "如果拖延是比赛，你已经是冠军了。🏆",
+    "你的目标是考第一？还是考倒数第一？🤔",
+    "别再摸鱼了，鱼都嫌你烦了。🐟",
+    "你知道吗？你的成绩让我想起了我的噩梦。😱",
+    "再不努力，你的未来会比今天更糟糕。",
+    "你是来学习的，还是来打酱油的？",
+    "成绩单不会撒谎，但你会。😏",
+    "你觉得自己很努力？那成绩呢？",
+    "别再找借口了，时间不会等你。⏳",
+    "你以为考高分靠运气？不，靠实力。💪",
+    "再戳我，我就把你的成绩贴在公告栏上。📋",
+    "你知道吗？你的成绩让我怀疑你是不是在考古。🦴",
+    "努力是免费的，但你选择了昂贵的懒惰。",
+    "你知道吗？你的成绩让我想起了我小时候的玩笑。",
+    "你是来考试的，还是来交朋友的？",
+    "如果学习是游戏，你已经卡关了。",
+    "你的未来取决于你今天的努力。",
+    "别再拖延了，时间不会为你停留。",
+    "你知道吗？你的成绩让我想起了我的黑历史。",
+    "你是来挑战极限的，还是来挑战底线的？",
+    "学习是场马拉松，而你却在起点睡着了。",
+    "你知道吗？你的成绩让我怀疑你是不是在玩躲猫猫。",
+    "别再找借口了，成功只属于那些努力的人。",
+    "你觉得自己很聪明？那为什么成绩单不这么认为？",
+    "你知道吗？你的成绩让我想起了我丢失的记忆。",
+    "别再摸鱼了，鱼都开始嫌弃你了。"
+,
+    "今天点我三次了，背单词点过三次吗？😏",
+    "你和高分之间就差一个动作：开始。",
+    "我不是在骂你，我是在提前播报现实。",
+    "你这学习节奏，像开了省电模式。🔋",
+    "别把‘明天开始’当口头禅了，明天都听烦了。",
+    "你现在的分数，像是在给未来挖坑。",
+    "刷短视频的手速这么快，刷题怎么就卡了？📱",
+    "你是来拿分的，不是来和拖延症谈恋爱的。",
+    "每次点我都很积极，做题要是也这么积极就好了。",
+    "这分数不是终点，但再躺就真到终点了。🛌",
+    "你现在这状态，连错题本都替你着急。😮‍💨",
+    "你不是不会，你只是一直没认真开始。",
+    "学得慢没关系，停着不动才是问题。",
+    "今天少找一个借口，明天就多一分底气。",
+    "别再等状态了，状态是做出来的。",
+    "你可以嘴硬，但成绩单只认分数。📄",
+    "你这波操作，像是在给低分做长期投资。",
+    "知识点都在排队等你，你却在原地发呆。",
+    "我劝你现在学，不然以后只能学会后悔。",
+    "别总说差一点，你差的是那一点点坚持。",
+    "你今天复习了吗，还是又在和时间赛跑并且输了？",
+    "考试不看心情，看准备。🎯",
+    "你要么现在吃学习的苦，要么之后吃现实的苦。",
+    "这不是天赋问题，是你执行力的问题。",
+    "我都替你记住目标了，你别先忘了。",
+    "再拖下去，计划表都要长灰了。🗂️",
+    "你以为在休息，其实是在给焦虑充值。⚠️",
+    "继续点我可以，但顺手点开题库更好。",
+    "你不是差，你是还没把自己用到位。",
+    "你的潜力很大，别把它只放在想象里。",
+    "今天认真一点，明天就不用慌一点。✅",
+    "如果努力有声音，你今天有点安静。",
+    "你离进步不远，前提是别后退。",
+    "再摸鱼我就默认你在给别人让名次了。🐟",
+    "你这分数像天气预报：阴天转努力。",
+    "我没有否定你，我只是否定你的偷懒。",
+    "别再研究玄学提分了，先把题做完。📝",
+    "要不这样，点我一次就去做一道题。",
+    "你不是缺方法，你是缺持续执行。",
+    "每次说马上开始，马上都快退休了。⌛",
+    "再给自己一次认真投入的机会吧。",
+    "高分不会突然出现，只会被一点点做出来。📈",
+    "你今天的认真程度，决定明天的从容程度。",
+    "继续努力，别让我夸你的机会一直缺席。👏",
+    "别怕慢，怕的是你一直不出发。",
+    "你这次要是稳住，后面会越来越轻松。",
+    "我看好你，但你得先动起来。🚀",
+    "现在开始还不晚，继续拖才晚。",
+    "再点一次之前，先去做三道题，成交？"];
 
 // 2. 初始化宠物状态 (在 renderDashboard 里调用)
 function updatePetMood() {
@@ -1666,12 +1744,45 @@ function updatePetMood() {
 
 // 3. 戳一戳互动函数
 let bubbleTimer = null;
+let recentQuoteIndexes = [];
+const RECENT_QUOTES_WINDOW = 20;
+
+function getNonRepeatingQuoteIndex() {
+    if (SASSY_QUOTES.length <= 1) return 0;
+
+    const windowSize = Math.min(RECENT_QUOTES_WINDOW, SASSY_QUOTES.length - 1);
+    const recentSet = new Set(recentQuoteIndexes);
+    let pickedIndex = -1;
+
+    for (let i = 0; i < 12; i++) {
+        const idx = Math.floor(Math.random() * SASSY_QUOTES.length);
+        if (!recentSet.has(idx)) {
+            pickedIndex = idx;
+            break;
+        }
+    }
+
+    if (pickedIndex === -1) {
+        pickedIndex = 0;
+        while (recentSet.has(pickedIndex) && pickedIndex < SASSY_QUOTES.length - 1) {
+            pickedIndex++;
+        }
+    }
+
+    recentQuoteIndexes.push(pickedIndex);
+    if (recentQuoteIndexes.length > windowSize) {
+        recentQuoteIndexes.shift();
+    }
+
+    return pickedIndex;
+}
+
 function pokeTeacher() {
     const bubble = document.getElementById('pet-bubble');
     const avatar = document.getElementById('desktop-pet');
     
-    // 随机选一句骚话
-    const randomQuote = SASSY_QUOTES[Math.floor(Math.random() * SASSY_QUOTES.length)];
+    // 短期不重复：优先避开最近出现过的语录
+    const randomQuote = SASSY_QUOTES[getNonRepeatingQuoteIndex()];
     bubble.innerText = randomQuote;
 
     // 显示气泡
