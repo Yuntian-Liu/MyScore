@@ -1,9 +1,9 @@
 ﻿<div align="center">
 
-# MyScore - AI 智能成绩管理系统 · V7.0 发布版
+# MyScore - AI 智能成绩管理系统 · V7.1 发布版
 
 <p>
-    <img src="https://img.shields.io/badge/v7.0-AI_Edition-10b981?style=flat-square&logo=rocket&logoColor=white" alt="Version">
+    <img src="https://img.shields.io/badge/v7.1-AI_Edition-10b981?style=flat-square&logo=rocket&logoColor=white" alt="Version">
     <img src="https://img.shields.io/badge/Model-DeepSeek_V3.2-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
     <img src="https://img.shields.io/badge/Deployed_on-Netlify-00C7B7?style=flat-square&logo=netlify&logoColor=white" alt="Netlify">
     <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=flat-square" alt="License">
@@ -13,10 +13,17 @@
 
 </div>
 
-一个功能完善且具备 **AI 交互能力** 的考试成绩管理系统。当前为 **V7.0 发布版**，在支持雅思、大学英语四六级以及自定义考试的基础上，接入 DeepSeek 大模型，并新增「版本日志系统 + 突突er伴学助手」双入口交互能力。
+一个功能完善且具备 **AI 交互能力** 的考试成绩管理系统。当前为 **V7.1 发布版**，在支持雅思、大学英语四六级以及自定义考试的基础上，接入 DeepSeek 大模型，并持续升级「版本日志系统 + 突突er伴学助手 + 移动端体验」三位一体交互能力。
 
 ---
-### V7.0 (Current)
+### V7.1 (Current)
+- ✅ **移动端 UI 系统升级**：导航、卡片、历史记录、浮动入口在手机端完成系统级适配，视觉更统一。
+- ✅ **最近成绩四宫格重构**：成绩展示改为结构化网格，手机端更整齐，桌面端字号同步增强。
+- ✅ **突突er 交互升级**：新增独立“展开/还原”按钮，`×` 回归纯关闭语义，交互更直觉。
+- ✅ **键盘适配增强**：基于 `visualViewport` 的移动端输入法避让与面板跟随，显著降低遮挡问题。
+- ✅ **品牌与合规补充**：新增弱化品牌副标识“碳碳四键的开发应用实践”与备案号悬挂。
+
+### V7.0 (Stable)
 - ✅ **版本日志系统升级**：支持首次打开自动弹窗 + 左下角悬浮入口（悬浮提示“版本日志”）。
 - ✅ **伴学助手突突er上线**：新增独立入口与悬浮聊天面板，支持连续对话与情绪陪伴。
 - ✅ **对话体验增强**：支持 Enter 发送、Shift+Enter 换行、Esc 关闭、会话本地持久化。
@@ -42,6 +49,12 @@
 - **桌面宠物**: 右下角的 Emoji 老师会根据你的最近成绩自动变脸（😎 考好了 / 😡 考砸了），点击还能“戳一戳”互动。
 - **突突er 伴学助手**: 左下角悬浮入口唤起聊天面板，可陪聊、答疑、做计划，不与毒舌老师冲突。
 - **版本日志入口**: 首次打开自动弹出更新日志，后续可通过左下角悬浮图标再次查看。
+
+### 📱 响应式体验 (V7.1 重点)
+- **移动端优先适配**: 手机端导航重排、按钮触控区优化、底部安全留白优化。
+- **聊天输入稳定性**: 输入法弹出时伴学助手面板自动避让，输入框可视性更稳定。
+- **成绩展示一致性**: 最近成绩网格与历史记录在手机端/桌面端保持一致的层级与信息密度。
+- **悬浮组件协调**: 左侧入口、桌宠、聊天面板在小屏设备上的遮挡关系经过专门调优。
 
 ### 📊 支持的考试类型
 #### 雅思考试 (IELTS)
@@ -86,15 +99,22 @@
 
 ## 📂 项目结构
 MyScore/
-├── index.html              # V7.0 主程序 (前端 UI + 交互逻辑)
+├── index.html              # 主程序入口 (前端 UI + 交互逻辑)
 ├── netlify/
 │   └── functions/
 │       └── comment.js      # Serverless 后端函数 (处理毒舌评价 + companion伴学对话)
-├── Versions_history/       # 历史版本归档 (V1.0 - V7.0)
+├── Versions_history/       # 历史版本归档 (V1.0 - V7.1)
 └── README.md               # 项目文档
 ## 🎯 版本历史
 
-### V7.0 (当前版本)
+### V7.1 (当前版本)
+- ✅ 移动端 UI 深度适配（导航、成绩卡片、历史记录、浮动组件）。
+- ✅ 最近成绩“四宫格”结构重构，手机端更规整，桌面端字体与比例增强。
+- ✅ 伴学助手新增“展开/还原”按钮，关闭逻辑与交互语义更清晰。
+- ✅ 修复移动端输入法遮挡问题（`visualViewport` 键盘自适应）。
+- ✅ 新增品牌副标识与备案号悬挂。
+
+### V7.0
 - ✅ 新增版本日志首次自动弹窗与悬浮入口。
 - ✅ 新增突突er伴学助手悬浮入口与聊天面板。
 - ✅ 新增突突er快捷操作：一键生成今日学习计划、清空对话。
@@ -131,6 +151,7 @@ MyScore/
 
 - **API Key 安全**: 请务必在 Netlify 环境变量中配置 Key，不要直接写在代码里。
 - **数据兼容性**: V7.x 数据与 V5.x 格式完全兼容，直接导入旧版备份即可。
+- **备案信息**: 若迁移至自有服务器并面向中国大陆访问，请按监管要求在页脚悬挂备案号并链接工信部备案系统。
 
 ## 📄 许可证
 

@@ -1,0 +1,2969 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyScore V7.1 - AI 智能成绩单 | 碳碳四键的个人开发应用实践</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-main: #faf8f5;
+            --bg-card: #ffffff;
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --text-main: #1f2937;
+            --text-secondary: #6b7280;
+            --listening: #3b82f6;
+            --reading: #10b981;
+            --writing: #f59e0b;
+            --speaking: #8b5cf6;
+            --translation: #ef4444;
+        }
+
+        * { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif; }
+
+        body {
+            background: linear-gradient(135deg, #faf8f5 0%, #f3f0eb 100%);
+            min-height: 100vh;
+            color: var(--text-main);
+        }
+
+        .brand-meta {
+            margin-top: 0.2rem;
+            font-size: 0.72rem;
+            letter-spacing: 0.02em;
+            color: #9ca3af;
+        }
+
+        .hidden { display: none !important; }
+
+        /* 卡片样式 */
+        .card {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(16, 185, 129, 0.1);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        /* 导航按钮 */
+        .nav-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .nav-btn:hover {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        /* 主按钮 */
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        /* 次按钮 */
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 0.875rem 1.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        /* 考试类型卡片 */
+        .exam-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .exam-card:hover {
+            border-color: #10b981;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15);
+        }
+
+        .exam-card.active {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border-color: #10b981;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.2);
+        }
+
+        /* 科目手风琴 */
+        .subject-box {
+            border-radius: 1rem;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .subject-box.listening { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2px solid #3b82f6; }
+        .subject-box.reading { background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 2px solid #10b981; }
+        .subject-box.writing { background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); border: 2px solid #f59e0b; }
+        .subject-box.speaking { background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%); border: 2px solid #8b5cf6; }
+        .subject-box.translation { background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border: 2px solid #ef4444; }
+
+        .accordion-header {
+            padding: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+
+        .accordion-content.expanded {
+            max-height: 600px;
+        }
+
+        .accordion-arrow {
+            transition: transform 0.3s ease;
+            width: 20px;
+            height: 20px;
+        }
+
+        .accordion-arrow.expanded {
+            transform: rotate(180deg);
+        }
+
+        /* 输入框 */
+        .input {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 0.875rem 1rem;
+            width: 100%;
+            outline: none;
+            transition: all 0.3s ease;
+            color: #1f2937;
+        }
+
+        .input:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        /* Tab */
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: #10b981;
+        }
+
+        .tab-btn.active {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        /* 统计卡片 */
+        .stat-box {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .stat-box:hover {
+            border-color: #10b981;
+        }
+
+        /* 记录项 */
+        .record-box {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 1rem;
+            padding: 1.25rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .record-box:hover {
+            border-color: #10b981;
+            transform: translateX(4px);
+        }
+
+        .record-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .record-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .record-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .record-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .record-side {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .record-total {
+            text-align: right;
+        }
+
+        .record-delete {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 1.5rem;
+            line-height: 1;
+            width: 34px;
+            height: 34px;
+            border-radius: 9999px;
+        }
+
+        .record-delete:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        /* 分数标签 */
+        .score-badge {
+            display: inline-flex;
+            padding: 0.375rem 0.875rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-right: 0;
+            white-space: nowrap;
+        }
+
+        .recent-score-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .recent-score-item {
+            border-radius: 0.85rem;
+            padding: 0.8rem 1rem;
+            text-align: center;
+            min-height: 118px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .recent-score-item-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .recent-score-item-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        @media (min-width: 1024px) {
+            .recent-score-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 0.9rem;
+            }
+
+            .recent-score-item {
+                min-height: 132px;
+                padding: 0.95rem 1.1rem;
+            }
+
+            .recent-score-item-label {
+                font-size: 1rem;
+            }
+
+            .recent-score-item-value {
+                font-size: 2.35rem;
+                line-height: 1.1;
+            }
+        }
+
+        /* 模态框 */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        /* 渐变文字 */
+        .gradient-text {
+            background: linear-gradient(135deg, #10b981, #059669);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #9ca3af;
+        }
+
+        /* 总分预览 */
+        .total-preview {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+            border: 2px solid #10b981;
+            border-radius: 1rem;
+            padding: 1.5rem;
+        }
+
+        /* Task 分数框 */
+        .task-box {
+            background: rgba(255, 255, 255, 0.7);
+            border: 2px solid;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        /* 版本日志与使用文档 */
+        .doc-btn {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .doc-btn:hover {
+            background: #d1fae5;
+            color: #065f46;
+            border-color: rgba(16, 185, 129, 0.5);
+        }
+
+        .info-modal-content {
+            max-width: 680px;
+        }
+
+        .info-modal-body {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            line-height: 1.75;
+            color: #374151;
+            white-space: pre-wrap;
+            min-height: 180px;
+        }
+
+        .info-modal-footer {
+            margin-top: 1.25rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .changelog-fab {
+            position: fixed;
+            left: 1.25rem;
+            bottom: 1.25rem;
+            z-index: 950;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            background: rgba(255, 255, 255, 0.96);
+            color: #047857;
+            border-radius: 9999px;
+            box-shadow: 0 8px 24px rgba(5, 150, 105, 0.18);
+            padding: 0.6rem 0.7rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .changelog-fab:hover {
+            background: #ecfdf5;
+            border-color: rgba(16, 185, 129, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .changelog-fab-label {
+            max-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            opacity: 0;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: max-width 0.25s ease, opacity 0.2s ease;
+        }
+
+        .changelog-fab:hover .changelog-fab-label,
+        .changelog-fab:focus-visible .changelog-fab-label {
+            max-width: 88px;
+            opacity: 1;
+        }
+
+        .changelog-fab:focus-visible {
+            outline: 2px solid rgba(16, 185, 129, 0.35);
+            outline-offset: 2px;
+        }
+
+        .tutuer-fab {
+            position: fixed;
+            left: 1.25rem;
+            bottom: 5.3rem;
+            z-index: 970;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            background: rgba(255, 255, 255, 0.96);
+            color: #1d4ed8;
+            border-radius: 9999px;
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.18);
+            padding: 0.6rem 0.7rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .tutuer-fab-dot {
+            position: absolute;
+            top: 0.18rem;
+            right: 0.18rem;
+            width: 9px;
+            height: 9px;
+            border-radius: 9999px;
+            background: #ef4444;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.25);
+        }
+
+        .tutuer-fab:hover {
+            background: #eff6ff;
+            border-color: rgba(59, 130, 246, 0.55);
+            transform: translateY(-2px);
+        }
+
+        .tutuer-fab-label {
+            max-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            opacity: 0;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: max-width 0.25s ease, opacity 0.2s ease;
+        }
+
+        .tutuer-fab:hover .tutuer-fab-label,
+        .tutuer-fab:focus-visible .tutuer-fab-label {
+            max-width: 92px;
+            opacity: 1;
+        }
+
+        .tutuer-panel {
+            position: fixed;
+            left: 1.25rem;
+            bottom: 1.25rem;
+            width: min(360px, calc(100vw - 1.5rem));
+            height: 470px;
+            background: #ffffff;
+            border: 1px solid #dbeafe;
+            border-radius: 1rem;
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.22);
+            z-index: 980;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tutuer-panel-header {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border-bottom: 1px solid #bfdbfe;
+            padding: 0.85rem 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .tutuer-panel-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .tutuer-expand-btn {
+            display: none;
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 9999px;
+            background: #ffffff;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 0.95rem;
+            line-height: 1;
+        }
+
+        .tutuer-chat-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.9rem;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .tutuer-msg {
+            max-width: 86%;
+            border-radius: 0.85rem;
+            padding: 0.6rem 0.75rem;
+            line-height: 1.55;
+            font-size: 0.92rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .tutuer-msg.assistant {
+            background: #ffffff;
+            color: #1f2937;
+            border: 1px solid #e5e7eb;
+            align-self: flex-start;
+        }
+
+        .tutuer-msg.user {
+            background: #dbeafe;
+            color: #1e3a8a;
+            border: 1px solid #bfdbfe;
+            align-self: flex-end;
+        }
+
+        .tutuer-panel-footer {
+            padding: 0.75rem;
+            border-top: 1px solid #e5e7eb;
+            background: #ffffff;
+        }
+
+        .tutuer-quick-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.55rem;
+            flex-wrap: wrap;
+        }
+
+        .tutuer-quick-btn {
+            border: 1px solid #bfdbfe;
+            border-radius: 9999px;
+            background: #eff6ff;
+            color: #1e40af;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.33rem 0.72rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tutuer-quick-btn:hover {
+            background: #dbeafe;
+            border-color: #93c5fd;
+        }
+
+        .tutuer-input-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-end;
+        }
+
+        .tutuer-input {
+            flex: 1;
+            border: 1px solid #d1d5db;
+            border-radius: 0.75rem;
+            padding: 0.65rem 0.8rem;
+            min-height: 42px;
+            max-height: 98px;
+            resize: vertical;
+            outline: none;
+            font-size: 0.9rem;
+        }
+
+        .tutuer-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+        }
+
+        .site-footer {
+            text-align: center;
+            padding: 1.7rem 1rem 5.8rem;
+            color: #9ca3af;
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        .icp-link {
+            color: #6b7280;
+            text-decoration: none;
+            border-bottom: 1px dashed rgba(107, 114, 128, 0.35);
+            transition: all 0.2s ease;
+        }
+
+        .icp-link:hover {
+            color: #374151;
+            border-bottom-color: rgba(55, 65, 81, 0.55);
+        }
+
+        @media (max-width: 768px) {
+            .tutuer-fab {
+                bottom: 4.9rem;
+                left: 0.9rem;
+            }
+
+            .tutuer-panel {
+                left: 0.5rem;
+                bottom: 0.8rem;
+                width: auto;
+                height: 60vh;
+            }
+        }
+    
+        @media (max-width: 768px) {
+            header > div {
+                padding: 0.75rem !important;
+            }
+
+            header > div > div {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 0.85rem !important;
+            }
+
+            header nav {
+                width: 100%;
+                justify-content: stretch !important;
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.55rem !important;
+            }
+
+            .nav-btn {
+                width: 100%;
+                padding: 0.62rem 0.85rem;
+                font-size: 0.85rem;
+                border-radius: 0.6rem;
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            }
+
+            main {
+                padding: 1rem 0.75rem !important;
+                padding-bottom: 8rem !important;
+            }
+
+            .card,
+            .stat-box,
+            .record-box,
+            .exam-card,
+            .modal-content {
+                border-radius: 0.85rem;
+            }
+
+            .card:hover,
+            .record-box:hover {
+                transform: none;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+                padding: 0.85rem 1rem;
+            }
+
+            #dashboard-tabs {
+                flex-wrap: nowrap !important;
+                overflow-x: auto;
+                padding-bottom: 0.6rem !important;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            #dashboard-tabs .tab-btn {
+                flex: 0 0 auto;
+            }
+
+            #total-count,
+            #exam-types-count {
+                font-size: 2rem !important;
+            }
+
+            #latest-exam-date {
+                font-size: 1.2rem !important;
+                word-break: break-word;
+            }
+
+            .site-footer {
+                padding: 1.4rem 1rem 7.2rem;
+                font-size: 0.83rem;
+            }
+
+            .brand-meta {
+                font-size: 0.67rem;
+            }
+
+            #ai-actions,
+            #reply-input-area > div,
+            .info-modal-footer {
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+
+            .changelog-fab {
+                left: 0.8rem;
+                bottom: 0.9rem;
+            }
+
+            .tutuer-fab {
+                left: 0.8rem;
+                bottom: 4.5rem;
+            }
+
+            .tutuer-panel {
+                left: 0.5rem;
+                right: 0.5rem;
+                width: auto;
+                bottom: max(0.5rem, env(safe-area-inset-bottom));
+                height: min(68dvh, 560px);
+                border-radius: 1.05rem;
+            }
+
+            .tutuer-panel.expanded-mobile {
+                top: 0.5rem;
+                bottom: 0.5rem;
+                height: auto;
+            }
+
+            .tutuer-panel.keyboard-open-mobile {
+                transition: height 0.18s ease, bottom 0.18s ease;
+            }
+
+            .tutuer-panel-footer {
+                padding: 0.65rem;
+            }
+
+            .tutuer-quick-actions {
+                margin-bottom: 0.45rem;
+                gap: 0.4rem;
+            }
+
+            .tutuer-quick-btn {
+                font-size: 0.75rem;
+                padding: 0.3rem 0.62rem;
+            }
+
+            .tutuer-input-row {
+                align-items: stretch;
+            }
+
+            .tutuer-input {
+                min-width: 0;
+                min-height: 40px;
+                max-height: 84px;
+                resize: none;
+            }
+
+            .recent-score-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.65rem;
+            }
+
+            .recent-score-item {
+                min-height: 126px;
+                padding: 0.75rem 0.6rem;
+            }
+
+            .recent-score-item-label {
+                font-size: 0.7rem;
+            }
+
+            .recent-score-item-value {
+                font-size: 2.05rem;
+                line-height: 1.15;
+            }
+
+            .record-row {
+                flex-direction: column;
+                gap: 0.7rem;
+            }
+
+            .record-badges {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.45rem;
+            }
+
+            .score-badge {
+                width: 100%;
+                justify-content: center;
+                padding: 0.48rem 0.4rem;
+                font-size: 0.9rem;
+            }
+
+            .record-side {
+                width: 100%;
+                justify-content: space-between;
+                border-top: 1px solid #f1f5f9;
+                padding-top: 0.6rem;
+            }
+
+            .record-total {
+                text-align: left;
+            }
+
+            .record-delete {
+                width: 36px;
+                height: 36px;
+                font-size: 1.4rem;
+            }
+
+            .tutuer-input-row .btn-primary {
+                width: auto;
+                flex: 0 0 auto;
+                padding: 0.65rem 0.95rem !important;
+            }
+
+            .tutuer-expand-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .tutuer-fab {
+                bottom: 4.9rem;
+                left: 0.7rem;
+                padding: 0.52rem 0.58rem;
+            }
+
+            .changelog-fab {
+                bottom: 0.7rem;
+                left: 0.7rem;
+                padding: 0.52rem 0.58rem;
+            }
+
+            .tutuer-fab-label,
+            .changelog-fab-label {
+                display: none;
+            }
+
+            #desktop-pet {
+                right: 0.7rem !important;
+                bottom: 2.85rem !important;
+                transform: scale(0.68);
+                transform-origin: bottom right;
+                z-index: 940 !important;
+            }
+
+            #pet-avatar {
+                font-size: 3.6rem !important;
+            }
+
+            #pet-bubble {
+                width: 150px !important;
+                font-size: 0.74rem !important;
+                padding: 0.6rem !important;
+            }
+
+            body.tutuer-open-mobile #desktop-pet {
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 头部 -->
+        <header style="position: sticky; top: 0; z-index: 50; background: rgba(250, 248, 245, 0.9); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(16, 185, 129, 0.1);">
+            <div style="max-width: 1200px; margin: 0 auto; padding: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #10b981, #059669); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
+                            <svg width="24" height="24" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                        </div>
+                            <div>
+                         <h1 style="font-size: 1.75rem; font-weight: bold;" class="gradient-text">MyScore</h1>
+                         <p style="font-size: 0.875rem; color: #6b7280;">V7.1 AI智能成绩单</p>
+                         <p class="brand-meta">碳碳四键的个人开发应用实践</p>
+                        </div>
+                    </div>
+                    <nav style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end;">
+                        <button class="nav-btn active" id="nav-dashboard" onclick="showPage('dashboard')">仪表盘</button>
+                        <button class="nav-btn" id="nav-entry" onclick="showPage('entry')">录入成绩</button>
+                        <button class="nav-btn" id="nav-custom" onclick="showPage('custom')">自定义考试</button>
+                        <button class="nav-btn doc-btn" type="button" onclick="openInfoModal('guide')">使用文档</button>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <main style="max-width: 1200px; margin: 0 auto; padding: 2rem 1rem;">
+            <!-- 仪表盘 -->
+            <div id="page-dashboard" class="page">
+                <!-- 概览卡片 -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                    <div class="card" style="padding: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <p style="color: #6b7280; font-size: 0.875rem; margin-bottom: 0.5rem;">总考试次数</p>
+                                <p id="total-count" style="font-size: 2.5rem; font-weight: bold; color: #10b981;">0</p>
+                            </div>
+                            <div style="width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, #ecfdf5, #d1fae5); display: flex; align-items: center; justify-content: center;">
+                                <svg width="28" height="28" fill="none" stroke="#10b981" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" style="padding: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <p style="color: #6b7280; font-size: 0.875rem; margin-bottom: 0.5rem;">考试类型</p>
+                                <p id="exam-types-count" style="font-size: 2.5rem; font-weight: bold;" class="gradient-text">0</p>
+                            </div>
+                            <div style="width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, #eff6ff, #dbeafe); display: flex; align-items: center; justify-content: center;">
+                                <svg width="28" height="28" fill="none" stroke="#3b82f6" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" style="padding: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <p style="color: #6b7280; font-size: 0.875rem; margin-bottom: 0.5rem;">最近考试</p>
+                                <p id="latest-exam-date" style="font-size: 1.5rem; font-weight: bold; color: #1f2937;">-</p>
+                            </div>
+                            <div style="width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, #fdf4ff, #fae8ff); display: flex; align-items: center; justify-content: center;">
+                                <svg width="28" height="28" fill="none" stroke="#a855f7" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 最近成绩 -->
+                <div class="card" style="padding: 2rem; margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 1.75rem;">⚡</span> 最近成绩
+                    </h2>
+                   <div id="ai-container" style="display:none; margin-bottom: 1rem;">
+                   <div id="ai-comment-box" style="background: #ecfdf5; border: 2px dashed #10b981; border-radius: 0.75rem; padding: 1rem; color: #047857; line-height: 1.6; font-size: 0.95rem; margin-bottom: 0.5rem; position: relative;">
+                    🤖 亲爱的YTUNer请耐心等待~突突老师正在批改...
+                 </div>
+
+                 <div id="ai-actions" style="display:none; justify-content: flex-end; gap: 0.5rem;">
+                 <button onclick="showReplyInput()" style="font-size: 0.8rem; color: #059669; background: white; border: 1px solid #10b981; padding: 0.3rem 0.8rem; border-radius: 99px; cursor: pointer;">💬 不服/回嘴</button>
+                 </div>
+
+    <div id="reply-input-area" style="display:none; margin-top: 0.5rem; animation: fadeIn 0.3s ease;">
+        <div style="display: flex; gap: 0.5rem;">
+            <input type="text" id="user-rebuttal" placeholder="输入你想反驳的话..." style="flex: 1; border: 1px solid #d1fae5; border-radius: 0.5rem; padding: 0.5rem; outline: none; font-size: 0.9rem;">
+            <button onclick="sendRebuttal()" style="background: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem;">发送</button>
+        </div>
+    </div>
+</div>
+<div id="recent-score-content">
+    <div class="empty-state">
+        <svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 1rem;">
+            <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <p style="color: #6b7280; margin-bottom: 1rem;">还没有成绩记录</p>
+        <button onclick="showPage('entry')" style="color: #10b981; font-weight: 600; background: none; border: none; cursor: pointer;">开始录入 →</button>
+    </div>
+</div>
+</div>
+
+                <!-- 统计 Tabs -->
+                <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
+                    <div id="dashboard-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; border-bottom: 2px solid #f3f4f6; padding-bottom: 1rem;">
+                        <button class="tab-btn active" onclick="switchDashboardTab('overview', this)">概览</button>
+                    </div>
+                    <div id="tab-content-overview">
+                        <!-- 图表容器 -->
+                        <div id="charts-container" style="display: none;">
+                            <!-- 统计区域 -->
+                            <div id="stats-area"></div>
+                            <!-- 图表标题和画布 -->
+                            <div style="margin-bottom: 1.5rem;">
+                                <h3 style="font-weight: 700; font-size: 1.125rem; margin-bottom: 1rem;">📈 成绩趋势</h3>
+                                <div style="position: relative; height: 350px; background: white; border: 2px solid #e5e7eb; border-radius: 1rem; padding: 1rem;">
+                                    <canvas id="main-chart"></canvas>
+                                </div>
+                                <div id="chart-no-data" class="empty-state" style="display: none;">
+                                    <p style="color: #9ca3af;">暂无数据，请先录入成绩</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="overview-empty" class="empty-state" style="padding: 2rem;">
+                            <p style="color: #9ca3af;">选择上方考试类型查看详细统计</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数据管理 -->
+                <div class="card" style="padding: 2rem; margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 1.75rem;">💾</span> 数据管理
+                    </h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                        <div class="stat-box">
+                            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem;">
+                                <div>
+                                    <h3 style="font-weight: 700; font-size: 1.125rem; margin-bottom: 0.25rem;">导出备份</h3>
+                                    <p style="color: #6b7280; font-size: 0.875rem;">导出所有成绩和设置</p>
+                                </div>
+                                <div style="width: 48px; height: 48px; border-radius: 12px; background: #eff6ff; display: flex; align-items: center; justify-content: center;">
+                                    <svg width="24" height="24" fill="none" stroke="#3b82f6" stroke-width="2" viewBox="0 0 24 24">
+                                        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <button class="btn-secondary" onclick="exportData()" style="width: 100%;">导出数据</button>
+                            <p style="font-size: 0.875rem; color: #9ca3af; margin-top: 0.75rem;">共 <span id="record-count">0</span> 条记录</p>
+                        </div>
+                        <div class="stat-box">
+                            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem;">
+                                <div>
+                                    <h3 style="font-weight: 700; font-size: 1.125rem; margin-bottom: 0.25rem;">导入备份</h3>
+                                    <p style="color: #6b7280; font-size: 0.875rem;">从文件恢复数据</p>
+                                </div>
+                                <div style="width: 48px; height: 48px; border-radius: 12px; background: #ecfdf5; display: flex; align-items: center; justify-content: center;">
+                                    <svg width="24" height="24" fill="none" stroke="#10b981" stroke-width="2" viewBox="0 0 24 24">
+                                        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <label class="btn-primary" style="display: block; text-align: center; cursor: pointer;">
+                                选择文件
+                                <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importData(this)">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 历史记录 -->
+                <div class="card" style="padding: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 style="font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="font-size: 1.75rem;">📜</span> 历史记录
+                        </h2>
+                        <button onclick="clearAllRecords()" style="color: #ef4444; background: none; border: none; cursor: pointer; font-weight: 500;">清空所有</button>
+                    </div>
+                    <div id="records-list"></div>
+                </div>
+            </div>
+
+            <!-- 录入成绩 -->
+            <div id="page-entry" class="page hidden">
+                <div class="card" style="padding: 2rem; margin-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem;">选择考试类型</h2>
+                    <div id="exam-type-selector" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem;"></div>
+                </div>
+                <div id="entry-form-container" class="card" style="padding: 2rem;">
+                    <div class="empty-state">
+                        <svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 1rem;">
+                            <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <p style="color: #6b7280;">请选择上方考试类型开始录入</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 自定义考试 -->
+            <div id="page-custom" class="page hidden">
+                <div class="card" style="padding: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <div>
+                            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem;">自定义考试类型</h2>
+                            <p style="color: #6b7280;">创建你自己的考试评分系统</p>
+                        </div>
+                        <button class="btn-primary" onclick="openCreateModal()">+ 新建考试</button>
+                    </div>
+                    <div id="custom-exam-list"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 创建考试模态框 -->
+        <div id="create-modal" class="modal-overlay" onclick="closeModalOnBackdrop(event)">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.75rem; font-weight: 700;" class="gradient-text">新建考试类型</h2>
+                    <button onclick="closeCreateModal()" style="background: none; border: none; font-size: 1.5rem; color: #9ca3af; cursor: pointer;">×</button>
+                </div>
+                <form id="create-exam-form" onsubmit="submitCreateForm(event)">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">考试名称</label>
+                        <input type="text" id="new-exam-name" required class="input" placeholder="如：托福、GRE">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">描述（可选）</label>
+                        <input type="text" id="new-exam-desc" class="input" placeholder="简短描述">
+                    </div>
+                    <div style="margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <label style="font-weight: 500;">科目设置</label>
+                            <button type="button" onclick="addSubject()" style="color: #10b981; background: none; border: none; cursor: pointer; font-weight: 500;">+ 添加科目</button>
+                        </div>
+                        <div id="subjects-list"></div>
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                        <button type="button" class="btn-secondary" onclick="closeCreateModal()" style="flex: 1;">取消</button>
+                        <button type="submit" class="btn-primary" style="flex: 1;">创建</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    <footer class="site-footer">
+    <p style="margin-bottom: 0.22rem;">MyScore V7.1</p>
+    <p style="margin-bottom: 0.22rem;">碳碳四键的个人开发应用实践</p>
+    <p style="margin-bottom: 0.22rem;">
+        <a class="icp-link" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">蜀ICP备2026006689号</a>
+    </p>
+    <p style="font-size: 0.82em; opacity: 0.85;">Copyright © YTUN 2026 All Rights Reserved</p>
+    </footer>
+    </div>
+
+    <script>
+        // ==================== 数据存储 ====================
+        const STORAGE = {
+            RECORDS: 'myscore_v51_records',  // 保持与V5.2兼容
+            CUSTOM: 'myscore_v51_custom'
+        };
+
+        // 图表实例变量
+        let mainChartInstance = null;
+
+        // 内置考试配置
+        const BUILTIN_EXAMS = {
+            ielts: {
+                id: 'ielts',
+                name: '雅思',
+                desc: 'IELTS Academic',
+                icon: '📋',
+                builtin: true,
+                calcTotal: true,
+                subjects: [
+                    { id: 'listening', name: 'Listening', short: 'L', color: '#3b82f6', type: 'lookup', min: 0, max: 40, dec: 1 },
+                    { id: 'reading', name: 'Reading', short: 'R', color: '#10b981', type: 'lookup', min: 0, max: 40, dec: 1 },
+                    { id: 'writing', name: 'Writing', short: 'W', color: '#f59e0b', type: 'ielts-writing', min: 0, max: 9, step: 0.5, dec: 1, hasTasks: true },
+                    { id: 'speaking', name: 'Speaking', short: 'S', color: '#8b5cf6', type: 'direct', min: 0, max: 9, step: 0.5, dec: 1 }
+                ]
+            },
+            cet4: {
+                id: 'cet4',
+                name: '四级',
+                desc: 'CET-4',
+                icon: '📚',
+                builtin: true,
+                calcTotal: true,
+                subjects: [
+                    { id: 'listening', name: '听力', short: '听', color: '#3b82f6', type: 'sections', sections: [
+                        { name: '短对话', score: 7.1, max: 8 },
+                        { name: '长对话', score: 7.1, max: 7 },
+                        { name: '短文', score: 14.2, max: 10 }
+                    ], dec: 0 },
+                    { id: 'reading', name: '阅读', short: '读', color: '#10b981', type: 'sections', sections: [
+                        { name: '选词填空', score: 3.55, max: 10 },
+                        { name: '长篇阅读', score: 7.1, max: 10 },
+                        { name: '仔细阅读', score: 14.2, max: 10 }
+                    ], dec: 0 },
+                    { id: 'writing', name: '写作', short: '写', color: '#f59e0b', type: 'formula', min: 0, max: 15, mult: 7.1, dec: 0 },
+                    { id: 'translation', name: '翻译', short: '译', color: '#ef4444', type: 'formula', min: 0, max: 15, mult: 7.1, dec: 0 }
+                ]
+            },
+            cet6: {
+                id: 'cet6',
+                name: '六级',
+                desc: 'CET-6',
+                icon: '🎓',
+                builtin: true,
+                calcTotal: true,
+                subjects: [
+                    { id: 'listening', name: '听力', short: '听', color: '#3b82f6', type: 'sections', sections: [
+                        { name: '长对话', score: 7.1, max: 8 },
+                        { name: '听力篇章', score: 7.1, max: 7 },
+                        { name: '讲座', score: 14.2, max: 10 }
+                    ], dec: 0 },
+                    { id: 'reading', name: '阅读', short: '读', color: '#10b981', type: 'sections', sections: [
+                        { name: '选词填空', score: 3.55, max: 10 },
+                        { name: '长篇阅读', score: 7.1, max: 10 },
+                        { name: '仔细阅读', score: 14.2, max: 10 }
+                    ], dec: 0 },
+                    { id: 'writing', name: '写作', short: '写', color: '#f59e0b', type: 'formula', min: 0, max: 15, mult: 7.1, dec: 0 },
+                    { id: 'translation', name: '翻译', short: '译', color: '#ef4444', type: 'formula', min: 0, max: 15, mult: 7.1, dec: 0 }
+                ]
+            }
+        };
+
+        // 雅思查找表
+        const IELTS_TABLES = {
+            listening: [
+                {min:39,max:40,s:9.0},{min:37,max:38,s:8.5},{min:35,max:36,s:8.0},{min:32,max:34,s:7.5},
+                {min:30,max:31,s:7.0},{min:26,max:29,s:6.5},{min:23,max:25,s:6.0},{min:18,max:22,s:5.5},
+                {min:16,max:17,s:5.0},{min:13,max:15,s:4.5},{min:10,max:12,s:4.0},{min:6,max:9,s:3.5},
+                {min:4,max:5,s:3.0},{min:3,max:3,s:2.5},{min:2,max:2,s:2.0},{min:1,max:1,s:1.0},{min:0,max:0,s:0.5}
+            ],
+            reading: [
+                {min:39,max:40,s:9.0},{min:37,max:38,s:8.5},{min:35,max:36,s:8.0},{min:33,max:34,s:7.5},
+                {min:30,max:32,s:7.0},{min:27,max:29,s:6.5},{min:23,max:26,s:6.0},{min:19,max:22,s:5.5},
+                {min:15,max:18,s:5.0},{min:13,max:14,s:4.5},{min:10,max:12,s:4.0},{min:8,max:9,s:3.5},
+                {min:6,max:7,s:3.0},{min:4,max:5,s:2.5},{min:3,max:3,s:2.5},{min:2,max:2,s:2.0},{min:1,max:1,s:1.0},{min:0,max:0,s:0.5}
+            ]
+        };
+
+        // ==================== 工具函数 ====================
+        function getRecords() {
+            const d = localStorage.getItem(STORAGE.RECORDS);
+            return d ? JSON.parse(d) : [];
+        }
+
+        function saveRecords(r) {
+            localStorage.setItem(STORAGE.RECORDS, JSON.stringify(r));
+        }
+
+        function getCustom() {
+            const d = localStorage.getItem(STORAGE.CUSTOM);
+            return d ? JSON.parse(d) : {};
+        }
+
+        function saveCustom(c) {
+            localStorage.setItem(STORAGE.CUSTOM, JSON.stringify(c));
+        }
+
+        function allExams() {
+            return { ...BUILTIN_EXAMS, ...getCustom() };
+        }
+
+        function roundUp(n) { return Math.ceil(n); }
+
+        function calcIeltsOverall(scores) {
+            const avg = scores.reduce((a,b)=>a+b,0)/scores.length;
+            const dec = avg - Math.floor(avg);
+            if (dec >= 0.25 && dec < 0.5) return Math.floor(avg) + 0.5;
+            if (dec >= 0.75) return Math.floor(avg) + 1.0;
+            return Math.round(avg * 2) / 2;
+        }
+
+        // 雅思写作 Task1/Task2 加权计算 (Task2占2/3, Task1占1/3)
+        function calcWritingScore(t1, t2) {
+            if (t1 === null || t2 === null) return null;
+            const score = (t2 * 2 + t1) / 3;
+            return Math.round(score * 2) / 2;
+        }
+
+        function lookup(raw, type) {
+            const table = IELTS_TABLES[type];
+            if (!table) return parseFloat(raw) || 0;
+            const v = parseInt(raw) || 0;
+            for (const item of table) {
+                if (v >= item.min && v <= item.max) return item.s;
+            }
+            return 0;
+        }
+
+        // ==================== 页面切换 ====================
+        function showPage(p) {
+            document.querySelectorAll('.page').forEach(el => el.classList.add('hidden'));
+            document.getElementById('page-' + p).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('nav-' + p).classList.add('active');
+
+            if (p === 'dashboard') renderDashboard();
+            else if (p === 'entry') {
+                currentExam = null;
+                writingTask1 = null;
+                writingTask2 = null;
+                renderExamSelector();
+                document.getElementById('entry-form-container').innerHTML = '<div class="empty-state"><svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom:1rem;"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg><p style="color:#6b7280;margin-bottom:1rem;">还没有成绩记录</p><button onclick="showPage(\'entry\')" style="color:#10b981;font-weight:600;background:none;border:none;cursor:pointer;">开始录入 →</button></div>';
+            }
+            else if (p === 'custom') renderCustomList();
+        }
+
+        // ==================== 仪表盘 ====================
+        function renderDashboard() {
+            // 更新桌面宠物的心情
+        if (typeof updatePetMood === 'function') {
+        updatePetMood();
+        }
+            const records = getRecords();
+            const exams = allExams();
+
+            document.getElementById('total-count').textContent = records.length;
+            const types = [...new Set(records.map(r => r.examType))];
+            document.getElementById('exam-types-count').textContent = types.length;
+            document.getElementById('record-count').textContent = records.length;
+            document.getElementById('latest-exam-date').textContent = records.length ? records[records.length-1].date : '-';
+
+            // 最近成绩
+            const recentDiv = document.getElementById('recent-score-content');
+            if (!records.length) {
+                recentDiv.innerHTML = '<div class="empty-state"><svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom:1rem;"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg><p style="color:#6b7280;margin-bottom:1rem;">还没有成绩记录</p><button onclick="showPage(\'entry\')" style="color:#10b981;font-weight:600;background:none;border:none;cursor:pointer;">开始录入 →</button></div>';
+            } else {
+                const last = records[records.length-1];
+                const exam = exams[last.examType];
+                const isCet = last.examType === 'cet4' || last.examType === 'cet6';
+
+                let html = '<div style="margin-bottom:0.5rem;color:#6b7280;">' + last.date + ' - ' + (exam ? exam.name : '未知') + '</div>';
+                html += '<div class="recent-score-grid">';
+                if (exam) {
+                    // 先显示非写作翻译的科目
+                    for (const s of exam.subjects) {
+                        if (isCet && (s.id === 'writing' || s.id === 'translation')) continue;
+
+                        const sc = last.scores[s.id] || 0;
+                        html += '<div class="recent-score-item" style="background:' + s.color + '15;border:2px solid ' + s.color + '40;">';
+                        html += '<div class="recent-score-item-label" style="color:' + s.color + ';">' + s.name + '</div>';
+                        html += '<div class="recent-score-item-value" style="color:' + s.color + ';">' + sc.toFixed(s.dec) + '</div></div>';
+                    }
+
+                    // CET考试：合并显示写作和翻译
+                    if (isCet) {
+                        const writingScore = last.scores['writing'] || 0;
+                        const translationScore = last.scores['translation'] || 0;
+                        const wtTotal = writingScore + translationScore;
+                        const wtColor = '#f59e0b';
+                        html += '<div class="recent-score-item" style="background:' + wtColor + '15;border:2px solid ' + wtColor + '40;">';
+                        html += '<div class="recent-score-item-label" style="color:' + wtColor + ';">写作和翻译</div>';
+                        html += '<div class="recent-score-item-value" style="color:' + wtColor + ';">' + wtTotal + '</div></div>';
+                    }
+                }
+                html += '</div>';
+                if (last.total !== null) {
+                    html += '<div class="total-preview"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:600;color:#059669;">总分</span><span style="font-size:2.5rem;font-weight:bold;" class="gradient-text">' + last.total.toFixed(1) + '</span></div></div>';
+                }
+                recentDiv.innerHTML = html;
+                // 准备历史数据
+const historyRecs = records.filter(r => r.examType === last.examType).map(r => r.total).slice(-5);
+// 呼叫 AI (传入：考试名、本次总分、历史记录)
+fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
+            }
+
+            // Tabs
+            const tabsDiv = document.getElementById('dashboard-tabs');
+            let tabsHtml = '<button class="tab-btn active" onclick="switchDashboardTab(\'overview\', this)">概览</button>';
+            for (const tid of types) {
+                const e = exams[tid];
+                if (e) tabsHtml += '<button class="tab-btn" onclick="switchDashboardTab(\'' + tid + '\', this)">' + e.icon + ' ' + e.name + '</button>';
+            }
+            tabsDiv.innerHTML = tabsHtml;
+
+            // 历史记录
+            const listDiv = document.getElementById('records-list');
+            if (!records.length) {
+                listDiv.innerHTML = '<div class="empty-state" style="padding:2rem;"><p style="color:#9ca3af;">暂无历史记录</p></div>';
+            } else {
+                let listHtml = '';
+                for (let i = records.length - 1; i >= 0; i--) {
+                    const r = records[i];
+                    const e = exams[r.examType];
+                    if (!e) continue;
+
+                    const isCet = r.examType === 'cet4' || r.examType === 'cet6';
+                    let badges = '';
+
+                    for (const s of e.subjects) {
+                        if (isCet && (s.id === 'writing' || s.id === 'translation')) continue;
+                        const sc = r.scores[s.id] || 0;
+                        badges += '<span class="score-badge" style="background:' + s.color + '15;color:' + s.color + ';">' + s.short + ': ' + sc.toFixed(s.dec) + '</span>';
+                    }
+
+                    if (isCet) {
+                        const writingScore = r.scores['writing'] || 0;
+                        const translationScore = r.scores['translation'] || 0;
+                        const wtTotal = writingScore + translationScore;
+                        const wtColor = '#f59e0b';
+                        badges += '<span class="score-badge" style="background:' + wtColor + '15;color:' + wtColor + ';">写作和翻译: ' + wtTotal + '</span>';
+                    }
+
+                    listHtml += '<div class="record-box"><div class="record-row"><div class="record-main"><div class="record-meta"><span style="font-size:1.25rem;">' + e.icon + '</span><span style="font-weight:700;">' + e.name + '</span><span style="color:#9ca3af;font-size:0.875rem;">' + r.date + '</span></div><div class="record-badges">' + badges + '</div></div><div class="record-side">';
+                    if (r.total !== null) {
+                        listHtml += '<div class="record-total"><div style="font-size:0.75rem;color:#9ca3af;">总分</div><div style="font-size:1.75rem;font-weight:bold;" class="gradient-text">' + r.total.toFixed(1) + '</div></div>';
+                    }
+                    listHtml += '<button class="record-delete" onclick="deleteRecord(' + r.id + ')">×</button></div></div></div>';
+                }
+                listDiv.innerHTML = listHtml;
+            }
+        }
+
+        function switchDashboardTab(tab, btnElement) {
+            // 使用传入的btnElement而不是event.target
+            const btn = btnElement || event.target;
+            
+            // 移除所有active状态
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            // 添加active状态到当前按钮
+            btn.classList.add('active');
+            
+            const container = document.getElementById('tab-content-overview');
+            const chartsContainer = document.getElementById('charts-container');
+            const overviewEmpty = document.getElementById('overview-empty');
+
+            if (tab === 'overview') {
+                // 显示概览
+                overviewEmpty.style.display = 'block';
+                chartsContainer.style.display = 'none';
+                return;
+            }
+
+            const exams = allExams();
+            const exam = exams[tab];
+            const recs = getRecords().filter(r => r.examType === tab);
+
+            overviewEmpty.style.display = 'none';
+            if (!recs.length) {
+                overviewEmpty.innerHTML = '<p style="color:#9ca3af;">暂无' + (exam ? exam.name : '') + '数据</p>';
+                chartsContainer.style.display = 'none';
+                return;
+            }
+
+            // 显示统计卡片 - 不破坏chartsContainer
+            let statsHtml = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem;">';
+            statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">考试次数</p><p style="font-size:2rem;font-weight:bold;" class="gradient-text">' + recs.length + '</p></div>';
+            statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">最近</p><p style="font-size:1.25rem;font-weight:bold;">' + recs[recs.length-1].date + '</p></div>';
+            if (exam.calcTotal) {
+                const totals = recs.map(r => r.total);
+                statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">最佳</p><p style="font-size:2rem;font-weight:bold;color:#3b82f6;">' + Math.max(...totals).toFixed(1) + '</p></div>';
+                statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">平均</p><p style="font-size:2rem;font-weight:bold;color:#8b5cf6;">' + (totals.reduce((a,b)=>a+b,0)/totals.length).toFixed(1) + '</p></div>';
+            }
+            statsHtml += '</div>';
+
+            // 更新统计区域
+            const statsArea = document.getElementById('stats-area');
+            if (statsArea) {
+                statsArea.innerHTML = statsHtml;
+            } else {
+                overviewEmpty.innerHTML = statsHtml;
+            }
+
+            // 渲染图表
+            chartsContainer.style.display = 'block';
+            renderMainChart(tab, recs, exam);
+        }
+
+        // ==================== 图表渲染 ====================
+        function renderMainChart(examType, records, exam) {
+            const canvas = document.getElementById('main-chart');
+            const noDataEl = document.getElementById('chart-no-data');
+            if (!canvas) return;
+
+            if (mainChartInstance) {
+                mainChartInstance.destroy();
+                mainChartInstance = null;
+            }
+
+            if (records.length === 0) {
+                noDataEl.style.display = 'block';
+                canvas.parentElement.style.display = 'none';
+                return;
+            }
+
+            noDataEl.style.display = 'none';
+            canvas.parentElement.style.display = 'block';
+
+            const sorted = [...records].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            // 根据考试类型准备数据
+            let datasets = [];
+            const examId = examType;
+
+            if (examId === 'ielts') {
+                // 雅思图表
+                datasets = [
+                    { label: 'Overall', data: sorted.map(r => r.total), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 3, fill: true, tension: 0.3, pointRadius: 5 },
+                    { label: 'Listening', data: sorted.map(r => r.scores.listening || 0), borderColor: '#3b82f6', borderWidth: 2, tension: 0.3, pointRadius: 4 },
+                    { label: 'Reading', data: sorted.map(r => r.scores.reading || 0), borderColor: '#10b981', borderWidth: 2, tension: 0.3, pointRadius: 4 },
+                    { label: 'Writing', data: sorted.map(r => r.scores.writing || 0), borderColor: '#f59e0b', borderWidth: 2, tension: 0.3, pointRadius: 4 },
+                    { label: 'Speaking', data: sorted.map(r => r.scores.speaking || 0), borderColor: '#8b5cf6', borderWidth: 2, tension: 0.3, pointRadius: 4 }
+                ];
+            } else if (examId === 'cet4' || examId === 'cet6') {
+                // 四六级图表 - 写作和翻译合并显示
+                const color = examId === 'cet4' ? '#10b981' : '#8b5cf6';
+                datasets = [
+                    { label: '总分', data: sorted.map(r => r.total), borderColor: color, backgroundColor: color + '20', borderWidth: 3, fill: true, tension: 0.3, pointRadius: 5 },
+                    { label: '听力', data: sorted.map(r => r.scores.listening || 0), borderColor: '#3b82f6', borderWidth: 2, tension: 0.3, pointRadius: 4 },
+                    { label: '阅读', data: sorted.map(r => r.scores.reading || 0), borderColor: '#10b981', borderWidth: 2, tension: 0.3, pointRadius: 4 },
+                    { label: '写作和翻译', data: sorted.map(r => (r.scores.writing || 0) + (r.scores.translation || 0)), borderColor: '#f59e0b', borderWidth: 2, tension: 0.3, pointRadius: 4 }
+                ];
+            } else {
+                // 自定义考试 - 显示总分和各科目
+                datasets = [
+                    { label: '总分', data: sorted.map(r => r.total), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 3, fill: true, tension: 0.3, pointRadius: 5 }
+                ];
+                // 添加各科目数据
+                for (const s of exam.subjects) {
+                    datasets.push({
+                        label: s.name,
+                        data: sorted.map(r => r.scores[s.id] || 0),
+                        borderColor: s.color,
+                        borderWidth: 2,
+                        tension: 0.3,
+                        pointRadius: 4
+                    });
+                }
+            }
+
+            const ctx = canvas.getContext('2d');
+            mainChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sorted.map(r => r.date),
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { usePointStyle: true, padding: 15 }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ==================== 历史记录 ====================
+        function renderHistoryRecords() {
+            const records = getRecords();
+            const exams = allExams();
+            const listDiv = document.getElementById('records-list');
+            
+            if (!records.length) {
+                listDiv.innerHTML = '<div class="empty-state" style="padding:2rem;"><p style="color:#9ca3af;">暂无历史记录</p></div>';
+                return;
+            }
+            
+            let listHtml = '';
+            for (let i = records.length - 1; i >= 0; i--) {
+                const r = records[i];
+                const e = exams[r.examType];
+                if (!e) continue;
+
+                const isCet = r.examType === 'cet4' || r.examType === 'cet6';
+                let badges = '';
+
+                for (const s of e.subjects) {
+                    if (isCet && (s.id === 'writing' || s.id === 'translation')) continue;
+                    const sc = r.scores[s.id] || 0;
+                    badges += '<span class="score-badge" style="background:' + s.color + '15;color:' + s.color + ';">' + s.short + ': ' + sc.toFixed(s.dec) + '</span>';
+                }
+
+                if (isCet) {
+                    const writingScore = r.scores['writing'] || 0;
+                    const translationScore = r.scores['translation'] || 0;
+                    const wtTotal = writingScore + translationScore;
+                    const wtColor = '#f59e0b';
+                    badges += '<span class="score-badge" style="background:' + wtColor + '15;color:' + wtColor + ';">写作和翻译: ' + wtTotal + '</span>';
+                }
+
+                listHtml += '<div class="record-box"><div class="record-row"><div class="record-main"><div class="record-meta"><span style="font-size:1.25rem;">' + e.icon + '</span><span style="font-weight:700;">' + e.name + '</span><span style="color:#9ca3af;font-size:0.875rem;">' + r.date + '</span></div><div class="record-badges">' + badges + '</div></div><div class="record-side">';
+                if (r.total !== null) {
+                    listHtml += '<div class="record-total"><div style="font-size:0.75rem;color:#9ca3af;">总分</div><div style="font-size:1.75rem;font-weight:bold;" class="gradient-text">' + r.total.toFixed(1) + '</div></div>';
+                }
+                listHtml += '<button class="record-delete" onclick="deleteRecord(' + r.id + ')">×</button></div></div></div>';
+            }
+            listDiv.innerHTML = listHtml;
+        }
+
+        function deleteRecord(id) {
+            if (!confirm('确定删除这条记录？')) return;
+            saveRecords(getRecords().filter(r => r.id !== id));
+            renderDashboard();
+        }
+
+        function clearAllRecords() {
+            if (!confirm('确定清空所有记录？此操作不可恢复！')) return;
+            localStorage.removeItem(STORAGE.RECORDS);
+            renderDashboard();
+        }
+
+
+        // ==================== 录入成绩 ====================
+        let currentExam = null;
+        let writingTask1 = null;
+        let writingTask2 = null;
+
+        function renderExamSelector() {
+            const exams = allExams();
+            const container = document.getElementById('exam-type-selector');
+            let html = '';
+            for (const [id, e] of Object.entries(exams)) {
+                html += '<div class="exam-card" onclick="selectExam(\'' + id + '\')"><div style="font-size:2.5rem;margin-bottom:0.5rem;">' + e.icon + '</div><div style="font-weight:700;">' + e.name + '</div><div style="font-size:0.875rem;color:#9ca3af;">' + e.desc + '</div></div>';
+            }
+            container.innerHTML = html;
+        }
+
+        function selectExam(id) {
+            currentExam = id;
+            writingTask1 = null;
+            writingTask2 = null;
+            const exams = allExams();
+            const exam = exams[id];
+
+            // 更新选中状态
+            document.querySelectorAll('.exam-card').forEach((c, i) => {
+                const keys = Object.keys(exams);
+                c.classList.toggle('active', keys[i] === id);
+            });
+
+            // 渲染表单
+            let html = '<form onsubmit="submitScore(event)">';
+            html += '<div style="margin-bottom:1.5rem;"><label style="display:block;margin-bottom:0.5rem;font-weight:500;">考试日期</label><input type="date" id="score-date" required class="input" style="max-width:200px;"></div>';
+
+            for (let i = 0; i < exam.subjects.length; i++) {
+                const s = exam.subjects[i];
+                const open = i === 0 ? 'expanded' : '';
+                const arrow = i === 0 ? 'expanded' : '';
+                const theme = s.id === 'listening' ? 'listening' : s.id === 'reading' ? 'reading' : s.id === 'writing' ? 'writing' : s.id === 'speaking' ? 'speaking' : 'translation';
+
+                html += '<div class="subject-box ' + theme + '">';
+                html += '<div class="accordion-header" onclick="toggleAcc(this)">';
+                html += '<div style="display:flex;align-items:center;gap:0.75rem;">';
+                html += '<div style="width:40px;height:40px;border-radius:10px;background:' + s.color + ';display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;">' + s.short + '</div>';
+                html += '<div style="font-weight:700;font-size:1.125rem;">' + s.name + '</div></div>';
+                html += '<svg class="accordion-arrow ' + arrow + '" fill="none" stroke="#6b7280" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>';
+                html += '</div>';
+                html += '<div class="accordion-content ' + open + '"><div style="padding:0 1.25rem 1.25rem;">';
+
+                // 雅思写作特殊处理 - Task1/Task2
+                if (s.type === 'ielts-writing') {
+                    html += '<div style="margin-bottom:1rem;">';
+                    html += '<label style="display:block;margin-bottom:0.5rem;font-size:0.875rem;color:#b45309;font-weight:500;">总分 (0-9，步长0.5)</label>';
+                    html += '<input type="number" id="sub-' + s.id + '" min="0" max="9" step="0.5" class="input" placeholder="输入总分" oninput="updateTotalPreview()">';
+                    html += '</div>';
+                    html += '<div style="border-top:2px solid #fcd34d;padding-top:1rem;margin-top:1rem;">';
+                    html += '<div style="margin-bottom:1rem;">';
+                    html += '<label style="display:block;margin-bottom:0.5rem;font-size:0.875rem;color:#b45309;">Task 1 (小作文)</label>';
+                    html += '<input type="number" id="task1-' + s.id + '" min="0" max="9" step="0.5" class="input" placeholder="Task1 分数" oninput="onTaskInput(1, this.value)">';
+                    html += '</div>';
+                    html += '<div style="margin-bottom:1rem;">';
+                    html += '<label style="display:block;margin-bottom:0.5rem;font-size:0.875rem;color:#b45309;">Task 2 (大作文)</label>';
+                    html += '<input type="number" id="task2-' + s.id + '" min="0" max="9" step="0.5" class="input" placeholder="Task2 分数" oninput="onTaskInput(2, this.value)">';
+                    html += '</div>';
+                    html += '<div style="background:rgba(255,255,255,0.7);border:2px solid #fcd34d;border-radius:0.75rem;padding:1rem;">';
+                    html += '<div style="font-size:0.875rem;color:#b45309;font-weight:500;">自动计算 (Task2×2 + Task1) ÷ 3</div>';
+                    html += '<div id="writing-calc" style="font-size:1.5rem;font-weight:bold;color:#b45309;">-</div>';
+                    html += '</div>';
+                    html += '</div>';
+                }
+                else if (s.type === 'direct') {
+                    html += '<input type="number" id="sub-' + s.id + '" min="' + s.min + '" max="' + s.max + '" step="' + (s.step || 1) + '" class="input" placeholder="' + s.min + '-' + s.max + '" oninput="updateTotalPreview()">';
+                }
+                else if (s.type === 'lookup') {
+                    html += '<input type="number" id="sub-' + s.id + '" min="' + s.min + '" max="' + s.max + '" class="input" placeholder="正确题数 (' + s.min + '-' + s.max + ')" oninput="updateLookup(this, \'' + s.id + '\')">';
+                    html += '<div style="margin-top:0.75rem;padding:0.75rem;background:' + s.color + '15;border-radius:0.5rem;border:2px solid ' + s.color + '30;">';
+                    html += '<span style="color:' + s.color + ';font-weight:500;">折算分: </span>';
+                    html += '<strong id="calc-' + s.id + '" style="color:' + s.color + ';font-size:1.25rem;">-</strong>';
+                    html += '</div>';
+                }
+                else if (s.type === 'sections') {
+                    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;margin-bottom:0.75rem;">';
+                    for (const sec of s.sections) {
+                        html += '<div><label style="display:block;font-size:0.75rem;color:#6b7280;margin-bottom:0.25rem;">' + sec.name + ' (' + sec.score + '分/题)</label><input type="number" id="sub-' + s.id + '-' + sec.name + '" min="0" max="' + sec.max + '" class="input" placeholder="0-' + sec.max + '" oninput="updateSections(this, \'' + s.id + '\')"></div>';
+                    }
+                    html += '</div>';
+                    html += '<div style="padding:0.75rem;background:' + s.color + '15;border-radius:0.5rem;border:2px solid ' + s.color + '30;">';
+                    html += '<span style="color:' + s.color + ';font-weight:500;">总分: </span>';
+                    html += '<strong id="calc-' + s.id + '" style="color:' + s.color + ';font-size:1.25rem;">-</strong>';
+                    html += '</div>';
+                }
+                else if (s.type === 'subquestions') {
+                    html += '<div style="margin-bottom:0.75rem;"><label style="font-size:0.875rem;color:#6b7280;">各小题得分：</label></div>';
+                    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;margin-bottom:0.75rem;">';
+                    for (const sq of s.subquestions) {
+                        html += '<div><label style="display:block;font-size:0.75rem;color:#6b7280;margin-bottom:0.25rem;">' + sq.name + ' (满分' + sq.max + ')</label><input type="number" id="sub-' + s.id + '-' + sq.name + '" min="0" max="' + sq.max + '" class="input" placeholder="0-' + sq.max + '" oninput="updateSubQuestions(this, \'' + s.id + '\')"></div>';
+                    }
+                    html += '</div>';
+                    html += '<div style="padding:0.75rem;background:' + s.color + '15;border-radius:0.5rem;border:2px solid ' + s.color + '30;">';
+                    html += '<span style="color:' + s.color + ';font-weight:500;">小题总分: </span>';
+                    html += '<strong id="calc-' + s.id + '" style="color:' + s.color + ';font-size:1.25rem;">-</strong>';
+                    html += '</div>';
+                }
+                else if (s.type === 'formula') {
+                    html += '<input type="number" id="sub-' + s.id + '" min="' + s.min + '" max="' + s.max + '" step="0.5" class="input" placeholder="原始分 (' + s.min + '-' + s.max + ')" oninput="updateFormula(this, \'' + s.id + '\', ' + s.mult + ')">';
+                    html += '<div style="margin-top:0.75rem;padding:0.75rem;background:' + s.color + '15;border-radius:0.5rem;border:2px solid ' + s.color + '30;">';
+                    html += '<span style="color:' + s.color + ';font-weight:500;">折算分 (×' + s.mult + '): </span>';
+                    html += '<strong id="calc-' + s.id + '" style="color:' + s.color + ';font-size:1.25rem;">-</strong>';
+                    html += '</div>';
+                }
+
+                html += '</div></div></div>';
+            }
+
+            if (exam.calcTotal) {
+                html += '<div class="total-preview" style="margin:1.5rem 0;">';
+                html += '<div style="display:flex;justify-content:space-between;align-items:center;">';
+                html += '<span style="font-weight:700;color:#059669;">' + (exam.id === 'ielts' ? 'Overall' : '总分预览') + '</span>';
+                html += '<span id="preview-total" style="font-size:2.5rem;font-weight:bold;" class="gradient-text">-</span>';
+                html += '</div></div>';
+            }
+
+            html += '<button type="submit" class="btn-primary" style="width:100%;">💾 保存成绩</button>';
+            html += '</form>';
+
+            document.getElementById('entry-form-container').innerHTML = html;
+            document.getElementById('score-date').value = new Date().toISOString().split('T')[0];
+        }
+
+        function toggleAcc(header) {
+            const content = header.nextElementSibling;
+            const arrow = header.querySelector('.accordion-arrow');
+            const isExpanded = content.classList.contains('expanded');
+            
+            document.querySelectorAll('.accordion-content').forEach(c => c.classList.remove('expanded'));
+            document.querySelectorAll('.accordion-arrow').forEach(a => a.classList.remove('expanded'));
+            
+            if (!isExpanded) {
+                content.classList.add('expanded');
+                arrow.classList.add('expanded');
+            }
+        }
+
+        function onTaskInput(task, val) {
+            const score = parseFloat(val);
+            if (task === 1) writingTask1 = isNaN(score) ? null : score;
+            else writingTask2 = isNaN(score) ? null : score;
+
+            if (writingTask1 !== null && writingTask2 !== null) {
+                const total = calcWritingScore(writingTask1, writingTask2);
+                document.getElementById('writing-calc').textContent = total.toFixed(1);
+                const totalInput = document.getElementById('sub-writing');
+                if (totalInput) totalInput.value = total.toFixed(1);
+            } else {
+                document.getElementById('writing-calc').textContent = '-';
+            }
+            updateTotalPreview();
+        }
+
+        function updateLookup(el, subId) {
+            const score = lookup(el.value, subId);
+            const calcEl = document.getElementById('calc-' + subId);
+            if (calcEl) calcEl.textContent = score.toFixed(1);
+            updateTotalPreview();
+        }
+
+        function updateSections(el, subId) {
+            if (!currentExam) return;
+            const exam = allExams()[currentExam];
+            if (!exam) return;
+            const sub = exam.subjects.find(s => s.id === subId);
+            if (!sub || !sub.sections) return;
+            
+            let sum = 0;
+            for (const sec of sub.sections) {
+                const inputEl = document.getElementById('sub-' + subId + '-' + sec.name);
+                const v = inputEl ? (parseInt(inputEl.value) || 0) : 0;
+                sum += v * (sec.score || 0);
+            }
+            const result = roundUp(sum);
+            const calcEl = document.getElementById('calc-' + subId);
+            if (calcEl) calcEl.textContent = result;
+            updateTotalPreview();
+        }
+
+        function updateFormula(el, subId, mult) {
+            const raw = parseFloat(el.value) || 0;
+            const calcEl = document.getElementById('calc-' + subId);
+            if (calcEl) calcEl.textContent = roundUp(raw * mult);
+            updateTotalPreview();
+        }
+
+        function updateSubQuestions(el, subId) {
+            if (!currentExam) return;
+            const exam = allExams()[currentExam];
+            if (!exam) return;
+            const sub = exam.subjects.find(s => s.id === subId);
+            if (!sub || !sub.subquestions) return;
+            
+            let sum = 0;
+            for (const sq of sub.subquestions) {
+                const inputEl = document.getElementById('sub-' + subId + '-' + sq.name);
+                const v = inputEl ? (parseFloat(inputEl.value) || 0) : 0;
+                sum += v;
+            }
+            const calcEl = document.getElementById('calc-' + subId);
+            if (calcEl) calcEl.textContent = sum.toFixed(1);
+            updateTotalPreview();
+        }
+
+        function updateTotalPreview() {
+            if (!currentExam) return;
+            const exam = allExams()[currentExam];
+            if (!exam || !exam.calcTotal) return;
+
+            const scores = [];
+            for (const s of exam.subjects) {
+                let sc = 0;
+                if (s.type === 'ielts-writing') {
+                    sc = parseFloat(document.getElementById('sub-' + s.id)?.value) || 0;
+                } else if (s.type === 'direct' || s.type === 'lookup') {
+                    const el = document.getElementById('sub-' + s.id);
+                    sc = s.type === 'lookup' ? lookup(el?.value, s.id) : (parseFloat(el?.value) || 0);
+                } else if (s.type === 'sections' || s.type === 'subquestions') {
+                    sc = parseFloat(document.getElementById('calc-' + s.id)?.textContent) || 0;
+                } else if (s.type === 'formula') {
+                    sc = parseInt(document.getElementById('calc-' + s.id)?.textContent) || 0;
+                }
+                scores.push(sc);
+            }
+
+            let total = 0;
+            if (exam.id === 'ielts') {
+                total = calcIeltsOverall(scores);
+            } else {
+                total = scores.reduce((a, b) => a + b, 0);
+            }
+            document.getElementById('preview-total').textContent = total.toFixed(1);
+        }
+
+        function submitScore(e) {
+            e.preventDefault();
+            if (!currentExam) return;
+
+            const exam = allExams()[currentExam];
+            const scores = {};
+
+            for (const s of exam.subjects) {
+                if (s.type === 'ielts-writing') {
+                    scores[s.id] = parseFloat(document.getElementById('sub-' + s.id)?.value) || 0;
+                } else if (s.type === 'direct') {
+                    scores[s.id] = parseFloat(document.getElementById('sub-' + s.id)?.value) || 0;
+                } else if (s.type === 'lookup') {
+                    scores[s.id] = lookup(document.getElementById('sub-' + s.id)?.value, s.id);
+                } else if (s.type === 'sections' || s.type === 'subquestions') {
+                    scores[s.id] = parseFloat(document.getElementById('calc-' + s.id)?.textContent) || 0;
+                } else if (s.type === 'formula') {
+                    scores[s.id] = parseInt(document.getElementById('calc-' + s.id)?.textContent) || 0;
+                }
+            }
+
+            let total = null;
+            if (exam.calcTotal) {
+                const vals = Object.values(scores);
+                total = exam.id === 'ielts' ? calcIeltsOverall(vals) : vals.reduce((a, b) => a + b, 0);
+            }
+
+            const rec = {
+                id: Date.now(),
+                examType: currentExam,
+                date: document.getElementById('score-date').value,
+                scores: scores,
+                total: total
+            };
+
+            const recs = getRecords();
+            recs.push(rec);
+            saveRecords(recs);
+
+            alert('成绩保存成功！');
+            showPage('dashboard');
+        }
+
+
+        // ==================== 自定义考试 ====================
+        let customSubs = [];
+
+        function renderCustomList() {
+            const custom = getCustom();
+            const container = document.getElementById('custom-exam-list');
+            if (!Object.keys(custom).length) {
+                container.innerHTML = '<div class="empty-state"><p style="color:#9ca3af;">还没有自定义考试类型</p><p style="font-size:0.875rem;color:#d1d5db;">点击右上角按钮创建</p></div>';
+                return;
+            }
+            let html = '';
+            for (const [id, e] of Object.entries(custom)) {
+                let subs = '';
+                for (const s of e.subjects) {
+                    subs += '<span style="display:inline-block;padding:0.375rem 0.875rem;border-radius:9999px;font-size:0.75rem;margin-right:0.5rem;background:' + s.color + '15;color:' + s.color + ';">' + s.name + '</span>';
+                }
+                html += '<div class="record-box"><div style="display:flex;justify-content:space-between;align-items:center;"><div style="display:flex;align-items:center;gap:1rem;"><div style="font-size:2rem;">' + e.icon + '</div><div><div style="font-weight:700;">' + e.name + '</div><div style="font-size:0.875rem;color:#9ca3af;">' + (e.desc || '无描述') + '</div><div style="margin-top:0.5rem;">' + subs + '</div></div></div><button onclick="deleteCustom(\'' + id + '\')" style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:1.5rem;">×</button></div></div>';
+            }
+            container.innerHTML = html;
+        }
+
+        function openCreateModal() {
+            customSubs = [];
+            document.getElementById('create-exam-form').reset();
+            document.getElementById('subjects-list').innerHTML = '';
+            document.getElementById('create-modal').classList.add('active');
+        }
+
+        function closeCreateModal() {
+            document.getElementById('create-modal').classList.remove('active');
+        }
+
+        function closeModalOnBackdrop(e) {
+            if (e.target.id === 'create-modal') closeCreateModal();
+        }
+
+        function addSubject() {
+            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'];
+            customSubs.push({ id: 'sub_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5), name: '', short: '', color: colors[customSubs.length % colors.length], type: 'direct', min: 0, max: 100 });
+            renderSubList();
+        }
+
+        function renderSubList() {
+            const container = document.getElementById('subjects-list');
+            if (!customSubs.length) {
+                container.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:1rem;">点击上方按钮添加科目</p>';
+                return;
+            }
+            let html = '';
+            for (let i = 0; i < customSubs.length; i++) {
+                const s = customSubs[i];
+                html += '<div style="padding:1rem;background:#f9fafb;border-radius:0.75rem;margin-bottom:0.75rem;border:2px solid #e5e7eb;">';
+                html += '<div style="display:grid;grid-template-columns:1fr 80px 40px;gap:0.5rem;margin-bottom:0.5rem;">';
+                html += '<input type="text" placeholder="科目名称" value="' + s.name + '" onchange="customSubs[' + i + '].name=this.value" class="input">';
+                html += '<input type="text" placeholder="简称" value="' + s.short + '" onchange="customSubs[' + i + '].short=this.value" class="input">';
+                html += '<input type="color" value="' + s.color + '" onchange="customSubs[' + i + '].color=this.value" style="width:40px;height:40px;border:none;border-radius:0.5rem;cursor:pointer;">';
+                html += '</div>';
+                html += '<select onchange="customSubs[' + i + '].type=this.value;renderSubList()" class="input" style="margin-bottom:0.5rem;">';
+                html += '<option value="direct" ' + (s.type === 'direct' ? 'selected' : '') + '>直接输入分数</option>';
+                html += '<option value="subquestions" ' + (s.type === 'subquestions' ? 'selected' : '') + '>多小题计分</option>';
+                html += '<option value="sections" ' + (s.type === 'sections' ? 'selected' : '') + '>分部分计分</option>';
+                html += '<option value="formula" ' + (s.type === 'formula' ? 'selected' : '') + '>公式计算</option>';
+                html += '</select>';
+
+                if (s.type === 'direct') {
+                    html += '<div style="display:flex;gap:0.5rem;"><input type="number" placeholder="最小值" value="' + s.min + '" onchange="customSubs[' + i + '].min=parseFloat(this.value)" class="input"><input type="number" placeholder="最大值" value="' + s.max + '" onchange="customSubs[' + i + '].max=parseFloat(this.value)" class="input"></div>';
+                } else if (s.type === 'subquestions') {
+                    if (!s.subquestions) s.subquestions = [{ name: '小题1', max: 10 }];
+                    html += '<div id="subqs-' + i + '">';
+                    for (let j = 0; j < s.subquestions.length; j++) {
+                        const sq = s.subquestions[j];
+                        html += '<div style="display:flex;gap:0.5rem;margin-bottom:0.25rem;"><input type="text" placeholder="小题名称" value="' + sq.name + '" onchange="customSubs[' + i + '].subquestions[' + j + '].name=this.value" class="input" style="flex:1;"><input type="number" placeholder="满分" value="' + sq.max + '" onchange="customSubs[' + i + '].subquestions[' + j + '].max=parseFloat(this.value)" class="input" style="width:80px;"></div>';
+                    }
+                    html += '</div><button type="button" onclick="addSubQuestion(' + i + ')" style="color:#10b981;background:none;border:none;cursor:pointer;font-size:0.875rem;">+ 添加小题</button>';
+                } else if (s.type === 'formula') {
+                    html += '<div style="display:flex;gap:0.5rem;"><input type="number" placeholder="原始分最大值" value="' + (s.max || 15) + '" onchange="customSubs[' + i + '].max=parseFloat(this.value)" class="input"><input type="number" placeholder="乘数" value="' + (s.mult || 7.1) + '" onchange="customSubs[' + i + '].mult=parseFloat(this.value)" class="input"></div>';
+                } else if (s.type === 'sections') {
+                    if (!s.sections) s.sections = [{ name: '部分1', score: 1, max: 10 }];
+                    html += '<div id="secs-' + i + '">';
+                    for (let j = 0; j < s.sections.length; j++) {
+                        const sec = s.sections[j];
+                        html += '<div style="display:flex;gap:0.5rem;margin-bottom:0.25rem;"><input type="text" placeholder="名称" value="' + sec.name + '" onchange="customSubs[' + i + '].sections[' + j + '].name=this.value" class="input" style="flex:1;"><input type="number" placeholder="分值" value="' + sec.score + '" onchange="customSubs[' + i + '].sections[' + j + '].score=parseFloat(this.value)" class="input" style="width:80px;"><input type="number" placeholder="最大题数" value="' + sec.max + '" onchange="customSubs[' + i + '].sections[' + j + '].max=parseInt(this.value)" class="input" style="width:80px;"></div>';
+                    }
+                    html += '</div><button type="button" onclick="addSec(' + i + ')" style="color:#10b981;background:none;border:none;cursor:pointer;font-size:0.875rem;">+ 添加部分</button>';
+                }
+
+                html += '<button type="button" onclick="removeSub(' + i + ')" style="color:#ef4444;background:none;border:none;cursor:pointer;font-size:0.875rem;margin-top:0.5rem;">删除科目</button>';
+                html += '</div>';
+            }
+            container.innerHTML = html;
+        }
+
+        function addSec(idx) {
+            customSubs[idx].sections.push({ name: '', score: 1, max: 10 });
+            renderSubList();
+        }
+
+        function addSubQuestion(idx) {
+            if (!customSubs[idx].subquestions) customSubs[idx].subquestions = [];
+            customSubs[idx].subquestions.push({ name: '', max: 10 });
+            renderSubList();
+        }
+
+        function removeSub(idx) {
+            customSubs.splice(idx, 1);
+            renderSubList();
+        }
+
+        function submitCreateForm(e) {
+            e.preventDefault();
+            if (!customSubs.length) {
+                alert('请至少添加一个科目！');
+                return;
+            }
+            for (const s of customSubs) {
+                if (!s.name || !s.short) {
+                    alert('请填写所有科目的名称和简称！');
+                    return;
+                }
+            }
+
+            const exam = {
+                id: 'custom_' + Date.now(),
+                name: document.getElementById('new-exam-name').value,
+                desc: document.getElementById('new-exam-desc').value,
+                icon: '📝',
+                builtin: false,
+                calcTotal: true,
+                subjects: customSubs
+            };
+
+            const custom = getCustom();
+            custom[exam.id] = exam;
+            saveCustom(custom);
+
+            closeCreateModal();
+            renderCustomList();
+            alert('考试类型创建成功！');
+        }
+
+        function deleteCustom(id) {
+            if (!confirm('确定删除？相关成绩也会被删除！')) return;
+            const custom = getCustom();
+            delete custom[id];
+            saveCustom(custom);
+            saveRecords(getRecords().filter(r => r.examType !== id));
+            renderCustomList();
+        }
+
+        // ==================== 导入导出 ====================
+        function exportData() {
+            const records = getRecords();
+            const custom = getCustom();
+            if (!records.length && !Object.keys(custom).length) {
+                alert('暂无数据可导出！');
+                return;
+            }
+            const data = { version: '5.2', date: new Date().toISOString(), records, custom };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'MyScore_Backup_' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            alert('导出成功！\n记录: ' + records.length + ' 条\n自定义考试: ' + Object.keys(custom).length + ' 个');
+        }
+
+        function importData(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!data.version) throw new Error('文件格式错误');
+                    let newRecs = 0, newExams = 0;
+                    if (data.records) {
+                        const existing = getRecords();
+                        const ids = new Set(existing.map(r => r.id));
+                        for (const r of data.records) {
+                            if (!ids.has(r.id)) {
+                                existing.push(r);
+                                newRecs++;
+                            }
+                        }
+                        saveRecords(existing);
+                    }
+                    if (data.custom) {
+                        const existing = getCustom();
+                        for (const [id, e] of Object.entries(data.custom)) {
+                            if (!existing[id]) {
+                                existing[id] = e;
+                                newExams++;
+                            }
+                        }
+                        saveCustom(existing);
+                    }
+                    alert('导入成功！\n新记录: ' + newRecs + ' 条\n新考试类型: ' + newExams + ' 个');
+                    renderDashboard();
+                } catch (err) {
+                    alert('导入失败: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+            input.value = '';
+        }       
+// 全局变量，用来记住上下文
+let lastExamType = '';
+let lastScore = 0;
+let lastHistory = [];
+let lastAiComment = '';
+
+// 1. 初始获取评价 (renderDashboard 调用这个)
+async function fetchAIComment(examType, currentScore, historyScores) {
+    // 保存上下文，一会儿吵架要用
+    lastExamType = examType;
+    lastScore = currentScore;
+    lastHistory = historyScores;
+
+    const container = document.getElementById('ai-container');
+    const box = document.getElementById('ai-comment-box');
+    const actions = document.getElementById('ai-actions');
+    const replyArea = document.getElementById('reply-input-area');
+
+    if (!container) return;
+
+    // 重置界面状态
+    container.style.display = 'block';
+    actions.style.display = 'none'; // 先藏起按钮
+    replyArea.style.display = 'none'; // 先藏起输入框
+    box.innerHTML = '🤖 毒舌老师正在推眼镜分析你的成绩...';
+    box.style.background = '#ecfdf5'; // 恢复绿色背景
+
+    try {
+        const res = await fetch('/.netlify/functions/comment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                examType, 
+                currentScore, 
+                historyScores 
+            })
+        });
+
+        const data = await res.json();
+        
+        if (data.comment) {
+            lastAiComment = data.comment; // 记住老师骂了什么
+            box.innerHTML = `<strong>👩‍🏫 毒舌老师：</strong> ${data.comment}`;
+            actions.style.display = 'flex'; // 显示"回嘴"按钮
+        } else {
+            box.innerHTML = '老师去吃饭了...';
+        }
+    } catch (err) {
+        console.error(err);
+        box.innerHTML = '老师断线了...';
+    }
+}
+
+// 2. 显示输入框
+function showReplyInput() {
+    document.getElementById('reply-input-area').style.display = 'block';
+    document.getElementById('ai-actions').style.display = 'none'; // 隐藏按钮
+    document.getElementById('user-rebuttal').focus();
+}
+
+// 3. 发送回嘴 (吵架逻辑)
+async function sendRebuttal() {
+    const input = document.getElementById('user-rebuttal');
+    const rebuttal = input.value.trim();
+    if (!rebuttal) return;
+
+    const box = document.getElementById('ai-comment-box');
+    
+    // 界面变身：变成"对战中"状态
+    box.innerHTML = `<strong>😤 你：</strong> ${rebuttal}<br><hr style="margin:8px 0; border:0; border-top:1px dashed #a7f3d0">🤖 老师正在思考怎么怼回来...`;
+    box.style.background = '#fff1f2'; // 变成淡红色，表示气氛紧张
+    box.style.color = '#be123c';
+    box.style.borderColor = '#fb7185';
+    
+    document.getElementById('reply-input-area').style.display = 'none'; // 隐藏输入框
+
+    try {
+        const res = await fetch('/.netlify/functions/comment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                examType: lastExamType, 
+                currentScore: lastScore, 
+                historyScores: lastHistory,
+                userRebuttal: rebuttal,      // 重点：把你的回嘴发过去
+                previousComment: lastAiComment // 重点：把老师刚才的话发过去
+            })
+        });
+
+        const data = await res.json();
+        
+        if (data.comment) {
+            lastAiComment = data.comment; // 更新上下文
+            // 显示这一轮的战况
+            box.innerHTML = `<strong>😤 你：</strong> ${rebuttal}<br><br><strong>👩‍🏫 毒舌老师：</strong> ${data.comment}`;
+            
+            // 允许继续回嘴 (无限套娃)
+            document.getElementById('ai-actions').style.display = 'flex';
+            input.value = ''; // 清空输入框
+        }
+    } catch (err) {
+        box.innerHTML += '<br>(老师被气得掉线了)';
+    }
+}
+ // ================= 桌面宠物逻辑 =================
+
+// 1. 毒舌语录库 (本地快速响应，不用等AI)
+const SASSY_QUOTES = [
+    "看什么看？单词背完了吗？😡",
+    "你今天的复习时长如果是 0，我对你的评价也是 0。",
+    "这么闲？还有空戳我？去刷题！👉",
+    "上次那点分，你怎么睡得着觉的？",
+    "再戳我，我就把你的成绩发给你爸妈。📱",
+    "只有弱者才会在意别人的评价，强者都在刷题。📚",
+    "哟，这不是那位总分 5.5 的选手吗？😏",
+    "这就是你对待学习的态度？再戳一下试试？👊",
+    "你知道吗？你的成绩让我怀疑你是不是在梦游考试。😴",
+    "别看了，成绩不会自己变高，快去学习！📖",
+    "你离成功只差一个字：努力。",
+    "如果拖延是比赛，你已经是冠军了。🏆",
+    "你的目标是考第一？还是考倒数第一？🤔",
+    "别再摸鱼了，鱼都嫌你烦了。🐟",
+    "你知道吗？你的成绩让我想起了我的噩梦。😱",
+    "再不努力，你的未来会比今天更糟糕。",
+    "你是来学习的，还是来打酱油的？",
+    "成绩单不会撒谎，但你会。😏",
+    "你觉得自己很努力？那成绩呢？",
+    "别再找借口了，时间不会等你。⏳",
+    "你以为考高分靠运气？不，靠实力。💪",
+    "再戳我，我就把你的成绩贴在公告栏上。📋",
+    "你知道吗？你的成绩让我怀疑你是不是在考古。🦴",
+    "努力是免费的，但你选择了昂贵的懒惰。",
+    "你知道吗？你的成绩让我想起了我小时候的玩笑。",
+    "你是来考试的，还是来交朋友的？",
+    "如果学习是游戏，你已经卡关了。",
+    "你的未来取决于你今天的努力。",
+    "别再拖延了，时间不会为你停留。",
+    "你知道吗？你的成绩让我想起了我的黑历史。",
+    "你是来挑战极限的，还是来挑战底线的？",
+    "学习是场马拉松，而你却在起点睡着了。",
+    "你知道吗？你的成绩让我怀疑你是不是在玩躲猫猫。",
+    "别再找借口了，成功只属于那些努力的人。",
+    "你觉得自己很聪明？那为什么成绩单不这么认为？",
+    "你知道吗？你的成绩让我想起了我丢失的记忆。",
+    "别再摸鱼了，鱼都开始嫌弃你了。"
+,
+    "今天点我三次了，背单词点过三次吗？😏",
+    "你和高分之间就差一个动作：开始。",
+    "我不是在骂你，我是在提前播报现实。",
+    "你这学习节奏，像开了省电模式。🔋",
+    "别把‘明天开始’当口头禅了，明天都听烦了。",
+    "你现在的分数，像是在给未来挖坑。",
+    "刷短视频的手速这么快，刷题怎么就卡了？📱",
+    "你是来拿分的，不是来和拖延症谈恋爱的。",
+    "每次点我都很积极，做题要是也这么积极就好了。",
+    "这分数不是终点，但再躺就真到终点了。🛌",
+    "你现在这状态，连错题本都替你着急。😮‍💨",
+    "你不是不会，你只是一直没认真开始。",
+    "学得慢没关系，停着不动才是问题。",
+    "今天少找一个借口，明天就多一分底气。",
+    "别再等状态了，状态是做出来的。",
+    "你可以嘴硬，但成绩单只认分数。📄",
+    "你这波操作，像是在给低分做长期投资。",
+    "知识点都在排队等你，你却在原地发呆。",
+    "我劝你现在学，不然以后只能学会后悔。",
+    "别总说差一点，你差的是那一点点坚持。",
+    "你今天复习了吗，还是又在和时间赛跑并且输了？",
+    "考试不看心情，看准备。🎯",
+    "你要么现在吃学习的苦，要么之后吃现实的苦。",
+    "这不是天赋问题，是你执行力的问题。",
+    "我都替你记住目标了，你别先忘了。",
+    "再拖下去，计划表都要长灰了。🗂️",
+    "你以为在休息，其实是在给焦虑充值。⚠️",
+    "继续点我可以，但顺手点开题库更好。",
+    "你不是差，你是还没把自己用到位。",
+    "你的潜力很大，别把它只放在想象里。",
+    "今天认真一点，明天就不用慌一点。✅",
+    "如果努力有声音，你今天有点安静。",
+    "你离进步不远，前提是别后退。",
+    "再摸鱼我就默认你在给别人让名次了。🐟",
+    "你这分数像天气预报：阴天转努力。",
+    "我没有否定你，我只是否定你的偷懒。",
+    "别再研究玄学提分了，先把题做完。📝",
+    "要不这样，点我一次就去做一道题。",
+    "你不是缺方法，你是缺持续执行。",
+    "每次说马上开始，马上都快退休了。⌛",
+    "再给自己一次认真投入的机会吧。",
+    "高分不会突然出现，只会被一点点做出来。📈",
+    "你今天的认真程度，决定明天的从容程度。",
+    "继续努力，别让我夸你的机会一直缺席。👏",
+    "别怕慢，怕的是你一直不出发。",
+    "你这次要是稳住，后面会越来越轻松。",
+    "我看好你，但你得先动起来。🚀",
+    "现在开始还不晚，继续拖才晚。",
+    "再点一次之前，先去做三道题，成交？"];
+
+// 2. 初始化宠物状态 (在 renderDashboard 里调用)
+function updatePetMood() {
+    const records = getRecords();
+    const avatar = document.getElementById('pet-avatar');
+    if (!records.length) {
+        avatar.innerHTML = '😴'; // 没成绩时在睡觉
+        return;
+    }
+
+    // 获取最近两次成绩来判断趋势
+    const last = records[records.length - 1];
+    const prev = records.length > 1 ? records[records.length - 2] : null;
+    
+    // 简单的变脸逻辑
+    if (!prev) {
+        avatar.innerHTML = '😐'; // 只有一次成绩，面无表情
+    } else if (last.total > prev.total) {
+        avatar.innerHTML = '😎'; // 进步了，戴墨镜
+    } else if (last.total < prev.total) {
+        avatar.innerHTML = '😡'; // 退步了，生气
+    } else {
+        avatar.innerHTML = '😑'; // 没变化，无语
+    }
+}
+
+// 3. 戳一戳互动函数
+let bubbleTimer = null;
+let recentQuoteIndexes = [];
+const RECENT_QUOTES_WINDOW = 20;
+
+function getNonRepeatingQuoteIndex() {
+    if (SASSY_QUOTES.length <= 1) return 0;
+
+    const windowSize = Math.min(RECENT_QUOTES_WINDOW, SASSY_QUOTES.length - 1);
+    const recentSet = new Set(recentQuoteIndexes);
+    let pickedIndex = -1;
+
+    for (let i = 0; i < 12; i++) {
+        const idx = Math.floor(Math.random() * SASSY_QUOTES.length);
+        if (!recentSet.has(idx)) {
+            pickedIndex = idx;
+            break;
+        }
+    }
+
+    if (pickedIndex === -1) {
+        pickedIndex = 0;
+        while (recentSet.has(pickedIndex) && pickedIndex < SASSY_QUOTES.length - 1) {
+            pickedIndex++;
+        }
+    }
+
+    recentQuoteIndexes.push(pickedIndex);
+    if (recentQuoteIndexes.length > windowSize) {
+        recentQuoteIndexes.shift();
+    }
+
+    return pickedIndex;
+}
+
+function pokeTeacher() {
+    const bubble = document.getElementById('pet-bubble');
+    const avatar = document.getElementById('desktop-pet');
+    
+    // 短期不重复：优先避开最近出现过的语录
+    const randomQuote = SASSY_QUOTES[getNonRepeatingQuoteIndex()];
+    bubble.innerText = randomQuote;
+
+    // 显示气泡
+    bubble.style.opacity = '1';
+    bubble.style.visibility = 'visible';
+    bubble.style.transform = 'translateY(-10px)';
+
+    // 头像抖动特效
+    avatar.style.transform = 'scale(0.9) rotate(-5deg)';
+    setTimeout(() => avatar.style.transform = 'scale(1) rotate(0)', 200);
+
+    // 3秒后自动消失
+    if (bubbleTimer) clearTimeout(bubbleTimer);
+    bubbleTimer = setTimeout(() => {
+        bubble.style.opacity = '0';
+        bubble.style.visibility = 'hidden';
+        bubble.style.transform = 'translateY(0)';
+    }, 3000);
+}
+// ==================== 版本日志与使用文档 ====================
+const APP_VERSION = '7.0';
+const CHANGELOG_STORAGE_KEY = 'myscore_changelog_seen_' + APP_VERSION;
+const CHANGELOG_PLACEHOLDER = `📝 MyScore V7.1 更新日志
+发布时间：2026-02-12 15:02
+代号：Mobile Harmony（移动端和谐计划）
+（一）新增
+A. 手机端体验升级
+• 全站完成移动端适配优化，页面在小屏设备上显示更稳定、布局更协调。
+• 顶部导航按钮重排为更整齐的双列布局，减少拥挤感，点击区域更友好。
+• 卡片间距、圆角、底部留白与悬浮元素位置统一优化，整体观感更轻盈。
+• 手机端桌宠尺寸与位置再优化，与左侧功能浮钮形成更协调的视觉平衡。
+
+B. 网站界面规范化
+• 新增站点副标识“碳碳四键的个人开发应用实践”。
+• 页面底部新增悬挂工信部备案信息：蜀ICP备2026006689号（含工信部备案链接）。
+
+（二）优化
+A. 最近成绩与历史记录优化
+• 最近成绩“四宫格”改版：移动端统一为整齐双列卡片，信息密度更清晰。
+• 历史记录卡片重构：分数标签、总分区域、删除按钮重新布局，解决错位与重叠问题。
+• 桌面端同步优化最近成绩卡片字号与比例，显示更大气、更易读。
+
+B. 突突er 伴学助手体验提升
+• 修复移动端输入法场景下的遮挡问题，输入时面板可稳定跟随键盘。
+• 新增“展开/还原”独立按钮，关闭按钮（×）恢复为纯关闭语义，交互更符合直觉。
+• 输入区与发送按钮布局优化，避免挤压变形，聊天输入更顺手。
+
+感谢您持续使用 MyScore，V7.1☀️ 
+开发者将继续围绕“好看、好用、稳定”打磨体验💪。`;
+
+const GUIDE_PLACEHOLDER = `MyScore 使用指南
+✨ 核心特性
+
+🤖 AI 智能交互 (V6.x 新增)
+• 毒舌老师: 每次录入成绩，AI 都会根据你的分数走势（进步/退步）给出犀利评价。
+• 回怼模式: 觉得老师说得不对？点击 "💬 不服/回嘴" 按钮，和 AI 展开辩论！它会根据你的理由进行更有趣的反击。
+• 桌面宠物: 右下角的 Emoji 老师会根据你的最近成绩自动变脸（😎 考好了 / 😡 考砸了），点击还能“戳一戳”互动。
+
+📊 支持的考试类型
+1.雅思考试 (IELTS)
+• 听力/阅读: 根据正确题数自动折算分数（0-40题 → 0-9.0分）
+• 写作 (Writing): Task 1/Task 2 分离输入，自动加权计算
+• 口语 (Speaking): 直接输入分数
+• Overall总分: 自动计算四项平均分，按雅思规则取整
+2.大学英语考试 (CET)
+• 四级/六级: 完整的成绩管理
+• 分项计分: 听力/阅读/写作/翻译 独立录入或换算
+3.自定义考试
+• 完全自由: 创建任意考试类型（如托福、GRE、期末考）
+• 四种计分: 直接输入 / 多小题计分 / 分部分计分 / 公式计算
+
+📈 数据可视化 & 管理
+• 趋势图表: Chart.js 绘制精美成绩曲线
+• 数据安全: 浏览器 LocalStorage 本地存储，隐私无忧
+• 备份恢复: 支持 JSON 格式一键导出/导入
+
+📖 详细功能说明 
+自定义考试类型使用指南
+自定义考试允许你创建任意类型的考试评分系统，比如托福、GRE、模拟测试等。
+
+STEP 1 创建新考试类型
+1. 点击顶部"自定义考试"导航
+2. 点击"+ 新建考试"按钮
+3. 填写考试名称（如：托福）和描述（可选）
+
+STEP 2 添加科目
+每个考试可以添加多个科目，每个科目需要设置：
+设置项 / 说明
+科目名称 / 如：阅读、听力、写作
+简称 / 显示在卡片上的缩写，如：阅、听、写
+颜色 / 用于区分不同科目的标识色
+计分方式 / 四种方式可选（见下文）
+
+STEP 3 计分方式详解
+✅方式一：直接输入分数
+• 适用场景：直接输入最终成绩
+• 示例：雅思口语直接输入 7.5 分
+• 配置：只需设置最小值、最大值（如 0-9）
+✅方式二：多小题计分
+• 适用场景：一个大题包含多个小题，需要分别计分后加总
+• 示例：数学解答题20分 = 第一问5分 + 第二问7分 + 第三问8分
+• 配置：
+  添加多个"小题"
+  每小题设置：名称（如：第一问）、满分值（如：5）
+  系统自动计算：各小题得分之和 = 该大题总分
+✅方式三：分部分计分
+• 适用场景：试卷分多个部分，每部分题数和分值不同
+• 示例：四六级听力
+（短对话8题×7.1分 + 长对话7题×7.1分 + 短文10题×14.2分）
+• 配置：
+  添加多个"部分"
+  每部分设置：名称（如：短对话）、每题分值（如：7.1）、最大题数（如：8）
+  系统自动计算：答对题数 × 每题分值，各部分的和即为该科目总分
+✅方式四：公式计算
+• 适用场景：原始分需要乘以系数换算
+• 示例：四六级写作原始分0-15分，报道分 = 原始分 × 7.1
+• 配置：
+  原始分最大值（如：15）
+  乘数系数（如：7.1）
+  系统自动计算：输入原始分 × 乘数 = 最终分数
+------------------------------------------------------------------------
+📄 许可证
+Copyright © LYT, 2026 All Rights Reserved
+联系方式：liuyuntian@ytun.team`;
+
+function openInfoModal(type) {
+    const modal = document.getElementById('info-modal');
+    const title = document.getElementById('info-modal-title');
+    const body = document.getElementById('info-modal-body');
+    const primary = document.getElementById('info-modal-primary');
+
+    if (!modal || !title || !body || !primary) return;
+
+    const isChangelog = type === 'changelog';
+    title.textContent = isChangelog ? ('版本日志 · V' + APP_VERSION) : '使用文档';
+    body.textContent = isChangelog ? CHANGELOG_PLACEHOLDER : GUIDE_PLACEHOLDER;
+
+    primary.style.display = isChangelog ? 'inline-flex' : 'none';
+    modal.classList.add('active');
+}
+
+function closeInfoModal() {
+    const modal = document.getElementById('info-modal');
+    if (!modal) return;
+    modal.classList.remove('active');
+}
+
+function acknowledgeChangelog() {
+    localStorage.setItem(CHANGELOG_STORAGE_KEY, '1');
+    closeInfoModal();
+}
+
+function handleInfoModalOverlayClick(event) {
+    if (event.target && event.target.id === 'info-modal') {
+        closeInfoModal();
+    }
+}
+
+function maybeShowChangelogOnFirstOpen() {
+    const hasSeen = localStorage.getItem(CHANGELOG_STORAGE_KEY) === '1';
+    if (!hasSeen) {
+        localStorage.setItem(CHANGELOG_STORAGE_KEY, '1');
+        openInfoModal('changelog');
+    }
+}
+
+// ==================== 突突er 伴学助手 ====================
+const TUTUER_HISTORY_KEY = 'myscore_tutuer_history';
+let tutuerMessages = [];
+let tutuerSending = false;
+let tutuerViewportSyncPending = false;
+
+function getTutuerDefaultGreeting() {
+    return '我是突突er，今天我会陪你一起学。你可以跟我聊情绪、计划、拖延，或者直接问学习题目。';
+}
+
+function loadTutuerHistory() {
+    try {
+        const raw = localStorage.getItem(TUTUER_HISTORY_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        if (Array.isArray(parsed) && parsed.length) {
+            tutuerMessages = parsed.filter(function (m) {
+                return m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string';
+            }).slice(-30);
+            return;
+        }
+    } catch (e) {}
+    tutuerMessages = [{ role: 'assistant', content: getTutuerDefaultGreeting() }];
+}
+
+function saveTutuerHistory() {
+    localStorage.setItem(TUTUER_HISTORY_KEY, JSON.stringify(tutuerMessages.slice(-30)));
+}
+
+function clearTutuerHistory() {
+    tutuerMessages = [{ role: 'assistant', content: getTutuerDefaultGreeting() }];
+    saveTutuerHistory();
+    renderTutuerMessages();
+}
+
+function renderTutuerMessages() {
+    const list = document.getElementById('tutuer-chat-list');
+    if (!list) return;
+    list.innerHTML = '';
+    for (const msg of tutuerMessages) {
+        const bubble = document.createElement('div');
+        bubble.className = 'tutuer-msg ' + msg.role;
+        bubble.textContent = msg.content;
+        list.appendChild(bubble);
+    }
+    list.scrollTop = list.scrollHeight;
+}
+
+function openTutuerPanel() {
+    const panel = document.getElementById('tutuer-panel');
+    const input = document.getElementById('tutuer-input');
+    if (!panel) return;
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    panel.classList.remove('hidden');
+    panel.classList.remove('expanded-mobile');
+    document.body.classList.toggle('tutuer-open-mobile', isMobile);
+    syncTutuerExpandBtn();
+    setTutuerUnread(false);
+    renderTutuerMessages();
+    scheduleTutuerViewportSync();
+    setTimeout(scheduleTutuerViewportSync, 80);
+    setTimeout(scheduleTutuerViewportSync, 220);
+    if (input && !isMobile) input.focus();
+}
+
+function closeTutuerPanel(event) {
+    if (event) event.stopPropagation();
+    const panel = document.getElementById('tutuer-panel');
+    if (!panel) return;
+    panel.classList.add('hidden');
+    panel.classList.remove('expanded-mobile');
+    panel.classList.remove('keyboard-open-mobile');
+    panel.style.removeProperty('bottom');
+    panel.style.removeProperty('height');
+    panel.style.removeProperty('top');
+    document.body.classList.remove('tutuer-open-mobile');
+    syncTutuerExpandBtn();
+}
+
+function toggleTutuerPanel() {
+    const panel = document.getElementById('tutuer-panel');
+    if (!panel) return;
+    if (panel.classList.contains('hidden')) {
+        openTutuerPanel();
+    } else {
+        closeTutuerPanel();
+    }
+}
+
+function syncTutuerExpandBtn() {
+    const panel = document.getElementById('tutuer-panel');
+    const btn = document.getElementById('tutuer-expand-btn');
+    if (!panel || !btn) return;
+    const expanded = panel.classList.contains('expanded-mobile');
+    btn.textContent = expanded ? '⤡' : '⤢';
+    btn.setAttribute('aria-label', expanded ? '还原面板' : '展开面板');
+    btn.title = expanded ? '还原' : '展开';
+}
+
+function toggleTutuerExpand(event) {
+    if (event) event.stopPropagation();
+    if (!window.matchMedia('(max-width: 768px)').matches) return;
+    const panel = document.getElementById('tutuer-panel');
+    if (!panel || panel.classList.contains('hidden')) return;
+    panel.classList.toggle('expanded-mobile');
+    syncTutuerExpandBtn();
+    scheduleTutuerViewportSync();
+}
+
+function scheduleTutuerViewportSync() {
+    if (tutuerViewportSyncPending) return;
+    tutuerViewportSyncPending = true;
+    requestAnimationFrame(function () {
+        tutuerViewportSyncPending = false;
+        syncTutuerViewportForKeyboard();
+    });
+}
+
+function syncTutuerViewportForKeyboard() {
+    if (!window.matchMedia('(max-width: 768px)').matches) return;
+    const panel = document.getElementById('tutuer-panel');
+    if (!panel || panel.classList.contains('hidden')) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const overlap = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
+    const keyboardOpen = overlap > 120;
+
+    panel.classList.toggle('keyboard-open-mobile', keyboardOpen);
+
+    if (!keyboardOpen) {
+        panel.style.removeProperty('bottom');
+        panel.style.removeProperty('height');
+        panel.style.removeProperty('top');
+        return;
+    }
+
+    panel.style.top = 'auto';
+    panel.style.bottom = Math.round(overlap + 8) + 'px';
+
+    const expanded = panel.classList.contains('expanded-mobile');
+    const targetHeight = expanded
+        ? Math.max(260, vv.height - 16)
+        : Math.max(240, Math.min(560, vv.height * 0.72));
+    panel.style.height = Math.round(targetHeight) + 'px';
+
+    const input = document.getElementById('tutuer-input');
+    if (input && document.activeElement === input) {
+        setTimeout(function () {
+            input.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }, 60);
+    }
+}
+
+function bindTutuerViewportEvents() {
+    const input = document.getElementById('tutuer-input');
+    if (input) {
+        input.addEventListener('focus', function () {
+            scheduleTutuerViewportSync();
+            setTimeout(scheduleTutuerViewportSync, 120);
+            setTimeout(scheduleTutuerViewportSync, 260);
+        });
+        input.addEventListener('blur', function () {
+            setTimeout(scheduleTutuerViewportSync, 80);
+        });
+    }
+
+    window.addEventListener('resize', scheduleTutuerViewportSync, { passive: true });
+    window.addEventListener('orientationchange', scheduleTutuerViewportSync, { passive: true });
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', scheduleTutuerViewportSync, { passive: true });
+        window.visualViewport.addEventListener('scroll', scheduleTutuerViewportSync, { passive: true });
+    }
+}
+
+function setTutuerLoading(loading) {
+    const sending = document.getElementById('tutuer-send-btn');
+    if (!sending) return;
+    tutuerSending = loading;
+    sending.disabled = loading;
+    sending.textContent = loading ? '思考中...' : '发送';
+}
+
+function setTutuerUnread(unread) {
+    const dot = document.getElementById('tutuer-fab-dot');
+    if (!dot) return;
+    dot.classList.toggle('hidden', !unread);
+}
+
+function getTutuerFallbackReply(userText) {
+    if (userText.includes('难受') || userText.includes('焦虑') || userText.includes('压力')) {
+        return '先把这件事拆成一小步：现在只做 10 分钟最简单的部分。做完再告诉我感受，我们继续。';
+    }
+    if (userText.includes('不会') || userText.includes('看不懂')) {
+        return '把题目或知识点贴给我，我会先用最简单版本讲一遍，再给你一题练习。';
+    }
+    return '我在，慢慢说。你可以告诉我你现在最卡的点，我会给你一个可执行的小计划。';
+}
+
+function askTutuerStudyPlan() {
+    const preset = '请根据我今天的状态，帮我生成一个可执行的今日学习计划（包含：1) 25分钟任务分块 2) 休息节奏 3) 今晚复盘问题）。';
+    const input = document.getElementById('tutuer-input');
+    openTutuerPanel();
+    if (input) {
+        input.value = preset;
+    }
+    sendTutuerMessage();
+}
+
+async function sendTutuerMessage() {
+    if (tutuerSending) return;
+    const input = document.getElementById('tutuer-input');
+    if (!input) return;
+    const userText = input.value.trim();
+    if (!userText) return;
+
+    tutuerMessages.push({ role: 'user', content: userText });
+    input.value = '';
+    renderTutuerMessages();
+    setTutuerLoading(true);
+
+    try {
+        const history = tutuerMessages.slice(-12).map(function (m) {
+            return { role: m.role, content: m.content };
+        });
+
+        const res = await fetch('/.netlify/functions/comment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                mode: 'companion',
+                userMessage: userText,
+                conversationHistory: history
+            })
+        });
+
+        const data = await res.json();
+        const reply = data && data.comment ? data.comment : getTutuerFallbackReply(userText);
+        tutuerMessages.push({ role: 'assistant', content: reply });
+    } catch (err) {
+        tutuerMessages.push({ role: 'assistant', content: getTutuerFallbackReply(userText) });
+    } finally {
+        setTutuerLoading(false);
+        saveTutuerHistory();
+        renderTutuerMessages();
+        const panel = document.getElementById('tutuer-panel');
+        if (panel && panel.classList.contains('hidden')) {
+            setTutuerUnread(true);
+        }
+    }
+}
+
+function handleTutuerInputKeydown(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendTutuerMessage();
+    }
+}
+
+document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') {
+        closeInfoModal();
+        closeTutuerPanel();
+    }
+});
+// 页面加载完成后，顺便初始化一下心情
+document.addEventListener('DOMContentLoaded', updatePetMood);
+        // ==================== 初始化 ====================
+        document.addEventListener('DOMContentLoaded', function () {
+            renderDashboard();
+            maybeShowChangelogOnFirstOpen();
+            loadTutuerHistory();
+            renderTutuerMessages();
+            setTutuerUnread(false);
+            bindTutuerViewportEvents();
+        });
+    </script>
+ <div id="desktop-pet" onclick="pokeTeacher()" style="position: fixed; bottom: 2rem; right: 2rem; z-index: 999; cursor: pointer; transition: transform 0.2s ease;">
+    <div id="pet-bubble" style="
+        position: absolute; 
+        bottom: 110%; 
+        right: 0; 
+        width: 220px; 
+        background: white; 
+        padding: 1rem; 
+        border-radius: 1rem 1rem 0 1rem; 
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+        border: 2px solid #10b981;
+        color: #374151;
+        font-size: 0.9rem;
+        opacity: 0; 
+        visibility: hidden; 
+        transition: all 0.3s ease;
+        pointer-events: none;">
+        今天背单词了吗？😡
+    </div>
+    
+    <div id="pet-avatar" style="font-size: 4.5rem; filter: drop-shadow(0 5px 15px rgba(16, 185, 129, 0.3)); user-select: none;">
+        👨‍🏫
+    </div>
+</div>
+<button class="changelog-fab" type="button" onclick="openInfoModal('changelog')" aria-label="查看版本日志">
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M9 12h6m-6 4h6M8 4h8a2 2 0 012 2v12a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2z"/>
+    </svg>
+    <span class="changelog-fab-label">版本日志</span>
+</button>
+<button class="tutuer-fab" type="button" onclick="toggleTutuerPanel()" aria-label="唤起突突er">
+    <span id="tutuer-fab-dot" class="tutuer-fab-dot hidden"></span>
+    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+    </svg>
+    <span class="tutuer-fab-label">唤起突突er</span>
+</button>
+<section id="tutuer-panel" class="tutuer-panel hidden" aria-label="突突er伴学助手">
+    <div class="tutuer-panel-header">
+        <div>
+            <p style="font-size:0.95rem;font-weight:700;color:#1e3a8a;">突突er伴学助手</p>
+            <p style="font-size:0.78rem;color:#475569;">聊情绪、问知识、一起定计划</p>
+        </div>
+        <div class="tutuer-panel-controls">
+            <button id="tutuer-expand-btn" class="tutuer-expand-btn" type="button" onclick="toggleTutuerExpand(event)" aria-label="展开面板">⤢</button>
+            <button type="button" onclick="closeTutuerPanel(event)" style="width:30px;height:30px;border:none;border-radius:9999px;background:#ffffff;color:#64748b;cursor:pointer;">×</button>
+        </div>
+    </div>
+    <div id="tutuer-chat-list" class="tutuer-chat-list"></div>
+    <div class="tutuer-panel-footer">
+        <div class="tutuer-quick-actions">
+            <button class="tutuer-quick-btn" type="button" onclick="askTutuerStudyPlan()">一键生成今日学习计划</button>
+            <button class="tutuer-quick-btn" type="button" onclick="clearTutuerHistory()">清空对话</button>
+        </div>
+        <div class="tutuer-input-row">
+            <textarea id="tutuer-input" class="tutuer-input" placeholder="和突突er说点什么..." onkeydown="handleTutuerInputKeydown(event)"></textarea>
+            <button id="tutuer-send-btn" class="btn-primary" type="button" onclick="sendTutuerMessage()" style="padding:0.65rem 1rem;">发送</button>
+        </div>
+    </div>
+</section>
+<div id="info-modal" class="modal-overlay" onclick="handleInfoModalOverlayClick(event)">
+    <div class="modal-content info-modal-content">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem;">
+            <h3 id="info-modal-title" style="font-size:1.25rem;font-weight:700;color:#111827;">版本日志</h3>
+            <button type="button" aria-label="关闭" onclick="closeInfoModal()" style="width:34px;height:34px;border:none;border-radius:9999px;background:#f3f4f6;color:#6b7280;cursor:pointer;font-size:1.25rem;line-height:1;">×</button>
+        </div>
+        <div id="info-modal-body" class="info-modal-body"></div>
+        <div class="info-modal-footer">
+            <button id="info-modal-primary" class="btn-primary" type="button" onclick="acknowledgeChangelog()">我知道了</button>
+            <button class="btn-secondary" type="button" onclick="closeInfoModal()">关闭</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+
+
+
+
