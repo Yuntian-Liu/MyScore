@@ -1,9 +1,9 @@
 ﻿<div align="center">
 
-# MyScore - AI 智能成绩管理系统 · V7.1 发布版
+# MyScore - AI 智能成绩管理系统 · V7.5 发布版
 
 <p>
-    <img src="https://img.shields.io/badge/v7.1-AI_Edition-10b981?style=flat-square&logo=rocket&logoColor=white" alt="Version">
+    <img src="https://img.shields.io/badge/v7.5-AI_Edition-10b981?style=flat-square&logo=rocket&logoColor=white" alt="Version">
     <img src="https://img.shields.io/badge/Model-DeepSeek_V3.2-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
     <img src="https://img.shields.io/badge/Deployed_on-Netlify-00C7B7?style=flat-square&logo=netlify&logoColor=white" alt="Netlify">
     <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=flat-square" alt="License">
@@ -13,10 +13,17 @@
 
 </div>
 
-一个功能完善且具备 **AI 交互能力** 的考试成绩管理系统。当前为 **V7.1 发布版**，在支持雅思、大学英语四六级以及自定义考试的基础上，接入 DeepSeek 大模型，并持续升级「版本日志系统 + 突突er伴学助手 + 移动端体验」三位一体交互能力。
+一个功能完善且具备 **AI 交互能力** 的考试成绩管理系统。当前为 **V7.5 发布版**，在支持雅思、大学英语四六级以及自定义考试的基础上，接入 DeepSeek 大模型，并持续升级「版本日志系统 + 突突er伴学助手 + 移动端体验」三位一体交互能力。
 
 ---
-### V7.1 (Current)
+### V7.5 (Current)
+- ✅ **Google Material 3 视觉风格升级**：整体配色方案、圆角、间距、阴影全面焕新，视觉更现代简洁。
+- ✅ **新增报告导出功能**：支持生成成绩单卡片/详细报告/学习总结，一键保存图片或复制文本。
+- ✅ **Header 视觉优化**：背景色与 body 统一色系，消除顶部与内容区的视觉割裂。
+- ✅ **导航交互优化**：点击当前导航项自动回滚至页面顶部。
+- ✅ **页脚升级**：新增 GitHub 开源标识与仓库链接，版本号同步更新。
+
+### V7.1 (Stable)
 - ✅ **移动端 UI 系统升级**：导航、卡片、历史记录、浮动入口在手机端完成系统级适配，视觉更统一。
 - ✅ **最近成绩四宫格重构**：成绩展示改为结构化网格，手机端更整齐，桌面端字号同步增强。
 - ✅ **突突er 交互升级**：新增独立“展开/还原”按钮，`×` 回归纯关闭语义，交互更直觉。
@@ -71,8 +78,9 @@
 - **完全自由**: 创建任意考试类型（如托福、GRE、期末考）
 - **四种计分**: 直接输入 / 多小题计分 / 分部分计分 / 公式计算
 
-### 📈 数据可视化 & 管理
+### 📊 数据可视化 & 管理 (V7.5 新增报告导出)
 - **趋势图表**: Chart.js 绘制精美成绩曲线
+- **报告导出**: V7.5 新增一键生成成绩单卡片/详细报告/学习总结，支持保存图片或复制文本
 - **数据安全**: 浏览器 LocalStorage 本地存储，隐私无忧
 - **备份恢复**: 支持 JSON 格式一键导出/导入
 
@@ -94,6 +102,7 @@
 1. **录入成绩**: 选择考试类型 -> 填写日期 -> 录入分数 -> 保存。
 2. **AI 互动**: 保存后，毒舌老师会自动评价；点击“回嘴”可开启多轮对话；点击左下角“唤起突突er”可进入伴学对话。
 3. **查看统计**: 点击"仪表盘"查看趋势图表。
+4. **报告导出**: V7.5 新增功能，点击"仪表盘"中的"导出报告"可生成成绩单卡片/详细报告/学习总结。
 
 ---
 
@@ -103,11 +112,18 @@ MyScore/
 ├── netlify/
 │   └── functions/
 │       └── comment.js      # Serverless 后端函数 (处理毒舌评价 + companion伴学对话)
-├── Versions_history/       # 历史版本归档 (V1.0 - V7.1)
+├── Versions_history/       # 历史版本归档 (V1.0 - V7.5)
 └── README.md               # 项目文档
 ## 🎯 版本历史
 
-### V7.1 (当前版本)
+### V7.5 (当前版本)
+- ✅ Google Material 3 视觉风格升级：整体配色方案、圆角、间距、阴影全面焕新。
+- ✅ 新增报告导出功能：支持生成成绩单卡片/详细报告/学习总结，一键保存图片或复制文本。
+- ✅ Header 视觉优化：背景色与 body 统一色系，消除顶部与内容区的视觉割裂。
+- ✅ 导航交互优化：点击当前导航项自动回滚至页面顶部。
+- ✅ 页脚升级：新增 GitHub 开源标识与仓库链接。
+
+### V7.1
 - ✅ 移动端 UI 深度适配（导航、成绩卡片、历史记录、浮动组件）。
 - ✅ 最近成绩“四宫格”结构重构，手机端更规整，桌面端字体与比例增强。
 - ✅ 伴学助手新增“展开/还原”按钮，关闭逻辑与交互语义更清晰。
