@@ -820,175 +820,6 @@
             gap: 0.65rem;
         }
 
-        .footer-matrix {
-            margin: 0.2rem 0 1rem;
-            padding: 0.85rem 0.9rem;
-            border-radius: 20px;
-            background:
-                linear-gradient(180deg, rgba(255,255,255,0.82), rgba(247,249,255,0.92)),
-                radial-gradient(circle at top left, rgba(91, 124, 255, 0.08), transparent 24%);
-            border: 1px solid rgba(92, 104, 138, 0.1);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.75);
-        }
-
-        .footer-matrix-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .footer-matrix-kicker {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            padding: 0.38rem 0.72rem;
-            border-radius: 999px;
-            background: rgba(91, 124, 255, 0.1);
-            color: #5568dc;
-            font-size: 0.74rem;
-            font-weight: 700;
-            letter-spacing: 0.02em;
-            margin-bottom: 0.55rem;
-        }
-
-        .footer-matrix-title {
-            font-family: 'Noto Serif SC', serif;
-            font-size: 0.98rem;
-            font-weight: 700;
-            color: var(--primary-ink);
-            margin-bottom: 0.12rem;
-        }
-
-        .footer-matrix-desc {
-            font-size: 0.78rem;
-            color: #7a8197;
-            max-width: 680px;
-        }
-
-        .footer-matrix-note {
-            font-size: 0.74rem;
-            color: #8b90a3;
-            white-space: nowrap;
-        }
-
-        .footer-matrix-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 0.65rem;
-        }
-
-        .matrix-card {
-            position: relative;
-            display: block;
-            padding: 0.72rem 0.8rem;
-            border-radius: 18px;
-            text-decoration: none;
-            color: inherit;
-            overflow: hidden;
-            min-height: 0;
-            border: 1px solid rgba(92, 104, 138, 0.1);
-            box-shadow: 0 16px 28px -28px rgba(66, 75, 102, 0.34);
-            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-        }
-
-        .matrix-card::after {
-            display: none;
-        }
-
-        .matrix-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 24px 46px -32px rgba(66, 75, 102, 0.48);
-        }
-
-        .matrix-card.current {
-            border-color: rgba(41, 111, 103, 0.22);
-            box-shadow: 0 16px 30px -24px rgba(41, 111, 103, 0.26);
-        }
-
-        .matrix-card-shell {
-            position: relative;
-            z-index: 1;
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            align-items: center;
-            gap: 0.7rem;
-        }
-
-        .matrix-card-head {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 0;
-            flex-shrink: 0;
-        }
-
-        .matrix-card-icon {
-            width: 2.4rem;
-            height: 2.4rem;
-            border-radius: 15px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            box-shadow: 0 14px 24px -20px rgba(66, 75, 102, 0.4);
-            flex-shrink: 0;
-        }
-
-        .matrix-card-icon svg {
-            display: block;
-        }
-
-        .matrix-card-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.28rem 0.52rem;
-            border-radius: 999px;
-            font-size: 0.66rem;
-            font-weight: 700;
-            background: rgba(255,255,255,0.72);
-            color: #55606f;
-            border: 1px solid rgba(92,104,138,0.08);
-        }
-
-        .matrix-card-main {
-            min-width: 0;
-            flex: 1;
-        }
-
-        .matrix-card-name {
-            font-size: 0.92rem;
-            font-weight: 800;
-            color: #223047;
-            margin-bottom: 0.08rem;
-        }
-
-        .matrix-card-text {
-            font-size: 0.72rem;
-            line-height: 1.45;
-            color: #626c84;
-            margin-bottom: 0;
-        }
-
-        .matrix-card-foot {
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 0.45rem;
-            font-size: 0.72rem;
-            color: #5f6b82;
-            flex-shrink: 0;
-        }
-
-        .matrix-card-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.38rem;
-            font-weight: 700;
-            color: #32435f;
-        }
-
         .footer-pill,
         .footer-link-pill {
             display: inline-flex;
@@ -1827,44 +1658,6 @@
                 align-items: flex-start;
             }
 
-            .footer-matrix {
-                padding: 0.9rem;
-                border-radius: 18px;
-            }
-
-            .footer-matrix-head {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .footer-matrix-note {
-                white-space: normal;
-            }
-
-            .footer-matrix-grid {
-                grid-template-columns: 1fr;
-                gap: 0.5rem;
-            }
-
-            .matrix-card {
-                min-height: 0;
-            }
-
-            .matrix-card-shell {
-                grid-template-columns: auto 1fr;
-                align-items: flex-start;
-            }
-
-            .matrix-card-main {
-                width: 100%;
-            }
-
-            .matrix-card-foot {
-                width: 100%;
-                justify-content: space-between;
-                grid-column: 1 / -1;
-            }
-
             .brand-meta {
                 font-size: 0.67rem;
             }
@@ -2353,96 +2146,6 @@
                             <svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="3.5" y="4.5" width="13" height="11" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M7 9.8h6M7 12.8h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
                         </span>
                         <span><strong>备案</strong> 蜀ICP备2026006689号</span>
-                    </a>
-                </div>
-            </div>
-
-            <div class="footer-matrix">
-                <div class="footer-matrix-head">
-                    <div>
-                        <div class="footer-matrix-title">碳碳四键个人开发实践·项目矩阵</div>
-                        <div class="footer-matrix-desc">附加入口，放在这里顺手看看就好。</div>
-                    </div>
-                    <div class="footer-matrix-note">当前站点优先标注</div>
-                </div>
-
-                <div class="footer-matrix-grid">
-                    <div class="matrix-card current" style="background:linear-gradient(135deg,#ecf7f3,#f7fbfa);">
-                        <div class="matrix-card-shell">
-                            <div class="matrix-card-head">
-                                <span class="matrix-card-icon" style="background:linear-gradient(135deg,#2f7a74,#4ea194);">
-                                    <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-                                        <path d="M6 23h20" stroke="#fff" stroke-width="2.1" stroke-linecap="round"/>
-                                        <rect x="8" y="16" width="4.2" height="7" rx="1.4" fill="#fff"/>
-                                        <rect x="14" y="12" width="4.2" height="11" rx="1.4" fill="#fff" opacity="0.92"/>
-                                        <rect x="20" y="8" width="4.2" height="15" rx="1.4" fill="#fff" opacity="0.82"/>
-                                    </svg>
-                                </span>
-                            </div>
-                            <div class="matrix-card-main">
-                                <div class="matrix-card-name">MyScore</div>
-                                <div class="matrix-card-text">记录成绩，查看趋势，整理反馈。</div>
-                            </div>
-                            <div class="matrix-card-foot">
-                                <span class="matrix-card-badge">当前站点</span>
-                                <span class="matrix-card-link">正在浏览
-                                    <svg width="13" height="13" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                                        <path d="M5 15 15 5M8 5h7v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <a class="matrix-card" href="https://selfie.ytunx.com/" target="_blank" rel="noopener noreferrer" style="background:linear-gradient(135deg,#eef0ff,#fff3ec);">
-                        <div class="matrix-card-shell">
-                            <div class="matrix-card-head">
-                                <span class="matrix-card-icon" style="background:linear-gradient(135deg,#5b7cff,#ff8a63);">
-                                    <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-                                        <circle cx="16" cy="11" r="4.6" stroke="#fff" stroke-width="2"/>
-                                        <path d="M8.5 24c1.8-4 5.1-6 7.5-6s5.7 2 7.5 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                                    </svg>
-                                </span>
-                            </div>
-                            <div class="matrix-card-main">
-                                <div class="matrix-card-name">碳碳四键丨多维空间</div>
-                                <div class="matrix-card-text">展示项目，整理经历，汇总信息。</div>
-                            </div>
-                            <div class="matrix-card-foot">
-                                <span class="matrix-card-badge">主入口</span>
-                                <span class="matrix-card-link">访问站点
-                                    <svg width="13" height="13" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                                        <path d="M5 15 15 5M8 5h7v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                </span>
-                            </div>
-                        </div>
-                    </a>
-
-                    <a class="matrix-card" href="https://gradify.ytunx.com/" target="_blank" rel="noopener noreferrer" style="background:linear-gradient(135deg,#fff4e8,#f4eeff);">
-                        <div class="matrix-card-shell">
-                            <div class="matrix-card-head">
-                                <span class="matrix-card-icon" style="background:linear-gradient(135deg,#f08b36,#8d63ff);">
-                                    <svg width="22" height="22" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-                                        <rect x="7" y="6.5" width="18" height="19" rx="5" stroke="#fff" stroke-width="2"/>
-                                        <path d="M11.5 13h9M11.5 17h9M11.5 21h5" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-                                        <path d="m20.5 9.5 2 2 3.2-3.2" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                </span>
-                            </div>
-                            <div class="matrix-card-main">
-                                <div class="matrix-card-name">Gradify Studio</div>
-                                <div class="matrix-card-text">批改作业，统一反馈，提高效率。</div>
-                            </div>
-                            <div class="matrix-card-foot">
-                                <span class="matrix-card-badge">效率工具</span>
-                                <span class="matrix-card-link">访问站点
-                                    <svg width="13" height="13" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                                        <path d="M5 15 15 5M8 5h7v7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                </span>
-                            </div>
-                        </div>
                     </a>
                 </div>
             </div>
@@ -4482,26 +4185,6 @@ function selectReportType(type, element) {
     renderReportPreview();
 }
 
-function buildShareTrendData(records) {
-    const recentRecords = records.slice(0, 5).reverse();
-    const scores = recentRecords.map(function (record) {
-        return typeof record.total === 'number' ? record.total : 0;
-    });
-    const minScore = Math.min.apply(null, scores);
-    const maxScore = Math.max.apply(null, scores);
-    const range = Math.max(maxScore - minScore, 1);
-
-    return recentRecords.map(function (record, index) {
-        const score = typeof record.total === 'number' ? record.total : minScore;
-        return {
-            label: record.date.slice(5),
-            score: score,
-            xRatio: recentRecords.length === 1 ? 0.5 : index / (recentRecords.length - 1),
-            yRatio: 1 - ((score - minScore) / range)
-        };
-    });
-}
-
 function renderReportPreview() {
     const container = document.getElementById('report-preview');
     const examType = document.getElementById('report-exam-select').value;
@@ -4598,45 +4281,34 @@ function renderReportPreview() {
         const latest = records[0];
         const exam = exams[latest.examType];
         const theme = getExamTheme(latest.examType);
-        const trendData = buildShareTrendData(records);
         
-        let html = `<div style="font-family:Manrope,'Noto Sans SC',sans-serif;">`;
-        html += `<div style="background:linear-gradient(140deg,${theme.reportGradientStart},${theme.reportGradientEnd});border-radius:30px;padding:1.5rem 1.35rem 1.4rem;color:white;text-align:center;position:relative;overflow:hidden;min-height:235px;">`;
-        html += `<div style="position:absolute;inset:-46px auto auto -44px;width:132px;height:132px;border-radius:50%;background:rgba(255,255,255,0.12);"></div>`;
-        html += `<div style="position:absolute;inset:auto -48px -62px auto;width:176px;height:176px;border-radius:50%;background:rgba(255,255,255,0.12);"></div>`;
-        html += `<div style="position:relative;display:flex;justify-content:center;margin-bottom:0.9rem;">${getExamBadgeMarkup(latest.examType, exam ? exam.name : '考试', 56)}</div>`;
-        html += `<div style="position:relative;font-size:1.15rem;font-weight:800;margin-bottom:0.35rem;">${escapeHtml(exam ? exam.name : '考试')}</div>`;
-        html += `<div style="position:relative;font-size:0.8rem;opacity:0.92;">${escapeHtml(latest.date)}</div>`;
+        let html = `<div style="background:linear-gradient(140deg,${theme.reportGradientStart},${theme.reportGradientEnd});border-radius:24px;padding:1.6rem;color:white;text-align:center;position:relative;overflow:hidden;">`;
+        html += `<div style="position:absolute;inset:auto -40px -60px auto;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.12);"></div>`;
+        html += `<div style="position:absolute;inset:-48px auto auto -48px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,0.1);"></div>`;
+        html += `<div style="position:relative;display:flex;justify-content:center;margin-bottom:0.9rem;">${getExamBadgeMarkup(latest.examType, exam ? exam.name : '考试', 64)}</div>`;
+        html += `<div style="position:relative;font-size:1.25rem;font-weight:800;margin-bottom:0.25rem;">${escapeHtml(exam ? exam.name : '考试')}</div>`;
+        html += `<div style="position:relative;font-size:0.875rem;opacity:0.9;">${escapeHtml(latest.date)}</div>`;
         
         if (latest.total !== null) {
-            html += `<div style="position:relative;font-size:3.6rem;line-height:1;font-weight:800;margin:1.2rem 0 0.5rem;font-style:italic;">${latest.total.toFixed(1)}</div>`;
-            html += `<div style="position:relative;font-size:0.84rem;opacity:0.86;">${latest.examType === 'ielts' ? 'Overall' : '总分'}</div>`;
+            html += `<div style="position:relative;font-size:3rem;font-weight:800;margin:1rem 0 0.35rem;font-style:italic;">${latest.total.toFixed(1)}</div>`;
+            html += `<div style="position:relative;font-size:0.875rem;opacity:0.8;">${latest.examType === 'ielts' ? 'Overall' : '总分'}</div>`;
         }
         html += `</div>`;
         
-        if (trendData.length > 1) {
-            const chartW = 520;
-            const chartH = 124;
-            const path = trendData.map(function (point, index) {
-                const x = 42 + point.xRatio * (chartW - 84);
-                const y = 18 + point.yRatio * (chartH - 42);
-                return (index === 0 ? 'M' : 'L') + x.toFixed(2) + ' ' + y.toFixed(2);
-            }).join(' ');
-
-            html += `<div style="margin-top:1rem;padding:1rem 1.1rem 0.9rem;border:1px solid ${theme.accent}1f;border-radius:24px;background:linear-gradient(180deg,#ffffff,${theme.soft});">`;
-            html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.55rem;"><div style="font-size:0.88rem;font-weight:700;color:${theme.strong};">最近 5 次趋势</div><div style="font-size:0.75rem;color:#7d8599;">${escapeHtml(exam ? exam.desc : '成绩摘要')}</div></div>`;
-            html += `<svg viewBox="0 0 ${chartW} ${chartH}" width="100%" height="124" aria-hidden="true">`;
-            html += `<path d="${path}" fill="none" stroke="${theme.accent}" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>`;
-            trendData.forEach(function (point, index) {
-                const x = 42 + point.xRatio * (chartW - 84);
-                const y = 18 + point.yRatio * (chartH - 42);
-                const radius = index === trendData.length - 1 ? 7 : 5;
-                html += `<circle cx="${x}" cy="${y}" r="${radius}" fill="${index === trendData.length - 1 ? '#ffffff' : theme.accent}" stroke="${theme.accent}" stroke-width="3"/>`;
-            });
-            html += `</svg>`;
-            html += `<div style="display:grid;grid-template-columns:repeat(${trendData.length},minmax(0,1fr));gap:0.5rem;margin-top:0.1rem;">`;
-            trendData.forEach(function (point) {
-                html += `<div style="text-align:center;font-size:0.7rem;color:#9ca3af;">${escapeHtml(point.label)}</div>`;
+        const recentRecords = records.slice(0, 5);
+        if (recentRecords.length > 1) {
+            html += `<div style="margin-top:1rem;padding:1rem 1.1rem;border:1px solid ${theme.accent}1f;border-radius:18px;background:linear-gradient(180deg,#ffffff,${theme.soft});">`;
+            html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.65rem;"><div style="font-size:0.88rem;font-weight:700;color:${theme.strong};">最近 5 次趋势</div><div style="font-size:0.75rem;color:#7d8599;">${escapeHtml(exam ? exam.desc : '成绩摘要')}</div></div>`;
+            html += `<div style="display:flex;justify-content:space-between;align-items:flex-end;height:72px;gap:8px;">`;
+            
+            recentRecords.reverse().forEach((r, i) => {
+                const maxScore = exam.calcTotal ? (exam.maxTotal || 100) : 100;
+                const height = r.total ? (r.total / maxScore * 100) : 0;
+                const isLatest = i === recentRecords.length - 1;
+                html += `<div style="flex:1;display:flex;flex-direction:column;align-items:center;">`;
+                html += `<div style="width:100%;background:${isLatest ? theme.accent : theme.softAlt};border-radius:999px;height:${Math.max(height, 12)}%;box-shadow:${isLatest ? '0 14px 24px -18px ' + theme.accent : 'none'};"></div>`;
+                html += `<div style="font-size:0.7rem;color:#9ca3af;margin-top:4px;">${escapeHtml(r.date.slice(5))}</div>`;
+                html += `</div>`;
             });
             html += `</div></div>`;
         }
@@ -4878,12 +4550,11 @@ function downloadShareCardDirect(records) {
     const type = latest.examType;
     const exam = exams[type] || { name: '考试', calcTotal: true, maxTotal: 100 };
     const theme = getExamTheme(type);
-    const trendData = buildShareTrendData(records);
 
     const canvas = document.createElement('canvas');
     const scale = 3;
     const W = 420;
-    const H = 400;
+    const H = 560;
     canvas.width = W * scale;
     canvas.height = H * scale;
     const ctx = canvas.getContext('2d');
@@ -4892,33 +4563,28 @@ function downloadShareCardDirect(records) {
     const gradient = ctx.createLinearGradient(0, 0, W, H);
     gradient.addColorStop(0, theme.reportGradientStart);
     gradient.addColorStop(1, theme.reportGradientEnd);
-    ctx.fillStyle = '#f7f7f8';
+    ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, W, H);
 
-    // 顶部信息卡
-    const heroX = 18;
-    const heroY = 18;
-    const heroW = W - 36;
-    const heroH = 214;
-    ctx.save();
+    // 顶部装饰圆
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
     ctx.beginPath();
-    ctx.roundRect(heroX, heroY, heroW, heroH, 28);
-    ctx.clip();
-    ctx.fillStyle = gradient;
-    ctx.fillRect(heroX, heroY, heroW, heroH);
+    ctx.arc(W, 0, 180, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(0, H, 120, 0, Math.PI * 2);
+    ctx.fill();
 
-    ctx.fillStyle = 'rgba(255,255,255,0.12)';
-    ctx.beginPath();
-    ctx.arc(heroX + 34, heroY + 28, 56, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(heroX + heroW - 34, heroY + heroH - 14, 64, 0, Math.PI * 2);
-    ctx.fill();
+    // 考试名称
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.font = '14px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText(exam.name, W / 2, 52);
 
     // 图形标记
     ctx.fillStyle = 'rgba(255,255,255,0.18)';
     ctx.beginPath();
-    ctx.roundRect(W / 2 - 30, heroY + 28, 60, 60, 20);
+    ctx.roundRect(W / 2 - 38, 74, 76, 76, 24);
     ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,0.22)';
     ctx.lineWidth = 1;
@@ -4929,145 +4595,171 @@ function downloadShareCardDirect(records) {
     ctx.lineJoin = 'round';
     if (type === 'ielts') {
         ctx.lineWidth = 4;
-        [heroY + 49, heroY + 63, heroY + 77].forEach(function (y) {
+        [96, 112, 128].forEach(function (y) {
             ctx.beginPath();
-            ctx.moveTo(W / 2 - 8, y);
-            ctx.lineTo(W / 2 + 14, y);
+            ctx.moveTo(W / 2 - 10, y);
+            ctx.lineTo(W / 2 + 16, y);
             ctx.stroke();
         });
-        [heroY + 49, heroY + 63, heroY + 77].forEach(function (y) {
+        [96, 112, 128].forEach(function (y) {
             ctx.beginPath();
-            ctx.roundRect(W / 2 - 18, y - 4, 7, 7, 2);
+            ctx.roundRect(W / 2 - 22, y - 4, 8, 8, 2);
             ctx.fill();
         });
     } else if (type === 'cet4') {
         ctx.lineWidth = 4;
-        ctx.strokeRect(W / 2 - 16, heroY + 45, 32, 24);
+        ctx.strokeRect(W / 2 - 19, 92, 38, 28);
         ctx.beginPath();
-        ctx.moveTo(W / 2 - 16, heroY + 57);
-        ctx.lineTo(W / 2 + 16, heroY + 57);
+        ctx.moveTo(W / 2 - 19, 106);
+        ctx.lineTo(W / 2 + 19, 106);
         ctx.stroke();
         ctx.beginPath();
-        ctx.moveTo(W / 2 - 4, heroY + 43);
-        ctx.lineTo(W / 2 - 4, heroY + 38);
-        ctx.quadraticCurveTo(W / 2 - 4, heroY + 33, W / 2 + 2, heroY + 33);
-        ctx.lineTo(W / 2 + 8, heroY + 33);
-        ctx.quadraticCurveTo(W / 2 + 14, heroY + 33, W / 2 + 14, heroY + 38);
-        ctx.lineTo(W / 2 + 14, heroY + 43);
+        ctx.moveTo(W / 2 - 4, 90);
+        ctx.lineTo(W / 2 - 4, 84);
+        ctx.quadraticCurveTo(W / 2 - 4, 78, W / 2 + 2, 78);
+        ctx.lineTo(W / 2 + 8, 78);
+        ctx.quadraticCurveTo(W / 2 + 14, 78, W / 2 + 14, 84);
+        ctx.lineTo(W / 2 + 14, 90);
         ctx.stroke();
     } else {
         ctx.beginPath();
-        ctx.moveTo(W / 2 - 20, heroY + 76);
-        ctx.lineTo(W / 2 + 20, heroY + 76);
+        ctx.moveTo(W / 2 - 24, 124);
+        ctx.lineTo(W / 2 + 24, 124);
         ctx.stroke();
-        ctx.fillRect(W / 2 - 18, heroY + 61, 8, 15);
-        ctx.fillRect(W / 2 - 5, heroY + 54, 8, 22);
-        ctx.fillRect(W / 2 + 8, heroY + 45, 8, 31);
+        ctx.fillRect(W / 2 - 22, 106, 9, 18);
+        ctx.fillRect(W / 2 - 7, 98, 9, 26);
+        ctx.fillRect(W / 2 + 8, 88, 9, 36);
         ctx.lineWidth = 4;
         ctx.beginPath();
-        ctx.moveTo(W / 2 - 16, heroY + 56);
-        ctx.quadraticCurveTo(W / 2 - 1, heroY + 51, W / 2 + 13, heroY + 38);
+        ctx.moveTo(W / 2 - 18, 101);
+        ctx.quadraticCurveTo(W / 2 - 1, 96, W / 2 + 14, 80);
         ctx.stroke();
         ctx.beginPath();
-        ctx.moveTo(W / 2 + 13, heroY + 38);
-        ctx.lineTo(W / 2 + 11, heroY + 40);
-        ctx.moveTo(W / 2 + 13, heroY + 38);
-        ctx.lineTo(W / 2 + 11, heroY + 35);
+        ctx.moveTo(W / 2 + 14, 80);
+        ctx.lineTo(W / 2 + 11, 82);
+        ctx.moveTo(W / 2 + 14, 80);
+        ctx.lineTo(W / 2 + 12, 76);
         ctx.stroke();
     }
 
-    // 考试名称
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 16px system-ui';
-    ctx.textAlign = 'center';
-    ctx.fillText(exam.name, W / 2, heroY + 112);
-
     // 日期
-    ctx.font = '12px system-ui';
-    ctx.fillStyle = 'rgba(255,255,255,0.82)';
-    ctx.fillText(latest.date, W / 2, heroY + 136);
+    ctx.font = '13px system-ui';
+    ctx.fillStyle = 'rgba(255,255,255,0.65)';
+    ctx.fillText(latest.date, W / 2, 140);
 
     // 总分
     if (latest.total !== null) {
         ctx.fillStyle = 'white';
-        ctx.font = 'italic bold 54px system-ui';
-        ctx.fillText(latest.total.toFixed(1), W / 2, heroY + 188);
+        ctx.font = 'bold 64px system-ui';
+        ctx.fillText(latest.total.toFixed(1), W / 2, 225);
 
-        ctx.font = '13px system-ui';
-        ctx.fillStyle = 'rgba(255,255,255,0.84)';
+        ctx.font = '14px system-ui';
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
         const totalLabel = type === 'ielts' ? 'Overall' : '总分';
-        ctx.fillText(totalLabel, W / 2, heroY + 206);
+        ctx.fillText(totalLabel, W / 2, 252);
     }
-    ctx.restore();
 
-    // 趋势卡
-    if (trendData.length > 1) {
-        const panelX = 18;
-        const panelY = 248;
-        const panelW = W - 36;
-        const panelH = 102;
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.roundRect(panelX, panelY, panelW, panelH, 24);
-        ctx.fill();
-        ctx.strokeStyle = theme.accent + '22';
-        ctx.lineWidth = 1;
-        ctx.stroke();
+    // 各科成绩 pills
+    const subjects = exam.subjects || [];
+    if (subjects.length > 0) {
+        const pillH = 28;
+        const pillGap = 8;
+        const pillsPerRow = Math.min(subjects.length, 4);
+        const pillW = (W - 80 - (pillsPerRow - 1) * pillGap) / pillsPerRow;
+        let py = 280;
 
-        ctx.fillStyle = theme.strong;
-        ctx.font = 'bold 14px system-ui';
-        ctx.textAlign = 'left';
-        ctx.fillText('最近 5 次趋势', panelX + 14, panelY + 24);
-        ctx.fillStyle = '#8b93a8';
-        ctx.font = '12px system-ui';
-        ctx.textAlign = 'right';
-        ctx.fillText(exam.desc || '成绩摘要', panelX + panelW - 14, panelY + 24);
+        ctx.font = 'bold 12px system-ui';
+        subjects.forEach((s, i) => {
+            const row = Math.floor(i / pillsPerRow);
+            const col = i % pillsPerRow;
+            const px = 40 + col * (pillW + pillGap);
+            const pillY = py + row * (pillH + pillGap);
 
-        const chartLeft = panelX + 18;
-        const chartTop = panelY + 36;
-        const chartWidth = panelW - 36;
-        const chartHeight = 42;
-        const points = trendData.map(function (point) {
-            return {
-                x: chartLeft + point.xRatio * chartWidth,
-                y: chartTop + point.yRatio * chartHeight
-            };
+            // pill 背景
+            ctx.fillStyle = 'rgba(255,255,255,0.16)';
+            ctx.beginPath();
+            ctx.roundRect(px, pillY, pillW, pillH, pillH / 2);
+            ctx.fill();
+
+            // 科目名+分数
+            const score = latest.scores[s.id] || 0;
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.fillText(s.short + ' ' + score.toFixed(s.dec || 1), px + pillW / 2, pillY + pillH / 2 + 4);
         });
+    }
 
-        ctx.strokeStyle = theme.accent;
-        ctx.lineWidth = 3.5;
+    // 趋势图 — 关键修复：限制在安全区域内
+    const recentRecords = records.slice(0, 5);
+    if (recentRecords.length > 1) {
+        const chartPadX = 50;
+        const chartPadTop = 390;
+        const chartW = W - chartPadX * 2;
+        const chartH = 70;
+
+        // 标签
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.font = '11px system-ui';
+        ctx.textAlign = 'left';
+        ctx.fillText('成绩趋势', chartPadX, chartPadTop - 10);
+
+        // 背景框
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        ctx.beginPath();
+        ctx.roundRect(chartPadX - 10, chartPadTop - 5, chartW + 20, chartH + 35, 10);
+        ctx.fill();
+
+        // 数据点计算 — 折线严格在框内
+        const scores = recentRecords.map(r => r.total || 0);
+        const minS = Math.min(...scores);
+        const maxS = Math.max(...scores);
+        const range = Math.max(maxS - minS, 1);
+
+        const sorted = [...recentRecords].reverse();
+        const innerPadX = 15;
+        const innerW = chartW - innerPadX * 2;
+        const innerPadY = 8;
+        const innerH = chartH - innerPadY * 2;
+
+        const points = sorted.map((r, i) => ({
+            x: chartPadX + innerPadX + (sorted.length === 1 ? innerW / 2 : (i / (sorted.length - 1)) * innerW),
+            y: chartPadTop + innerPadY + innerH - ((r.total || minS) - minS) / range * innerH
+        }));
+
+        // 折线
+        ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+        ctx.lineWidth = 2.5;
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         ctx.beginPath();
-        points.forEach(function (point, index) {
-            if (index === 0) ctx.moveTo(point.x, point.y);
-            else ctx.lineTo(point.x, point.y);
+        points.forEach((p, i) => {
+            if (i === 0) ctx.moveTo(p.x, p.y);
+            else ctx.lineTo(p.x, p.y);
         });
         ctx.stroke();
 
-        points.forEach(function (point, index) {
+        // 数据点
+        points.forEach((p, i) => {
+            ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.fillStyle = index === points.length - 1 ? '#ffffff' : theme.accent;
-            ctx.strokeStyle = theme.accent;
-            ctx.lineWidth = 2.5;
-            ctx.arc(point.x, point.y, index === points.length - 1 ? 6 : 4, 0, Math.PI * 2);
+            ctx.arc(p.x, p.y, i === points.length - 1 ? 5 : 3, 0, Math.PI * 2);
             ctx.fill();
-            ctx.stroke();
         });
 
-        ctx.fillStyle = '#98a0b4';
-        ctx.font = '11px system-ui';
+        // 日期标签 — 在框内底部
+        ctx.fillStyle = 'rgba(255,255,255,0.45)';
+        ctx.font = '9px system-ui';
         ctx.textAlign = 'center';
-        trendData.forEach(function (point, index) {
-            ctx.fillText(point.label, points[index].x, panelY + panelH - 12);
+        sorted.forEach((r, i) => {
+            ctx.fillText(r.date.slice(5), points[i].x, chartPadTop + chartH + 18);
         });
     }
 
     // 页脚
-    ctx.fillStyle = '#98a0b4';
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
     ctx.font = '11px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText('Generated by MyScore V8.0', W / 2, H - 16);
+    ctx.fillText('Generated by MyScore V8.0', W / 2, H - 20);
 
     // 下载
     const dataURL = canvas.toDataURL('image/png');

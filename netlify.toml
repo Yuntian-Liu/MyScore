@@ -1,0 +1,8 @@
+[build]
+  publish = "."
+
+[[redirects]]
+  from = "/api/comment"
+  to = "/.netlify/functions/comment"
+  status = 200
+

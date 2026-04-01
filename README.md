@@ -1,11 +1,11 @@
 ﻿<div align="center">
 
-# MyScore - AI 智能成绩管理系统 · V7.5 发布版
+# MyScore - AI 智能成绩管理系统 · V8.0 发布版
 
 <p>
-    <img src="https://img.shields.io/badge/v7.5-AI_Edition-10b981?style=flat-square&logo=rocket&logoColor=white" alt="Version">
+    <img src="https://img.shields.io/badge/v8.0-Product_Refresh-ff8a63?style=flat-square&logo=rocket&logoColor=white" alt="Version">
     <img src="https://img.shields.io/badge/Model-DeepSeek_V3.2-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
-    <img src="https://img.shields.io/badge/Deployed_on-Netlify-00C7B7?style=flat-square&logo=netlify&logoColor=white" alt="Netlify">
+    <img src="https://img.shields.io/badge/Deploy-Netlify_%2B_Zeabur-5468ff?style=flat-square&logo=vercel&logoColor=white" alt="Deploy">
     <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=flat-square" alt="License">
 </p>
 
@@ -13,10 +13,20 @@
 
 </div>
 
-一个功能完善且具备 **AI 交互能力** 的考试成绩管理系统。当前为 **V7.5 发布版**，在支持雅思、大学英语四六级以及自定义考试的基础上，接入 DeepSeek 大模型，并持续升级「版本日志系统 + 突突er伴学助手 + 移动端体验」三位一体交互能力。
+一个功能完善且具备 **AI 交互能力** 的考试成绩管理系统。当前为 **V8.0 发布版**，在支持雅思、大学英语四六级以及自定义考试的基础上，接入 DeepSeek 大模型，并完成了「双平台部署对齐 + UI/UX 产品化重构 + 报告导出升级」三条主线更新。
+
+## 🔔 最新版本速览
+
+### V8.0 (Current)
+- ✅ **双平台部署打通**：统一前端 AI 入口为 `/api/comment`，同一仓库可同时部署到 Netlify 与 Zeabur。
+- ✅ **保留 Netlify 现有环境变量方案**：无需改动原有 `AI_API_KEY` 使用方式，迁移风险更低。
+- ✅ **首页与品牌视觉重构**：头部、卡片、学习档案区、页脚尾注完成产品化改版。
+- ✅ **考试主题色统一**：不同考试类型拥有一致的主题色与 SVG 标识，并扩展到记录列表、选择区与导出模块。
+- ✅ **报告导出升级**：预览和下载图均完成去 emoji 化与视觉收口，更适合作为正式产出。
+- ✅ **README 与站内版本日志同步**：版本号、更新说明、部署路径和结构说明统一升到 V8.0。
 
 ---
-### V7.5 (Current)
+### V7.5
 - ✅ **Google Material 3 视觉风格升级**：整体配色方案、圆角、间距、阴影全面焕新，视觉更现代简洁。
 - ✅ **新增报告导出功能**：支持生成成绩单卡片/详细报告/学习总结，一键保存图片或复制文本。
 - ✅ **Header 视觉优化**：背景色与 body 统一色系，消除顶部与内容区的视觉割裂。
@@ -78,9 +88,9 @@
 - **完全自由**: 创建任意考试类型（如托福、GRE、期末考）
 - **四种计分**: 直接输入 / 多小题计分 / 分部分计分 / 公式计算
 
-### 📊 数据可视化 & 管理 (V7.5 新增报告导出)
+### 📊 数据可视化 & 管理 (V8.0 持续升级)
 - **趋势图表**: Chart.js 绘制精美成绩曲线
-- **报告导出**: V7.5 新增一键生成成绩单卡片/详细报告/学习总结，支持保存图片或复制文本
+- **报告导出**: 支持生成成绩单卡片/详细报告/学习总结，预览与导出图均已升级为 V8.0 新视觉
 - **数据安全**: 浏览器 LocalStorage 本地存储，隐私无忧
 - **备份恢复**: 支持 JSON 格式一键导出/导入
 
@@ -88,7 +98,7 @@
 
 ## 🚀 部署与使用
 
-> **注意**：V7.x 版本包含后端函数，**无法直接双击 HTML 运行 AI 功能**，推荐部署至 Netlify。
+> **注意**：V8.0 版本包含前端页面与 AI 中转接口联动，**无法直接双击 HTML 运行 AI 功能**。推荐部署到 Netlify 或 Zeabur。
 
 ### 1. 部署到 Netlify
 1. Fork 本项目到你的 GitHub。
@@ -96,27 +106,48 @@
 3. 在 **Environment variables** (环境变量) 中添加：
     - Key: `AI_API_KEY`
     - Value: `你的_DeepSeek_API_Key` (sk-xxxx...)
-4. 等待部署完成，访问你的 Netlify 域名即可。
+4. 仓库已内置 `netlify.toml`，会将 `/api/comment` 自动转发到 Netlify Function。
+5. 等待部署完成，访问你的 Netlify 域名即可。
 
-### 2. 日常使用
+### 2. 部署到 Zeabur
+1. 直接使用同一个 GitHub 仓库创建项目。
+2. 在 Zeabur 环境变量中同样配置 `AI_API_KEY`。
+3. 仓库已包含 `server.js`、`package.json` 与 `zbpack.json`，默认启动命令为 `npm start`。
+4. Zeabur 将直接提供 `/api/comment` 接口，无需额外改前端代码。
+
+### 3. 日常使用
 1. **录入成绩**: 选择考试类型 -> 填写日期 -> 录入分数 -> 保存。
 2. **AI 互动**: 保存后，毒舌老师会自动评价；点击“回嘴”可开启多轮对话；点击左下角“唤起突突er”可进入伴学对话。
 3. **查看统计**: 点击"仪表盘"查看趋势图表。
-4. **报告导出**: V7.5 新增功能，点击"仪表盘"中的"导出报告"可生成成绩单卡片/详细报告/学习总结。
+4. **报告导出**: 点击"仪表盘"中的"导出报告"可生成成绩单卡片/详细报告/学习总结。
+5. **双平台部署**: 无论页面托管在 Netlify 还是 Zeabur，前端均统一走 `/api/comment`。
 
 ---
 
 ## 📂 项目结构
 MyScore/
 ├── index.html              # 主程序入口 (前端 UI + 交互逻辑)
+├── server.js               # Zeabur / Node 服务入口
+├── netlify.toml            # Netlify 路由与函数映射
+├── package.json            # Node 启动配置与项目版本
+├── zbpack.json             # Zeabur 部署参数
+├── DEPLOYMENT.md           # 双平台部署说明
 ├── netlify/
 │   └── functions/
 │       └── comment.js      # Serverless 后端函数 (处理毒舌评价 + companion伴学对话)
-├── Versions_history/       # 历史版本归档 (V1.0 - V7.5)
+├── Versions_history/       # 历史版本归档 (当前已归档至 V8.0)
 └── README.md               # 项目文档
+
 ## 🎯 版本历史
 
-### V7.5 (当前版本)
+### V8.0 (当前版本)
+- ✅ 前后端统一切换到 `/api/comment`，支持 Netlify 与 Zeabur 共用同一仓库部署。
+- ✅ 保留 Netlify 旧环境变量配置方式，不影响现网站点的 AI 调用。
+- ✅ 首页、学习档案、页脚尾注、Logo 与报告导出模块完成新一轮 UI/UX 重构。
+- ✅ 引入考试主题色与 SVG 图形系统，减少旧 emoji 和模板化观感。
+- ✅ README、站内版本日志、导出尾注、页面标题等版本信息统一更新到 V8.0。
+
+### V7.5
 - ✅ Google Material 3 视觉风格升级：整体配色方案、圆角、间距、阴影全面焕新。
 - ✅ 新增报告导出功能：支持生成成绩单卡片/详细报告/学习总结，一键保存图片或复制文本。
 - ✅ Header 视觉优化：背景色与 body 统一色系，消除顶部与内容区的视觉割裂。
@@ -166,6 +197,8 @@ MyScore/
 ## 📝 注意事项
 
 - **API Key 安全**: 请务必在 Netlify 环境变量中配置 Key，不要直接写在代码里。
+- **双平台隔离原则**: Netlify 与 Zeabur 的环境变量互不影响，真正决定调用哪边的是前端请求的接口地址。
+- **统一接口入口**: 当前前端默认请求 `/api/comment`，Netlify 通过 rewrite 映射，Zeabur 由 Node 服务直接提供。
 - **数据兼容性**: V7.x 数据与 V5.x 格式完全兼容，直接导入旧版备份即可。
 - **备案信息**: 若迁移至自有服务器并面向中国大陆访问，请按监管要求在页脚悬挂备案号并链接工信部备案系统。
 
