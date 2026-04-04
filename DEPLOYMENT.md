@@ -25,6 +25,7 @@ Optional:
 
 - `AI_BASE_URL`
 - `AI_MODEL`
+- `ALLOWED_ORIGIN` — 限制 CORS 来源域名（如 `https://myscore.netlify.app`）。不设置时默认 `*`。
 
 Netlify uses [netlify.toml](/f:/Vibe%20Coding/MyScore/netlify.toml) to rewrite:
 
@@ -42,6 +43,7 @@ Optional:
 
 - `AI_BASE_URL`
 - `AI_MODEL`
+- `ALLOWED_ORIGIN` — 限制 CORS 来源域名。不设置时默认 `*`。
 - `PORT`
 - `HOST`
 

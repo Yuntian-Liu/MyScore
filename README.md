@@ -1,10 +1,10 @@
 ﻿<div align="center">
 
-# MyScore - AI 智能成绩管理系统 · V8.0 发布版
+# MyScore - AI 智能成绩管理系统 · V8.0.1
 
 <p>
-    <img src="https://img.shields.io/badge/v8.0-Product_Refresh-ff8a63?style=flat-square&logo=rocket&logoColor=white" alt="Version">
-    <img src="https://img.shields.io/badge/Model-DeepSeek_V3.2-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
+    <img src="https://img.shields.io/badge/v8.0.1-Code_Cleanup-ff8a63?style=flat-square&logo=rocket&logoColor=white" alt="Version">
+    <img src="https://img.shields.io/badge/Model-DeepSeek-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
     <img src="https://img.shields.io/badge/Deploy-Netlify_%2B_Zeabur-5468ff?style=flat-square&logo=vercel&logoColor=white" alt="Deploy">
     <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=flat-square" alt="License">
 </p>
@@ -13,11 +13,18 @@
 
 </div>
 
-一个功能完善且具备 **AI 交互能力** 的考试成绩管理系统。当前为 **V8.0 发布版**，在支持雅思、大学英语四六级以及自定义考试的基础上，接入 DeepSeek 大模型，并完成了「双平台部署对齐 + UI/UX 产品化重构 + 报告导出升级」三条主线更新。
+一个功能完善且具备 **AI 交互能力** 的考试成绩管理系统。当前为 **V8.0.1**，在 V8.0 的基础上完成了前端工程化拆分、后端去重与安全配置优化。
 
 ## 🔔 最新版本速览
 
-### V8.0 (Current)
+### V8.0.1 (Current)
+- ✅ **前端工程化拆分**：CSS（~2000 行）提取到 `style.css`，JS（~2500 行）合并为 `app.js`，`index.html` 从 5170 行精简到约 560 行。
+- ✅ **后端去重**：提取 `server.js` 与 `netlify/functions/comment.js` 的重复 AI 逻辑到 `lib/aiComment.js`，减少维护成本。
+- ✅ **安全配置**：新增 `.gitignore`，CORS 支持 `ALLOWED_ORIGIN` 环境变量，新增 `start-local.bat` 本地启动脚本。
+- ✅ **修复导出版本号**：备份文件版本号从 `5.2` 更新为 `8.0`。
+- ✅ **默认模型更新**：AI 默认模型改为 `deepseek-reasoner`。
+
+### V8.0
 - ✅ **双平台部署打通**：统一前端 AI 入口为 `/api/comment`，同一仓库可同时部署到 Netlify 与 Zeabur。
 - ✅ **保留 Netlify 现有环境变量方案**：无需改动原有 `AI_API_KEY` 使用方式，迁移风险更低。
 - ✅ **首页与品牌视觉重构**：头部、卡片、学习档案区、页脚尾注完成产品化改版。
@@ -98,7 +105,7 @@
 
 ## 🚀 部署与使用
 
-> **注意**：V8.0 版本包含前端页面与 AI 中转接口联动，**无法直接双击 HTML 运行 AI 功能**。推荐部署到 Netlify 或 Zeabur。
+> **注意**：V8.0+ 版本包含前端页面与 AI 中转接口联动，**无法直接双击 HTML 运行 AI 功能**。推荐部署到 Netlify 或 Zeabur。本地开发可使用 `start-local.bat`。
 
 ### 1. 部署到 Netlify
 1. Fork 本项目到你的 GitHub。
@@ -106,6 +113,7 @@
 3. 在 **Environment variables** (环境变量) 中添加：
     - Key: `AI_API_KEY`
     - Value: `你的_DeepSeek_API_Key` (sk-xxxx...)
+    - （可选）Key: `ALLOWED_ORIGIN` — 限制 CORS 来源域名
 4. 仓库已内置 `netlify.toml`，会将 `/api/comment` 自动转发到 Netlify Function。
 5. 等待部署完成，访问你的 Netlify 域名即可。
 
@@ -126,21 +134,34 @@
 
 ## 📂 项目结构
 MyScore/
-├── index.html              # 主程序入口 (前端 UI + 交互逻辑)
+├── index.html              # 主程序入口 (纯 HTML 结构)
+├── style.css               # 样式文件
+├── app.js                  # 前端交互逻辑
 ├── server.js               # Zeabur / Node 服务入口
 ├── netlify.toml            # Netlify 路由与函数映射
 ├── package.json            # Node 启动配置与项目版本
 ├── zbpack.json             # Zeabur 部署参数
 ├── DEPLOYMENT.md           # 双平台部署说明
+├── start-local.bat         # 本地开发启动脚本
+├── lib/
+│   └── aiComment.js        # 共享 AI 逻辑 (CORS + prompt + API 调用)
 ├── netlify/
 │   └── functions/
-│       └── comment.js      # Serverless 后端函数 (处理毒舌评价 + companion伴学对话)
-├── Versions_history/       # 历史版本归档 (当前已归档至 V8.0)
+│       └── comment.js      # Netlify Serverless 函数
+├── Versions_history/       # 历史版本归档
 └── README.md               # 项目文档
 
 ## 🎯 版本历史
 
-### V8.0 (当前版本)
+### V8.0.1 (当前版本)
+- ✅ 前端工程化拆分：CSS 提取到 `style.css`，JS 合并为 `app.js`，`index.html` 大幅精简。
+- ✅ 后端去重：共享 AI 逻辑提取到 `lib/aiComment.js`，减少重复代码。
+- ✅ 新增 `.gitignore`、`start-local.bat` 本地启动脚本。
+- ✅ CORS 支持 `ALLOWED_ORIGIN` 环境变量配置。
+- ✅ 修复导出备份版本号（5.2 → 8.0）。
+- ✅ 默认 AI 模型更新为 `deepseek-reasoner`。
+
+### V8.0
 - ✅ 前后端统一切换到 `/api/comment`，支持 Netlify 与 Zeabur 共用同一仓库部署。
 - ✅ 保留 Netlify 旧环境变量配置方式，不影响现网站点的 AI 调用。
 - ✅ 首页、学习档案、页脚尾注、Logo 与报告导出模块完成新一轮 UI/UX 重构。
