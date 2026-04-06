@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="myscore-comment-endpoint" content="/api/comment">
-    <title>MyScore V8.0.1 - AI 智能成绩单 | 碳碳四键的个人开发应用实践</title>
+    <title>MyScore V8.0.2 - AI 智能成绩单 | 碳碳四键的个人开发应用实践</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -110,6 +110,12 @@
                         </div>
                     </div>
                    <div id="ai-container" style="display:none; margin-bottom: 1rem;">
+                   <div id="ai-style-bar" style="display: flex; gap: 0.4rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                     <button onclick="setAiStyle('storm')" id="style-storm" title="犀利刻薄" style="font-size: 0.78rem; padding: 0.35rem 0.75rem; border-radius: 99px; border: 1px solid rgba(31,106,82,0.2); background: rgba(31,106,82,0.12); color: #174f3d; cursor: pointer; font-weight: 700;">⛈️ 风暴</button>
+                     <button onclick="setAiStyle('sun')" id="style-sun" title="温暖鼓励" style="font-size: 0.78rem; padding: 0.35rem 0.75rem; border-radius: 99px; border: 1px solid rgba(81,63,44,0.12); background: rgba(255,251,245,0.95); color: #8e5520; cursor: pointer; font-weight: 700;">☀️ 暖阳</button>
+                     <button onclick="setAiStyle('cold')" id="style-cold" title="理性分析" style="font-size: 0.78rem; padding: 0.35rem 0.75rem; border-radius: 99px; border: 1px solid rgba(81,63,44,0.12); background: rgba(255,251,245,0.95); color: #8e5520; cursor: pointer; font-weight: 700;">❄️ 冷锋</button>
+                     <button onclick="setAiStyle('rain')" id="style-rain" title="先损后帮" style="font-size: 0.78rem; padding: 0.35rem 0.75rem; border-radius: 99px; border: 1px solid rgba(81,63,44,0.12); background: rgba(255,251,245,0.95); color: #8e5520; cursor: pointer; font-weight: 700;">🌧️ 阵雨</button>
+                   </div>
                    <div id="ai-comment-box" style="background: rgba(221,238,231,0.72); border: 1px solid rgba(31,106,82,0.14); border-radius: 1rem; padding: 1rem; color: #174f3d; line-height: 1.7; font-size: 0.95rem; margin-bottom: 0.65rem; position: relative; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);">
                      🤖 亲爱的YTUNer请耐心等待~突突老师正在批改...
                  </div>
@@ -301,7 +307,7 @@
                         </svg>
                     </span>
                     <div>
-                        <div class="footer-title">MyScore V8.0.1</div>
+                        <div class="footer-title">MyScore V8.0.2</div>
                         <div class="footer-desc">碳碳四键的个人开发实践项目 · 把成绩记录、趋势和陪学反馈收进一个更顺手的仪表盘。</div>
                     </div>
                 </div>
@@ -318,7 +324,7 @@
                         <span class="footer-pill-icon" style="background:#fff0e8;color:#e26d4a;">
                             <svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3.2v13.6M3.2 10h13.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                         </span>
-                        <span><strong>版本</strong> V8.0.1</span>
+                        <span><strong>版本</strong> V8.0.2</span>
                     </span>
 
                     <a class="footer-link-pill" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
@@ -553,6 +559,18 @@
 
 <!-- 报告预览隐藏容器（用于生成图片）-->
 <div id="report-canvas-container" style="position:absolute;left:-9999px;top:-9999px;"></div>
+
+<!-- 目标设置浮层 -->
+<div id="goal-overlay" onclick="if(event.target===this)cancelGoal()" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.35);z-index:9999;justify-content:center;align-items:center;">
+  <div style="background:#fffaf5;border-radius:14px;padding:1.5rem 1.8rem;width:320px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
+    <div style="font-size:1rem;font-weight:700;color:#3a2a1a;margin-bottom:1rem;" id="goal-overlay-title">设置目标分数</div>
+    <input id="goal-overlay-input" type="number" step="0.1" min="0" placeholder="输入目标分数" style="width:100%;padding:0.6rem 0.8rem;border:1.5px solid rgba(81,63,44,0.2);border-radius:8px;font-size:1rem;color:#3a2a1a;background:#fff;outline:none;box-sizing:border-box;">
+    <div style="display:flex;gap:0.6rem;justify-content:flex-end;margin-top:1rem;">
+      <button onclick="cancelGoal()" style="padding:0.45rem 1rem;border:1px solid rgba(81,63,44,0.15);border-radius:8px;background:none;color:#8e5520;font-size:0.88rem;cursor:pointer;font-weight:600;">取消</button>
+      <button onclick="confirmGoal()" style="padding:0.45rem 1rem;border:none;border-radius:8px;background:#1f6a52;color:#fff;font-size:0.88rem;cursor:pointer;font-weight:600;">确认</button>
+    </div>
+  </div>
+</div>
 
 <script src="app.js"></script>
 

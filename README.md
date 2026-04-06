@@ -1,9 +1,9 @@
 ﻿<div align="center">
 
-# MyScore - AI 智能成绩管理系统 · V8.0.1
+# MyScore - AI 智能成绩管理系统 · V8.0.2
 
 <p>
-    <img src="https://img.shields.io/badge/v8.0.1-Code_Cleanup-ff8a63?style=flat-square&logo=rocket&logoColor=white" alt="Version">
+    <img src="https://img.shields.io/badge/v8.0.2-Personality_Upgrade-ff8a63?style=flat-square&logo=rocket&logoColor=white" alt="Version">
     <img src="https://img.shields.io/badge/Model-DeepSeek-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
     <img src="https://img.shields.io/badge/Deploy-Netlify_%2B_Zeabur-5468ff?style=flat-square&logo=vercel&logoColor=white" alt="Deploy">
     <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=flat-square" alt="License">
@@ -13,16 +13,22 @@
 
 </div>
 
-一个功能完善且具备 **AI 交互能力** 的考试成绩管理系统。当前为 **V8.0.1**，在 V8.0 的基础上完成了前端工程化拆分、后端去重与安全配置优化。
+一个功能完善且具备 **AI 交互能力** 的考试成绩管理系统。当前为 **V8.0.2**，新增 AI 评价风格切换、目标追踪功能，并修复了密钥安全问题。
 
 ## 🔔 最新版本速览
 
-### V8.0.1 (Current)
+### V8.0.2 (Current)
+- ✅ **AI 评价风格系统**：新增风暴（犀利）、暖阳（鼓励）、冷锋（理性）、阵雨（先损后帮）四种风格，一键切换。
+- ✅ **目标追踪功能**：支持为每种考试设置目标分数，显示进度百分比。
+- ✅ **安全修复**：移除 start-local.bat 中硬编码的 API Key，加入 .gitignore 防止泄露。
+- ✅ **默认模型确认**：AI 模型确认为 `deepseek-chat`（稳定可用）。
+
+### V8.0.1
 - ✅ **前端工程化拆分**：CSS（~2000 行）提取到 `style.css`，JS（~2500 行）合并为 `app.js`，`index.html` 从 5170 行精简到约 560 行。
 - ✅ **后端去重**：提取 `server.js` 与 `netlify/functions/comment.js` 的重复 AI 逻辑到 `lib/aiComment.js`，减少维护成本。
 - ✅ **安全配置**：新增 `.gitignore`，CORS 支持 `ALLOWED_ORIGIN` 环境变量，新增 `start-local.bat` 本地启动脚本。
 - ✅ **修复导出版本号**：备份文件版本号从 `5.2` 更新为 `8.0`。
-- ✅ **默认模型更新**：AI 默认模型改为 `deepseek-reasoner`。
+- ✅ **默认模型更新**：AI 默认模型确认为 `deepseek-chat`。
 
 ### V8.0
 - ✅ **双平台部署打通**：统一前端 AI 入口为 `/api/comment`，同一仓库可同时部署到 Netlify 与 Zeabur。
@@ -142,7 +148,7 @@ MyScore/
 ├── package.json            # Node 启动配置与项目版本
 ├── zbpack.json             # Zeabur 部署参数
 ├── DEPLOYMENT.md           # 双平台部署说明
-├── start-local.bat         # 本地开发启动脚本
+├── start-local.bat         # 本地开发启动脚本（不提交到 git）
 ├── lib/
 │   └── aiComment.js        # 共享 AI 逻辑 (CORS + prompt + API 调用)
 ├── netlify/
@@ -153,13 +159,18 @@ MyScore/
 
 ## 🎯 版本历史
 
-### V8.0.1 (当前版本)
+### V8.0.2 (当前版本)
+- ✅ 新增 AI 评价风格系统：风暴/暖阳/冷锋/阵雨四种风格一键切换。
+- ✅ 新增目标追踪功能：支持为每种考试设置目标分数与进度展示。
+- ✅ 安全修复：移除 start-local.bat 中的硬编码 API Key，加入 .gitignore。
+- ✅ 默认 AI 模型确认为 `deepseek-chat`。
+
+### V8.0.1
 - ✅ 前端工程化拆分：CSS 提取到 `style.css`，JS 合并为 `app.js`，`index.html` 大幅精简。
 - ✅ 后端去重：共享 AI 逻辑提取到 `lib/aiComment.js`，减少重复代码。
 - ✅ 新增 `.gitignore`、`start-local.bat` 本地启动脚本。
 - ✅ CORS 支持 `ALLOWED_ORIGIN` 环境变量配置。
 - ✅ 修复导出备份版本号（5.2 → 8.0）。
-- ✅ 默认 AI 模型更新为 `deepseek-reasoner`。
 
 ### V8.0
 - ✅ 前后端统一切换到 `/api/comment`，支持 Netlify 与 Zeabur 共用同一仓库部署。

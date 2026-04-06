@@ -8,6 +8,38 @@
             return meta && meta.content ? meta.content.trim() : '/api/comment';
         })();
 
+        // ==================== AI 风格配置 ====================
+        const AI_STYLES = {
+            storm: { icon: '⛈️', name: '风暴', desc: '犀利刻薄' },
+            sun:   { icon: '☀️', name: '暖阳', desc: '温暖鼓励' },
+            cold:  { icon: '❄️', name: '冷锋', desc: '理性分析' },
+            rain:  { icon: '🌧️', name: '阵雨', desc: '先损后帮' }
+        };
+        let currentAiStyle = localStorage.getItem('myscore_ai_style') || 'storm';
+
+        function setAiStyle(styleKey) {
+            if (!AI_STYLES[styleKey]) return;
+            var prevStyle = currentAiStyle;
+            currentAiStyle = styleKey;
+            localStorage.setItem('myscore_ai_style', styleKey);
+            // 更新按钮高亮
+            document.querySelectorAll('#ai-style-bar button').forEach(function(btn) {
+                btn.style.background = 'rgba(255,251,245,0.95)';
+                btn.style.borderColor = 'rgba(81,63,44,0.12)';
+                btn.style.color = '#8e5520';
+            });
+            var active = document.getElementById('style-' + styleKey);
+            if (active) {
+                active.style.background = 'rgba(31,106,82,0.12)';
+                active.style.borderColor = 'rgba(31,106,82,0.2)';
+                active.style.color = '#174f3d';
+            }
+            // 切换风格后自动重新请求评价
+            if (prevStyle !== styleKey && lastExamType && lastScore) {
+                fetchAIComment(lastExamType, lastScore, lastHistory);
+            }
+        }
+
         // 图表实例变量
         let mainChartInstance = null;
 
@@ -399,10 +431,57 @@
                     }
                 }
                 html += '</div>';
+                var totalLabel = last.examType === 'ielts' ? 'Overall' : '总分';
                 if (last.total !== null) {
-                    const totalLabel = last.examType === 'ielts' ? 'Overall' : '总分';
                     html += '<div class="total-preview"><div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-weight:600;color:#059669;">' + totalLabel + '</span><span style="font-size:2.5rem;font-weight:bold;" class="gradient-text">' + last.total.toFixed(1) + '</span></div></div>';
+
+                    // 功能 2：目标追踪
+                    var goalKey = last.examType;
+                    var goal = getGoal(goalKey);
+                    if (goal !== null) {
+                        var pct = Math.min(100, Math.round((last.total / goal) * 100));
+                        var barColor = pct >= 100 ? '#10b981' : (pct >= 70 ? '#f59e0b' : '#ef4444');
+                        html += '<div style="margin-top:0.5rem;padding:0.6rem 0.8rem;background:rgba(31,106,82,0.05);border-radius:0.8rem;">';
+                        html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.35rem;"><span style="font-size:0.82rem;color:#6b7280;font-weight:600;">目标 ' + goal.toFixed(1) + '</span><span style="font-size:0.82rem;color:' + barColor + ';font-weight:700;">' + pct + '%</span></div>';
+                        html += '<div style="height:6px;background:rgba(0,0,0,0.06);border-radius:3px;overflow:hidden;"><div style="width:' + pct + '%;height:100%;background:' + barColor + ';border-radius:3px;transition:width 0.4s ease;"></div></div>';
+                        html += '</div>';
+                    }
+                    html += '<div style="text-align:right;margin-top:0.4rem;"><button onclick="promptSetGoal(\'' + escapeHtml(goalKey) + '\')" style="font-size:0.78rem;color:#1f6a52;background:none;border:1px solid rgba(31,106,82,0.18);border-radius:99px;padding:0.25rem 0.7rem;cursor:pointer;font-weight:600;">' + (goal !== null ? '修改目标' : '设置目标') + '</button></div>';
                 }
+
+                // 功能 1：成绩对比分析
+                var sameTypeRecords = records.filter(function(r) { return r.examType === last.examType; });
+                if (sameTypeRecords.length >= 2) {
+                    var prev = sameTypeRecords[sameTypeRecords.length - 2];
+                    html += '<div style="margin-top:0.6rem;padding:0.7rem 0.8rem;background:rgba(31,106,82,0.04);border-radius:0.8rem;">';
+                    html += '<div style="font-size:0.82rem;color:#6b7280;font-weight:600;margin-bottom:0.4rem;">对比上次</div>';
+                    if (exam) {
+                        for (var ci = 0; ci < exam.subjects.length; ci++) {
+                            var cs = exam.subjects[ci];
+                            if (isCet && (cs.id === 'writing' || cs.id === 'translation')) continue;
+                            var curVal = last.scores[cs.id] || 0;
+                            var preVal = prev.scores[cs.id] || 0;
+                            var diff = curVal - preVal;
+                            var arrow, diffColor;
+                            if (diff > 0) { arrow = '↑'; diffColor = '#10b981'; }
+                            else if (diff < 0) { arrow = '↓'; diffColor = '#ef4444'; }
+                            else { arrow = '→'; diffColor = '#9ca3af'; }
+                            var sign = diff > 0 ? '+' : '';
+                            html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:0.2rem 0;font-size:0.88rem;"><span style="color:#374151;">' + escapeHtml(cs.name) + '</span><span style="color:#6b7280;">' + preVal.toFixed(cs.dec) + ' → ' + curVal.toFixed(cs.dec) + '</span><span style="color:' + diffColor + ';font-weight:700;">' + arrow + sign + diff.toFixed(cs.dec) + '</span></div>';
+                        }
+                    }
+                    if (last.total !== null && prev.total !== null) {
+                        var totalDiff = last.total - prev.total;
+                        var tArrow, tColor;
+                        if (totalDiff > 0) { tArrow = '↑'; tColor = '#10b981'; }
+                        else if (totalDiff < 0) { tArrow = '↓'; tColor = '#ef4444'; }
+                        else { tArrow = '→'; tColor = '#9ca3af'; }
+                        var tSign = totalDiff > 0 ? '+' : '';
+                        html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:0.3rem 0 0 0;border-top:1px solid rgba(0,0,0,0.06);margin-top:0.2rem;font-size:0.9rem;"><span style="font-weight:700;color:#059669;">' + totalLabel + '</span><span style="color:#6b7280;">' + prev.total.toFixed(1) + ' → ' + last.total.toFixed(1) + '</span><span style="color:' + tColor + ';font-weight:700;">' + tArrow + tSign + totalDiff.toFixed(1) + '</span></div>';
+                    }
+                    html += '</div>';
+                }
+
                 recentDiv.innerHTML = html;
                 // 准备历史数据
 const historyRecs = records.filter(r => r.examType === last.examType).map(r => r.total).slice(-5);
@@ -1187,16 +1266,20 @@ async function fetchAIComment(examType, currentScore, historyScores) {
     box.style.color = '#174f3d';
     box.style.borderColor = 'rgba(31,106,82,0.14)';
 
+    // 更新风格按钮高亮
+    setAiStyle(currentAiStyle);
+
     try {
         const data = await postComment({
             examType,
             currentScore,
-            historyScores
+            historyScores,
+            style: currentAiStyle
         });
-        
+
         if (data.comment) {
             lastAiComment = data.comment; // 记住老师骂了什么
-            box.innerHTML = `<strong>👩‍🏫 毒舌老师：</strong> ${escapeHtml(data.comment)}`;
+            renderAiComment(box, data.comment);
             actions.style.display = 'flex'; // 显示"回嘴"按钮
         } else {
             box.innerHTML = '老师去吃饭了...';
@@ -1205,6 +1288,80 @@ async function fetchAIComment(examType, currentScore, historyScores) {
         console.error(err);
         box.innerHTML = '老师断线了...';
     }
+}
+
+// 渲染 AI 评价（支持 ||| 分隔的评价+建议格式）
+function renderAiComment(box, rawComment) {
+    var parts = rawComment.split('|||');
+    var mainComment = parts[0] ? parts[0].trim() : rawComment;
+    var suggestion = parts[1] ? parts[1].trim() : '';
+
+    var html = '<strong>👩‍🏫 毒舌老师：</strong> ' + escapeHtml(mainComment);
+    if (suggestion) {
+        var sugId = 'sug-' + Date.now();
+        html += '<br><span onclick="toggleSuggestion(\'' + sugId + '\')" style="display:inline-block; margin-top:0.4rem; font-size:0.82rem; color:#1f6a52; cursor:pointer; font-weight:600;" class="sug-toggle">展开建议 ▾</span>';
+        html += '<div id="' + sugId + '" style="display:none; margin-top:0.35rem; padding:0.5rem 0.7rem; background:rgba(31,106,82,0.06); border-radius:0.7rem; font-size:0.88rem; color:#174f3d; line-height:1.6;">' + escapeHtml(suggestion) + '</div>';
+    }
+    box.innerHTML = html;
+}
+
+function toggleSuggestion(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var toggle = el.previousElementSibling;
+    if (el.style.display === 'none') {
+        el.style.display = 'block';
+        if (toggle) toggle.textContent = '收起建议 ▴';
+    } else {
+        el.style.display = 'none';
+        if (toggle) toggle.textContent = '展开建议 ▾';
+    }
+}
+
+// ================= 目标追踪逻辑 =================
+function getGoal(examType) {
+    try {
+        var goals = JSON.parse(localStorage.getItem('myscore_goals') || '{}');
+        return goals[examType] || null;
+    } catch { return null; }
+}
+
+function saveGoal(examType, target) {
+    try {
+        var goals = JSON.parse(localStorage.getItem('myscore_goals') || '{}');
+        goals[examType] = target;
+        localStorage.setItem('myscore_goals', JSON.stringify(goals));
+    } catch {}
+}
+
+var _goalExamType = null;
+
+function promptSetGoal(examType) {
+    _goalExamType = examType;
+    var current = getGoal(examType);
+    var overlay = document.getElementById('goal-overlay');
+    var input = document.getElementById('goal-overlay-input');
+    var title = document.getElementById('goal-overlay-title');
+    title.textContent = '设置目标分数' + (current ? '（当前：' + current.toFixed(1) + '）' : '');
+    input.value = current ? current.toFixed(1) : '';
+    overlay.style.display = 'flex';
+    setTimeout(function() { input.focus(); input.select(); }, 100);
+}
+
+function confirmGoal() {
+    if (!_goalExamType) return;
+    var input = document.getElementById('goal-overlay-input');
+    var val = parseFloat(input.value.trim());
+    if (isNaN(val) || val <= 0) { alert('请输入有效的正数'); return; }
+    saveGoal(_goalExamType, val);
+    document.getElementById('goal-overlay').style.display = 'none';
+    _goalExamType = null;
+    renderDashboard();
+}
+
+function cancelGoal() {
+    document.getElementById('goal-overlay').style.display = 'none';
+    _goalExamType = null;
 }
 
 // 2. 显示输入框
@@ -1236,7 +1393,8 @@ async function sendRebuttal() {
             currentScore: lastScore,
             historyScores: lastHistory,
             userRebuttal: rebuttal,      // 重点：把你的回嘴发过去
-            previousComment: lastAiComment // 重点：把老师刚才的话发过去
+            previousComment: lastAiComment, // 重点：把老师刚才的话发过去
+            style: currentAiStyle
         });
         
         if (data.comment) {
@@ -1430,9 +1588,35 @@ function pokeTeacher() {
     }, 3000);
 }
 // ==================== 版本日志与使用文档 ====================
-const APP_VERSION = '8.0.1';
+const APP_VERSION = '8.0.2';
 const CHANGELOG_STORAGE_KEY = 'myscore_changelog_seen_' + APP_VERSION;
-const CHANGELOG_PLACEHOLDER = `📝 MyScore V8.0.1 更新日志
+const CHANGELOG_PLACEHOLDER = `📝 MyScore V8.0.2 更新日志
+发布时间：2026-04-06
+代号：Personality Upgrade（个性升级计划）
+
+A. AI 评价风格系统 (AI Style System)
+• 新增四种评价风格：风暴（犀利刻薄）、暖阳（温暖鼓励）、冷锋（理性分析）、阵雨（先损后帮）。
+• 风格切换按钮显示在 AI 评价区域上方，点击即刻切换并重新获取评价。
+• 每种风格拥有独立的 system prompt、temperature 与 max_tokens 配置。
+• 风格选择自动保存到 localStorage，下次打开页面保持上次选择。
+
+B. 目标追踪功能 (Goal Tracking)
+• 仪表盘新增"设置目标"入口，可为每种考试类型设定目标分数。
+• 显示当前分数与目标的百分比进度条，颜色随完成度变化。
+• 目标数据保存在 localStorage，支持随时修改。
+
+C. 安全修复 (Security Fix)
+• 移除 start-local.bat 中硬编码的 API Key，防止密钥泄露。
+• 将 start-local.bat 加入 .gitignore，避免再次误提交敏感信息。
+• AI 默认模型确认为 deepseek-chat（稳定可用）。
+
+感谢您持续使用 MyScore，V8.0.2 ✨
+这一版为 AI 评价增加了个性化选择，同时修复了密钥安全问题。
+Copyright © LYT, 2026 All Rights Reserved
+
+---
+
+📝 MyScore V8.0.1 更新日志
 发布时间：2026-04-04
 代号：Code Cleanup（代码瘦身计划）
 
@@ -1453,7 +1637,7 @@ C. 安全与配置 (Security & Configuration)
 
 D. 修复与优化 (Fixes & Polish)
 • 修复导出备份文件版本号仍显示 5.2 的问题，统一更新为 8.0。
-• 默认 AI 模型更新为 deepseek-reasoner。
+• 默认 AI 模型更新为 deepseek-chat。
 • DEPLOYMENT.md 补充 ALLOWED_ORIGIN 环境变量说明。
 
 感谢您持续使用 MyScore，V8.0.1 ✨
