@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyScore V2.1 - 我的成绩单</title>
+    <title>MyScore 1.1.2 - 我的成绩单</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* 明亮主题配色 */
@@ -99,6 +99,17 @@
             box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
         }
 
+        .input-bright.input-error {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+        .input-warning {
+            font-size: 0.75rem;
+            color: #ef4444;
+            margin-top: 0.25rem;
+        }
+
         .btn-primary {
             background: linear-gradient(135deg, #10b981, #059669);
             transition: all 0.3s ease;
@@ -110,6 +121,21 @@
         }
 
         .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 70, 94, 0.3);
+        }
+
+        .btn-secondary:active {
             transform: translateY(0);
         }
 
@@ -151,6 +177,47 @@
             border-color: #10b981;
             background-color: rgba(16, 185, 129, 0.1);
         }
+
+        /* 导出/导入相关样式 */
+        .import-export-card {
+            background: linear-gradient(135deg, #e0f2fe 0%, #f0fdf4 100%);
+            border: 2px solid #6366f1;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .import-export-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(99, 70, 94, 0.15);
+        }
+
+        .file-input-label {
+            position: relative;
+            display: inline-block;
+        }
+
+        .file-input-label input {
+            opacity: 0;
+            cursor: pointer;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .file-input-label::before {
+            content: '选择文件';
+            font-size: 0.75rem;
+            color: #4b46e5;
+            padding: 4px 8px;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            border-radius: 0.5rem;
+        }
+
+        .hidden-input {
+            display: none;
+        }
     </style>
 </head>
 <body class="text-gray-900">
@@ -160,7 +227,7 @@
             <div class="card-bright p-6 flex justify-between items-center">
                 <div>
                     <h1 class="text-4xl font-bold gradient-text-bright">MyScore</h1>
-                    <p class="text-gray-500 text-sm mt-1">我的成绩单 (V2.1 - 支持雅思/四六级)</p>
+                    <p class="text-gray-500 text-sm mt-1">我的成绩单 (V2.3 - 支持雅思/四六级，支持数据导出/导入)</p>
                 </div>
                 <nav class="flex gap-3">
                     <button onclick="showPage('dashboard')" id="nav-dashboard"
@@ -184,6 +251,51 @@
                 </h2>
                 <div id="recent-score-content">
                     <!-- 动态内容 -->
+                </div>
+            </div>
+
+            <!-- 数据导出/导入 -->
+            <div class="card-bright import-export-card p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                    数据管理
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- 导出数据 -->
+                    <div class="flex-1">
+                        <div class="bg-white rounded-lg p-4 border-2 border-blue-300">
+                            <h3 class="text-lg font-bold text-blue-700 mb-3">
+                                导出数据
+                            </h3>
+                            <p class="text-gray-600 text-sm mb-4">
+                                将所有成绩导出为JSON文件，方便备份和迁移
+                            </p>
+                            <button onclick="exportData()" 
+                                class="w-full btn-primary text-white font-bold py-3 px-4 rounded-lg shadow-md">
+                                导出数据
+                            </button>
+                        </div>
+                    </div>
+                    <!-- 导入数据 -->
+                    <div class="flex-1">
+                        <div class="bg-white rounded-lg p-4 border-2 border-emerald-300">
+                            <h3 class="text-lg font-bold text-emerald-700 mb-3">
+                                导入数据
+                            </h3>
+                            <p class="text-gray-600 text-sm mb-4">
+                                从JSON文件恢复成绩记录（会覆盖现有数据）
+                            </p>
+                            <div class="relative mt-2">
+                                <label class="file-input-label block text-emerald-600 text-sm font-medium mb-2">
+                                    选择JSON文件
+                                </label>
+                                <input type="file" id="import-file-input" accept=".json"
+                                    class="file-input-label input-bright rounded-lg px-4 py-3 border-2 border-emerald-300"
+                                    onchange="handleFileSelect(event)">
+                                <input type="file" id="actual-import-file" 
+                                    class="hidden-input">
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -264,9 +376,10 @@
                     <form id="ielts-form" class="space-y-6">
                         <!-- 考试日期 -->
                         <div>
-                            <label class="block text-gray-700 text-sm font-medium mb-2">考试日期</label>
+                            <label class="block text-gray-700 text-sm font-medium mb-2">考试日期（支持键盘输入，如20260125自动转换）</label>
                             <input type="date" id="ielts-exam-date" required
                                 class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                            <div id="ielts-date-warning" class="input-warning"></div>
                         </div>
 
                         <!-- 四科输入区域 -->
@@ -279,8 +392,9 @@
                                 <div class="space-y-4">
                                     <div>
                                         <label class="block text-blue-600 text-sm font-medium mb-2">正确题数 (0-40)</label>
-                                        <input type="number" id="ielts-listening-raw" min="0" max="40" required placeholder="请输入正确题数"
+                                        <input type="number" id="ielts-listening-raw" min="0" max="40" required placeholder="请输入正确题数 (0-40)"
                                             class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="ielts-listening-warning" class="input-warning"></div>
                                     </div>
                                     <div class="bg-white/70 rounded-lg p-4 border-2 border-blue-300">
                                         <div class="text-blue-600 text-sm font-medium">折算分</div>
@@ -297,8 +411,9 @@
                                 <div class="space-y-4">
                                     <div>
                                         <label class="block text-emerald-600 text-sm font-medium mb-2">正确题数 (0-40)</label>
-                                        <input type="number" id="ielts-reading-raw" min="0" max="40" required placeholder="请输入正确题数"
+                                        <input type="number" id="ielts-reading-raw" min="0" max="40" required placeholder="请输入正确题数 (0-40)"
                                             class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="ielts-reading-warning" class="input-warning"></div>
                                     </div>
                                     <div class="bg-white/70 rounded-lg p-4 border-2 border-emerald-300">
                                         <div class="text-emerald-600 text-sm font-medium">折算分</div>
@@ -315,8 +430,9 @@
                                 <div class="space-y-4">
                                     <div>
                                         <label class="block text-amber-600 text-sm font-medium mb-2">总分 (0-9，步长0.5)</label>
-                                        <input type="number" id="ielts-writing-score" min="0" max="9" step="0.5" required placeholder="请输入总分"
+                                        <input type="number" id="ielts-writing-score" min="0" max="9" step="0.5" required placeholder="请输入总分 (0-9)"
                                             class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="ielts-writing-warning" class="input-warning"></div>
                                     </div>
                                     <button type="button" onclick="toggleIeltsWritingDetails()"
                                         class="w-full text-amber-600 hover:text-amber-700 text-sm font-semibold transition-colors">
@@ -326,13 +442,15 @@
                                         <div class="pt-4 space-y-3 border-t-2 border-amber-300 mt-4">
                                             <div>
                                                 <label class="block text-amber-600 text-sm font-medium mb-2">Task 1 (小作文, 权重1/3)</label>
-                                                <input type="number" id="ielts-writing-task1" min="0" max="9" step="0.5" placeholder="请输入Task1分数"
+                                                <input type="number" id="ielts-writing-task1" min="0" max="9" step="0.5" placeholder="请输入Task1分数 (0-9)"
                                                     class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                                <div id="ielts-task1-warning" class="input-warning"></div>
                                             </div>
                                             <div>
                                                 <label class="block text-amber-600 text-sm font-medium mb-2">Task 2 (大作文, 权重2/3)</label>
-                                                <input type="number" id="ielts-writing-task2" min="0" max="9" step="0.5" placeholder="请输入Task2分数"
+                                                <input type="number" id="ielts-writing-task2" min="0" max="9" step="0.5" placeholder="请输入Task2分数 (0-9)"
                                                     class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                                <div id="ielts-task2-warning" class="input-warning"></div>
                                             </div>
                                             <div class="bg-white/70 rounded-lg p-3 border-2 border-amber-300">
                                                 <div class="text-amber-600 text-sm font-medium">自动计算 (Task2×2+Task1)÷3</div>
@@ -351,8 +469,9 @@
                                 <div class="space-y-4">
                                     <div>
                                         <label class="block text-purple-600 text-sm font-medium mb-2">总分 (0-9，步长0.5)</label>
-                                        <input type="number" id="ielts-speaking-score" min="0" max="9" step="0.5" required placeholder="请输入总分"
+                                        <input type="number" id="ielts-speaking-score" min="0" max="9" step="0.5" required placeholder="请输入总分 (0-9)"
                                             class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="ielts-speaking-warning" class="input-warning"></div>
                                     </div>
                                 </div>
                             </div>
@@ -391,9 +510,10 @@
                     <form id="cet-form" class="space-y-6">
                         <!-- 考试日期 -->
                         <div>
-                            <label class="block text-gray-700 text-sm font-medium mb-2">考试日期</label>
+                            <label class="block text-gray-700 text-sm font-medium mb-2">考试日期（支持键盘输入，如20260125自动转换）</label>
                             <input type="date" id="cet-exam-date" required
                                 class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                            <div id="cet-date-warning" class="input-warning"></div>
                         </div>
 
                         <!-- 听力输入区域 -->
@@ -405,18 +525,21 @@
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div>
                                         <label class="block text-blue-600 text-sm font-medium mb-2">Section A: <span id="listening-sectiona-label">短对话/新闻</span> (7.1分/题)</label>
-                                        <input type="number" id="cet-listening-sectiona" min="0" required placeholder="题数 (0-8)"
+                                        <input type="number" id="cet-listening-sectiona" min="0" max="8" required placeholder="题数 (0-8)"
                                             class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="cet-sectiona-warning" class="input-warning"></div>
                                     </div>
                                     <div>
                                         <label class="block text-blue-600 text-sm font-medium mb-2">Section B: 长对话 (7.1分/题)</label>
-                                        <input type="number" id="cet-listening-sectionb" min="0" required placeholder="题数 (0-7)"
+                                        <input type="number" id="cet-listening-sectionb" min="0" max="7" required placeholder="题数 (0-7)"
                                             class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="cet-sectionb-warning" class="input-warning"></div>
                                     </div>
                                     <div>
                                         <label class="block text-blue-600 text-sm font-medium mb-2">Section C: <span id="listening-sectionc-label">短文</span> (14.2分/题)</label>
-                                        <input type="number" id="cet-listening-sectionc" min="0" required placeholder="题数 (0-10)"
+                                        <input type="number" id="cet-listening-sectionc" min="0" max="10" required placeholder="题数 (0-10)"
                                             class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="cet-sectionc-warning" class="input-warning"></div>
                                     </div>
                                 </div>
                                 <div class="bg-white/70 rounded-lg p-4 border-2 border-blue-300">
@@ -439,16 +562,19 @@
                                         <label class="block text-emerald-600 text-sm font-medium mb-2">选词填空 (3.55分/题)</label>
                                         <input type="number" id="cet-reading-wordbank" min="0" max="10" required placeholder="题数 (0-10)"
                                             class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="cet-wordbank-warning" class="input-warning"></div>
                                     </div>
                                     <div>
                                         <label class="block text-emerald-600 text-sm font-medium mb-2">长篇阅读 (7.1分/题)</label>
                                         <input type="number" id="cet-reading-skimming" min="0" max="10" required placeholder="题数 (0-10)"
                                             class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="cet-skimming-warning" class="input-warning"></div>
                                     </div>
                                     <div>
                                         <label class="block text-emerald-600 text-sm font-medium mb-2">仔细阅读 (14.2分/题)</label>
                                         <input type="number" id="cet-reading-reading" min="0" max="10" required placeholder="题数 (0-10)"
                                             class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="cet-reading-warning" class="input-warning"></div>
                                     </div>
                                 </div>
                                 <div class="bg-white/70 rounded-lg p-4 border-2 border-emerald-300">
@@ -468,8 +594,9 @@
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-amber-600 text-sm font-medium mb-2">原始分 (0-15分)</label>
-                                    <input type="number" id="cet-writing-raw" min="0" max="15" step="0.5" required placeholder="请输入原始分"
+                                    <input type="number" id="cet-writing-raw" min="0" max="15" step="0.5" required placeholder="请输入原始分 (0-15)"
                                         class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                    <div id="cet-writing-warning" class="input-warning"></div>
                                 </div>
                                 <div class="bg-white/70 rounded-lg p-4 border-2 border-amber-300">
                                     <div class="flex justify-between items-center">
@@ -488,8 +615,9 @@
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-red-600 text-sm font-medium mb-2">原始分 (0-15分)</label>
-                                    <input type="number" id="cet-translation-raw" min="0" max="15" step="0.5" required placeholder="请输入原始分"
+                                    <input type="number" id="cet-translation-raw" min="0" max="15" step="0.5" required placeholder="请输入原始分 (0-15)"
                                         class="w-full input-bright rounded-lg px-4 py-3 text-gray-900">
+                                        <div id="cet-translation-warning" class="input-warning"></div>
                                 </div>
                                 <div class="bg-white/70 rounded-lg p-4 border-2 border-red-300">
                                     <div class="flex justify-between items-center">
@@ -530,7 +658,7 @@
         let currentExamType = 'ielts';
 
         // ==================== 数据存储 ====================
-        const STORAGE_KEY = 'myscore_v2.1_records';
+        const STORAGE_KEY = 'myscore_v2.3_records';
 
         // 获取所有记录
         function getRecords() {
@@ -560,6 +688,29 @@
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
                 updateUI();
             }
+        }
+
+        // ==================== 日期格式化函数 ====================
+        function formatDateInput(input) {
+            // 移除非数字字符
+            let digits = input.replace(/\D/g, '');
+            
+            // 只有完整的8位数字才转换
+            if (digits.length === 8) {
+                let year = digits.substring(0, 4);
+                let month = digits.substring(4, 6);
+                let day = digits.substring(6, 8);
+                
+                // 验证日期是否有效
+                const date = new Date(year, month - 1, day);
+                if (!isNaN(date.getTime())) {
+                    return `${year}-${month}-${day}`;
+                }
+            }
+            
+            // 其他情况保持原值（包括输入中、不足8位、无效日期等）
+            // 返回空字符串，不进行任何转换
+            return '';
         }
 
         // ==================== 考试类型切换 ====================
@@ -602,11 +753,22 @@
                 document.getElementById('ielts-listening-score').textContent = '0.0';
                 document.getElementById('ielts-reading-score').textContent = '0.0';
                 document.getElementById('ielts-writing-calculated').textContent = '-';
+                clearAllWarnings();
                 updateIeltsOverallPreview();
             } else {
                 document.getElementById('cet-form').reset();
+                clearAllWarnings();
                 updateCetTotalPreview();
             }
+        }
+
+        // 清除所有警告信息
+        function clearAllWarnings() {
+            const warnings = document.querySelectorAll('.input-warning');
+            warnings.forEach(w => w.textContent = '');
+            
+            const errorInputs = document.querySelectorAll('.input-error');
+            errorInputs.forEach(input => input.classList.remove('input-error'));
         }
 
         // ==================== 向上取整函数 ====================
@@ -663,8 +825,8 @@
                 { range: [8, 9], score: 3.5 },
                 { range: [6, 7], score: 3.0 },
                 { range: [4, 5], score: 2.5 },
-                { range: [3, 3], score: 2.0 },
-                { range: [2, 2], score: 1.0 },
+                { range: [3, 3], score: 2.5 },
+                { range: [2, 2], score: 2.0 },
                 { range: [1, 1], score: 1.0 },
                 { range: [0, 0], score: 0.5 }
             ];
@@ -718,6 +880,142 @@
         function convertRawToReportScore(rawScore) {
             const scaledScore = rawScore * 7.1;
             return roundUp(scaledScore);
+        }
+
+        // ==================== 输入验证 ====================
+
+        // 验证数值输入范围
+        function validateNumberInput(input, min, max, warningId) {
+            const warningEl = document.getElementById(warningId);
+            const value = parseFloat(input.value);
+            
+            if (input.value && (isNaN(value) || value < min || value > max)) {
+                warningEl.textContent = `⚠️ 请输入 ${min} 到 ${max} 之间的数值`;
+                input.classList.add('input-error');
+                return false;
+            } else {
+                warningEl.textContent = '';
+                input.classList.remove('input-error');
+                return true;
+            }
+        }
+
+        // ==================== 数据导出/导入功能 ====================
+
+        // 导出数据为JSON文件
+        function exportData() {
+            const records = getRecords();
+            
+            if (records.length === 0) {
+                alert('暂无数据可导出！');
+                return;
+            }
+
+            // 创建文件名：myscore_v2.3_成绩导出.json
+            const fileName = `myscore_v2.3_${getDateString()}_成绩导出.json`;
+            
+            // 转换为JSON字符串
+            const jsonContent = JSON.stringify(records, null, 2);
+            
+            // 创建Blob对象
+            const blob = new Blob([jsonContent], { type: 'application/json;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            // 创建下载链接
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            link.textContent = '点击下载文件';
+            link.click();
+            
+            // 清理URL
+            URL.revokeObjectURL(url);
+            
+            alert('数据导出成功！');
+        }
+
+        // 导入数据从JSON文件
+        function importData(event) {
+            const file = event.target.files[0];
+            
+            if (!file) {
+                alert('请选择JSON文件！');
+                return;
+            }
+
+            // 检查文件类型
+            if (!file.name.endsWith('.json')) {
+                alert('请选择JSON文件！');
+                return;
+            }
+
+            // 读取文件内容
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const content = e.target.result;
+                    const importedRecords = JSON.parse(content);
+                    
+                    if (!Array.isArray(importedRecords)) {
+                        throw new Error('文件格式不正确！');
+                    }
+                    
+                    if (importedRecords.length === 0) {
+                        throw new Error('文件中没有数据！');
+                    }
+                    
+                    if (confirm(`导入 ${importedRecords.length} 条记录？\n\n（会覆盖现有数据）`)) {
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(importedRecords));
+                        updateUI();
+                        alert(`成功导入 ${importedRecords.length} 条记录！`);
+                    } else {
+                        if (confirm(`放弃导入，保留现有 ${importedRecords.length} 条记录？`)) {
+                            // 不做任何操作
+                        } else {
+                            // 清空现有数据，导入新数据
+                            localStorage.setItem(STORAGE_KEY, JSON.stringify(importedRecords));
+                            updateUI();
+                            alert(`成功导入 ${importedRecords.length} 条记录！`);
+                        }
+                    }
+                } catch (error) {
+                    alert('导入失败：' + error.message);
+                }
+            };
+            
+            reader.onerror = function() {
+                alert('文件读取失败！');
+            };
+            
+            reader.readAsText(file);
+        }
+
+        // 文件选择处理
+        function handleFileSelect(event) {
+            const fileInput = document.getElementById('import-file-input');
+            const actualFileInput = document.getElementById('actual-import-file');
+            
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                actualFileInput.files = fileInput.files;
+                
+                // 显示文件名
+                const fileName = file.name ? `: ${file.name}` : '';
+                const selectLabel = document.querySelector('.file-input-label');
+                selectLabel.childNodes[0].textContent = '已选择 ' + fileName;
+            } else {
+                const selectLabel = document.querySelector('.file-input-label');
+                selectLabel.childNodes[0].textContent = '选择JSON文件';
+            }
+        }
+
+        // 获取格式化日期字符串
+        function getDateString() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}${month}${day}`;
         }
 
         // ==================== UI 渲染 ====================
@@ -940,7 +1238,7 @@
                                     <div class="text-gray-600 text-sm mb-3 flex gap-4 flex-wrap">
                                         <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded font-medium">听力: ${record.listening.total}</span>
                                         <span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded font-medium">阅读: ${record.reading.total}</span>
-                                        <span class="bg-orange-100 text-orange-700 px-2 py-1 rounded font-medium">写作+翻译: ${record.writing.score + record.translation.score}</span>
+                                        <span class="bg-orange-100 text-orange-700 px-2 py-1 rounded font-medium">写作和翻译: ${record.writing.score + record.translation.score}</span>
                                     </div>
                                     <div class="flex items-center gap-3">
                                         <span class="text-gray-600 text-sm font-medium">总分:</span>
@@ -979,9 +1277,11 @@
         const ieltsWritingTask1Input = document.getElementById('ielts-writing-task1');
         const ieltsWritingTask2Input = document.getElementById('ielts-writing-task2');
         const ieltsSpeakingScoreInput = document.getElementById('ielts-speaking-score');
+        const ieltsDateInput = document.getElementById('ielts-exam-date');
 
         // 实时预览 - Listening
         ieltsListeningRawInput.addEventListener('input', function() {
+            validateNumberInput(this, 0, 40, 'ielts-listening-warning');
             const count = parseInt(this.value) || 0;
             const score = calculateListeningScore(count);
             document.getElementById('ielts-listening-score').textContent = score.toFixed(1);
@@ -990,6 +1290,7 @@
 
         // 实时预览 - Reading
         ieltsReadingRawInput.addEventListener('input', function() {
+            validateNumberInput(this, 0, 40, 'ielts-reading-warning');
             const count = parseInt(this.value) || 0;
             const score = calculateReadingScore(count);
             document.getElementById('ielts-reading-score').textContent = score.toFixed(1);
@@ -997,8 +1298,12 @@
         });
 
         // 实时预览 - Writing
-        ieltsWritingScoreInput.addEventListener('input', updateIeltsOverallPreview);
+        ieltsWritingScoreInput.addEventListener('input', function() {
+            validateNumberInput(this, 0, 9, 'ielts-writing-warning');
+            updateIeltsOverallPreview();
+        });
         ieltsWritingTask1Input.addEventListener('input', function() {
+            validateNumberInput(this, 0, 9, 'ielts-task1-warning');
             const task1 = parseFloat(this.value) || null;
             const task2 = parseFloat(ieltsWritingTask2Input.value) || null;
             const calculated = calculateWritingScore(task1, task2);
@@ -1011,6 +1316,7 @@
             }
         });
         ieltsWritingTask2Input.addEventListener('input', function() {
+            validateNumberInput(this, 0, 9, 'ielts-task2-warning');
             const task1 = parseFloat(ieltsWritingTask1Input.value) || null;
             const task2 = parseFloat(this.value) || null;
             const calculated = calculateWritingScore(task1, task2);
@@ -1024,7 +1330,23 @@
         });
 
         // 实时预览 - Speaking
-        ieltsSpeakingScoreInput.addEventListener('input', updateIeltsOverallPreview);
+        ieltsSpeakingScoreInput.addEventListener('input', function() {
+            validateNumberInput(this, 0, 9, 'ielts-speaking-warning');
+            updateIeltsOverallPreview();
+        });
+
+        // 日期输入点击选中和实时格式化
+        ieltsDateInput.addEventListener('click', function() {
+            this.select(); // 点击时选中，让用户可以方便覆盖或修改
+        });
+
+        ieltsDateInput.addEventListener('input', function() {
+            const formatted = formatDateInput(this.value);
+            if (formatted !== this.value && formatted !== '') {
+                this.value = formatted;
+                document.getElementById('ielts-date-warning').textContent = '';
+            }
+        });
 
         // 更新 Overall 预览
         function updateIeltsOverallPreview() {
@@ -1042,9 +1364,20 @@
             document.getElementById('ielts-overall-score').textContent = overall.toFixed(1);
         }
 
-        // 雅思表单提交
+        // 雅思表单提交验证
         document.getElementById('ielts-form').addEventListener('submit', function(e) {
             e.preventDefault();
+
+            // 验证所有输入
+            const validListening = validateNumberInput(ieltsListeningRawInput, 0, 40, 'ielts-listening-warning');
+            const validReading = validateNumberInput(ieltsReadingRawInput, 0, 40, 'ielts-reading-warning');
+            const validWriting = validateNumberInput(ieltsWritingScoreInput, 0, 9, 'ielts-writing-warning');
+            const validSpeaking = validateNumberInput(ieltsSpeakingScoreInput, 0, 9, 'ielts-speaking-warning');
+
+            if (!validListening || !validReading || !validWriting || !validSpeaking) {
+                alert('请修正输入错误后再提交');
+                return;
+            }
 
             const date = document.getElementById('ielts-exam-date').value;
             const listeningRaw = parseInt(ieltsListeningRawInput.value);
@@ -1079,6 +1412,7 @@
             document.getElementById('ielts-listening-score').textContent = '0.0';
             document.getElementById('ielts-reading-score').textContent = '0.0';
             document.getElementById('ielts-writing-calculated').textContent = '-';
+            clearAllWarnings();
             updateIeltsOverallPreview();
 
             alert('雅思成绩保存成功！');
@@ -1093,18 +1427,47 @@
         const cetReadingReading = document.getElementById('cet-reading-reading');
         const cetWritingRaw = document.getElementById('cet-writing-raw');
         const cetTranslationRaw = document.getElementById('cet-translation-raw');
+        const cetDateInput = document.getElementById('cet-exam-date');
 
         // 四六级实时预览
         [cetListeningSectionA, cetListeningSectionB, cetListeningSectionC].forEach(input => {
-            input.addEventListener('input', updateCetTotalPreview);
+            input.addEventListener('input', function() {
+                const max = input === cetListeningSectionA ? 8 : (input === cetListeningSectionB ? 7 : 10);
+                const warningId = input === cetListeningSectionA ? 'cet-sectiona-warning' : 
+                              (input === cetListeningSectionB ? 'cet-sectionb-warning' : 'cet-sectionc-warning');
+                validateNumberInput(input, 0, max, warningId);
+                updateCetTotalPreview();
+            });
         });
 
         [cetReadingWordBank, cetReadingSkimming, cetReadingReading].forEach(input => {
-            input.addEventListener('input', updateCetTotalPreview);
+            input.addEventListener('input', function() {
+                validateNumberInput(input, 0, 10, 'cet-' + input.id.split('-')[1] + '-warning');
+                updateCetTotalPreview();
+            });
         });
 
-        cetWritingRaw.addEventListener('input', updateCetTotalPreview);
-        cetTranslationRaw.addEventListener('input', updateCetTotalPreview);
+        cetWritingRaw.addEventListener('input', function() {
+            validateNumberInput(this, 0, 15, 'cet-writing-warning');
+            updateCetTotalPreview();
+        });
+        cetTranslationRaw.addEventListener('input', function() {
+            validateNumberInput(this, 0, 15, 'cet-translation-warning');
+            updateCetTotalPreview();
+        });
+
+        // 日期输入点击选中和实时格式化
+        cetDateInput.addEventListener('click', function() {
+            this.select(); // 点击时选中，让用户可以方便覆盖或修改
+        });
+
+        cetDateInput.addEventListener('input', function() {
+            const formatted = formatDateInput(this.value);
+            if (formatted !== this.value && formatted !== '') {
+                this.value = formatted;
+                document.getElementById('cet-date-warning').textContent = '';
+            }
+        });
 
         function updateCetTotalPreview() {
             const sectionA = parseInt(cetListeningSectionA.value) || 0;
@@ -1139,9 +1502,24 @@
             document.getElementById('cet-total-score').textContent = total;
         }
 
-        // 四六级表单提交
+        // 四六级表单提交验证
         document.getElementById('cet-form').addEventListener('submit', function(e) {
             e.preventDefault();
+
+            // 验证所有输入
+            const validSectionA = validateNumberInput(cetListeningSectionA, 0, 8, 'cet-sectiona-warning');
+            const validSectionB = validateNumberInput(cetListeningSectionB, 0, 7, 'cet-sectionb-warning');
+            const validSectionC = validateNumberInput(cetListeningSectionC, 0, 10, 'cet-sectionc-warning');
+            const validWordBank = validateNumberInput(cetReadingWordBank, 0, 10, 'cet-wordbank-warning');
+            const validSkimming = validateNumberInput(cetReadingSkimming, 0, 10, 'cet-skimming-warning');
+            const validReading = validateNumberInput(cetReadingReading, 0, 10, 'cet-reading-warning');
+            const validWriting = validateNumberInput(cetWritingRaw, 0, 15, 'cet-writing-warning');
+            const validTranslation = validateNumberInput(cetTranslationRaw, 0, 15, 'cet-translation-warning');
+
+            if (!validSectionA || !validSectionB || !validSectionC || !validWordBank || !validSkimming || !validReading || !validWriting || !validTranslation) {
+                alert('请修正输入错误后再提交');
+                return;
+            }
 
             const date = document.getElementById('cet-exam-date').value;
             const sectionA = parseInt(cetListeningSectionA.value);
@@ -1192,6 +1570,7 @@
 
             // 重置表单
             this.reset();
+            clearAllWarnings();
             updateCetTotalPreview();
 
             const examName = currentExamType === 'cet4' ? '四级' : '六级';

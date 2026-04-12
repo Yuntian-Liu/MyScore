@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyScore V5.3 - 我的成绩单</title>
+    <title>MyScore 2.2.1 - AI 智能成绩单</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -326,9 +326,9 @@
                                 <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                             </svg>
                         </div>
-                        <div>
-                            <h1 style="font-size: 1.75rem; font-weight: bold;" class="gradient-text">MyScore</h1>
-                            <p style="font-size: 0.875rem; color: #6b7280;">V5.3 我的成绩单</p>
+                            <div>
+                         <h1 style="font-size: 1.75rem; font-weight: bold;" class="gradient-text">MyScore</h1>
+                         <p style="font-size: 0.875rem; color: #6b7280;">V6.3 AI智能成绩单</p>
                         </div>
                     </div>
                     <nav style="display: flex; gap: 0.5rem;">
@@ -391,19 +391,32 @@
                     <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
                         <span style="font-size: 1.75rem;">⚡</span> 最近成绩
                     </h2>
-                    <div id="ai-comment-box" style="display:none; margin-bottom: 1rem; background: #ecfdf5; border: 2px dashed #10b981; border-radius: 0.75rem; padding: 1rem; color: #047857; line-height: 1.6; font-size: 0.95rem;">
-        🤖 突突老师正在评阅中...
+                   <div id="ai-container" style="display:none; margin-bottom: 1rem;">
+                   <div id="ai-comment-box" style="background: #ecfdf5; border: 2px dashed #10b981; border-radius: 0.75rem; padding: 1rem; color: #047857; line-height: 1.6; font-size: 0.95rem; margin-bottom: 0.5rem; position: relative;">
+                    🤖 亲爱的YTUNer请耐心等待~突突老师正在批改...
+                 </div>
+
+                 <div id="ai-actions" style="display:none; justify-content: flex-end; gap: 0.5rem;">
+                 <button onclick="showReplyInput()" style="font-size: 0.8rem; color: #059669; background: white; border: 1px solid #10b981; padding: 0.3rem 0.8rem; border-radius: 99px; cursor: pointer;">💬 不服/回嘴</button>
+                 </div>
+
+    <div id="reply-input-area" style="display:none; margin-top: 0.5rem; animation: fadeIn 0.3s ease;">
+        <div style="display: flex; gap: 0.5rem;">
+            <input type="text" id="user-rebuttal" placeholder="输入你想反驳的话..." style="flex: 1; border: 1px solid #d1fae5; border-radius: 0.5rem; padding: 0.5rem; outline: none; font-size: 0.9rem;">
+            <button onclick="sendRebuttal()" style="background: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem;">发送</button>
+        </div>
     </div>
-                    <div id="recent-score-content">
-                        <div class="empty-state">
-                            <svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 1rem;">
-                                <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            </svg>
-                            <p style="color: #6b7280; margin-bottom: 1rem;">还没有成绩记录</p>
-                            <button onclick="showPage('entry')" style="color: #10b981; font-weight: 600; background: none; border: none; cursor: pointer;">开始录入 →</button>
-                        </div>
-                    </div>
-                </div>
+</div>
+<div id="recent-score-content">
+    <div class="empty-state">
+        <svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 1rem;">
+            <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <p style="color: #6b7280; margin-bottom: 1rem;">还没有成绩记录</p>
+        <button onclick="showPage('entry')" style="color: #10b981; font-weight: 600; background: none; border: none; cursor: pointer;">开始录入 →</button>
+    </div>
+</div>
+</div>
 
                 <!-- 统计 Tabs -->
                 <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
@@ -547,10 +560,11 @@
             </div>
         </div>
 
-        <footer style="text-align: center; padding: 2rem; color: #9ca3af;">
-            <p>Copyright © LYT, 2026 All Rights Reserved</p>
-            <p style="font-size: 0.875rem; margin-top: 0.25rem;">MyScore V5.3</p>
-        </footer>
+    <footer style="text-align: center; padding: 2rem; color: #9ca3af;">
+    <p style="margin-bottom: 0.25rem;">Designed by Liu Yuntian</p>
+    <p style="margin-bottom: 0.25rem;">Copyright © YTUN 2026 All Rights Reserved</p>
+    <p style="font-size: 0.875rem; opacity: 0.8;">MyScore V6.3</p>
+    </footer>
     </div>
 
     <script>
@@ -1507,17 +1521,34 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
             reader.readAsText(file);
             input.value = '';
         }       
-// AI 调用函数
-async function fetchAIComment(examType, currentScore, historyScores) {
-    const box = document.getElementById('ai-comment-box');
-    if (!box) return;
+// 全局变量，用来记住上下文
+let lastExamType = '';
+let lastScore = 0;
+let lastHistory = [];
+let lastAiComment = '';
 
-    // 显示加载状态
-    box.style.display = 'block';
+// 1. 初始获取评价 (renderDashboard 调用这个)
+async function fetchAIComment(examType, currentScore, historyScores) {
+    // 保存上下文，一会儿吵架要用
+    lastExamType = examType;
+    lastScore = currentScore;
+    lastHistory = historyScores;
+
+    const container = document.getElementById('ai-container');
+    const box = document.getElementById('ai-comment-box');
+    const actions = document.getElementById('ai-actions');
+    const replyArea = document.getElementById('reply-input-area');
+
+    if (!container) return;
+
+    // 重置界面状态
+    container.style.display = 'block';
+    actions.style.display = 'none'; // 先藏起按钮
+    replyArea.style.display = 'none'; // 先藏起输入框
     box.innerHTML = '🤖 毒舌老师正在推眼镜分析你的成绩...';
+    box.style.background = '#ecfdf5'; // 恢复绿色背景
 
     try {
-        // 请求刚才写的后端接口
         const res = await fetch('/.netlify/functions/comment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1530,17 +1561,70 @@ async function fetchAIComment(examType, currentScore, historyScores) {
 
         const data = await res.json();
         
-        // 显示结果
         if (data.comment) {
+            lastAiComment = data.comment; // 记住老师骂了什么
             box.innerHTML = `<strong>👩‍🏫 毒舌老师：</strong> ${data.comment}`;
+            actions.style.display = 'flex'; // 显示"回嘴"按钮
         } else {
-            box.innerHTML = '老师去吃饭了，稍后再来...';
+            box.innerHTML = '老师去吃饭了...';
         }
-
     } catch (err) {
         console.error(err);
-        box.innerHTML = '老师太累了，暂时不想说话...';
+        box.innerHTML = '老师断线了...';
     }
+}
+
+// 2. 显示输入框
+function showReplyInput() {
+    document.getElementById('reply-input-area').style.display = 'block';
+    document.getElementById('ai-actions').style.display = 'none'; // 隐藏按钮
+    document.getElementById('user-rebuttal').focus();
+}
+
+// 3. 发送回嘴 (吵架逻辑)
+async function sendRebuttal() {
+    const input = document.getElementById('user-rebuttal');
+    const rebuttal = input.value.trim();
+    if (!rebuttal) return;
+
+    const box = document.getElementById('ai-comment-box');
+    
+    // 界面变身：变成"对战中"状态
+    box.innerHTML = `<strong>😤 你：</strong> ${rebuttal}<br><hr style="margin:8px 0; border:0; border-top:1px dashed #a7f3d0">🤖 老师正在思考怎么怼回来...`;
+    box.style.background = '#fff1f2'; // 变成淡红色，表示气氛紧张
+    box.style.color = '#be123c';
+    box.style.borderColor = '#fb7185';
+    
+    document.getElementById('reply-input-area').style.display = 'none'; // 隐藏输入框
+
+    try {
+        const res = await fetch('/.netlify/functions/comment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                examType: lastExamType, 
+                currentScore: lastScore, 
+                historyScores: lastHistory,
+                userRebuttal: rebuttal,      // 重点：把你的回嘴发过去
+                previousComment: lastAiComment // 重点：把老师刚才的话发过去
+            })
+        });
+
+        const data = await res.json();
+        
+        if (data.comment) {
+            lastAiComment = data.comment; // 更新上下文
+            // 显示这一轮的战况
+            box.innerHTML = `<strong>😤 你：</strong> ${rebuttal}<br><br><strong>👩‍🏫 毒舌老师：</strong> ${data.comment}`;
+            
+            // 允许继续回嘴 (无限套娃)
+            document.getElementById('ai-actions').style.display = 'flex';
+            input.value = ''; // 清空输入框
+        }
+    } catch (err) {
+        box.innerHTML += '<br>(老师被气得掉线了)';
+    }
+}
  // ================= 桌面宠物逻辑 =================
 
 // 1. 毒舌语录库 (本地快速响应，不用等AI)
@@ -1609,8 +1693,7 @@ function pokeTeacher() {
 }
 
 // 页面加载完成后，顺便初始化一下心情
-document.addEventListener('DOMContentLoaded', updatePetMood);   
-}
+document.addEventListener('DOMContentLoaded', updatePetMood);
         // ==================== 初始化 ====================
         document.addEventListener('DOMContentLoaded', function () {
             renderDashboard();

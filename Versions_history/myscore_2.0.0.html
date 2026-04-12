@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyScore V5.3 - 我的成绩单</title>
+    <title>MyScore 2.0.0 - AI 智能成绩单</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -391,31 +391,19 @@
                     <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
                         <span style="font-size: 1.75rem;">⚡</span> 最近成绩
                     </h2>
-                   <div id="ai-container" style="display:none; margin-bottom: 1rem;">
-                   <div id="ai-comment-box" style="background: #ecfdf5; border: 2px dashed #10b981; border-radius: 0.75rem; padding: 1rem; color: #047857; line-height: 1.6; font-size: 0.95rem; margin-bottom: 0.5rem; position: relative;">
-                    🤖 亲爱的YTUNer请耐心等待~突突老师正在批改...
-                 </div>
-
-                 <div id="ai-actions" style="display:none; justify-content: flex-end; gap: 0.5rem;">
-                 <button onclick="showReplyInput()" style="font-size: 0.8rem; color: #059669; background: white; border: 1px solid #10b981; padding: 0.3rem 0.8rem; border-radius: 99px; cursor: pointer;">💬 不服/回嘴</button>
-                 </div>
-
-    <div id="reply-input-area" style="display:none; margin-top: 0.5rem; animation: fadeIn 0.3s ease;">
-        <div style="display: flex; gap: 0.5rem;">
-            <input type="text" id="user-rebuttal" placeholder="输入你想反驳的话..." style="flex: 1; border: 1px solid #d1fae5; border-radius: 0.5rem; padding: 0.5rem; outline: none; font-size: 0.9rem;">
-            <button onclick="sendRebuttal()" style="background: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem;">发送</button>
-        </div>
+                    <div id="ai-comment-box" style="display:none; margin-bottom: 1rem; background: #ecfdf5; border: 2px dashed #10b981; border-radius: 0.75rem; padding: 1rem; color: #047857; line-height: 1.6; font-size: 0.95rem;">
+        🤖 突突老师正在评阅中...
     </div>
-</div>
-<div id="recent-score-content">
-    <div class="empty-state">
-        <svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 1rem;">
-            <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-        <p style="color: #6b7280; margin-bottom: 1rem;">还没有成绩记录</p>
-        <button onclick="showPage('entry')" style="color: #10b981; font-weight: 600; background: none; border: none; cursor: pointer;">开始录入 →</button>
-    </div>
-</div>
+                    <div id="recent-score-content">
+                        <div class="empty-state">
+                            <svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 1rem;">
+                                <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <p style="color: #6b7280; margin-bottom: 1rem;">还没有成绩记录</p>
+                            <button onclick="showPage('entry')" style="color: #10b981; font-weight: 600; background: none; border: none; cursor: pointer;">开始录入 →</button>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- 统计 Tabs -->
                 <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
@@ -723,10 +711,6 @@
 
         // ==================== 仪表盘 ====================
         function renderDashboard() {
-            // 更新桌面宠物的心情
-        if (typeof updatePetMood === 'function') {
-        updatePetMood();
-        }
             const records = getRecords();
             const exams = allExams();
 
@@ -1518,35 +1502,18 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
             };
             reader.readAsText(file);
             input.value = '';
-        }       
-// 全局变量，用来记住上下文
-let lastExamType = '';
-let lastScore = 0;
-let lastHistory = [];
-let lastAiComment = '';
-
-// 1. 初始获取评价 (renderDashboard 调用这个)
+        }
+// AI 调用函数
 async function fetchAIComment(examType, currentScore, historyScores) {
-    // 保存上下文，一会儿吵架要用
-    lastExamType = examType;
-    lastScore = currentScore;
-    lastHistory = historyScores;
-
-    const container = document.getElementById('ai-container');
     const box = document.getElementById('ai-comment-box');
-    const actions = document.getElementById('ai-actions');
-    const replyArea = document.getElementById('reply-input-area');
+    if (!box) return;
 
-    if (!container) return;
-
-    // 重置界面状态
-    container.style.display = 'block';
-    actions.style.display = 'none'; // 先藏起按钮
-    replyArea.style.display = 'none'; // 先藏起输入框
+    // 显示加载状态
+    box.style.display = 'block';
     box.innerHTML = '🤖 毒舌老师正在推眼镜分析你的成绩...';
-    box.style.background = '#ecfdf5'; // 恢复绿色背景
 
     try {
+        // 请求刚才写的后端接口
         const res = await fetch('/.netlify/functions/comment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1559,167 +1526,22 @@ async function fetchAIComment(examType, currentScore, historyScores) {
 
         const data = await res.json();
         
+        // 显示结果
         if (data.comment) {
-            lastAiComment = data.comment; // 记住老师骂了什么
             box.innerHTML = `<strong>👩‍🏫 毒舌老师：</strong> ${data.comment}`;
-            actions.style.display = 'flex'; // 显示"回嘴"按钮
         } else {
-            box.innerHTML = '老师去吃饭了...';
+            box.innerHTML = '老师去吃饭了，稍后再来...';
         }
+
     } catch (err) {
         console.error(err);
-        box.innerHTML = '老师断线了...';
+        box.innerHTML = '老师太累了，暂时不想说话...';
     }
 }
-
-// 2. 显示输入框
-function showReplyInput() {
-    document.getElementById('reply-input-area').style.display = 'block';
-    document.getElementById('ai-actions').style.display = 'none'; // 隐藏按钮
-    document.getElementById('user-rebuttal').focus();
-}
-
-// 3. 发送回嘴 (吵架逻辑)
-async function sendRebuttal() {
-    const input = document.getElementById('user-rebuttal');
-    const rebuttal = input.value.trim();
-    if (!rebuttal) return;
-
-    const box = document.getElementById('ai-comment-box');
-    
-    // 界面变身：变成"对战中"状态
-    box.innerHTML = `<strong>😤 你：</strong> ${rebuttal}<br><hr style="margin:8px 0; border:0; border-top:1px dashed #a7f3d0">🤖 老师正在思考怎么怼回来...`;
-    box.style.background = '#fff1f2'; // 变成淡红色，表示气氛紧张
-    box.style.color = '#be123c';
-    box.style.borderColor = '#fb7185';
-    
-    document.getElementById('reply-input-area').style.display = 'none'; // 隐藏输入框
-
-    try {
-        const res = await fetch('/.netlify/functions/comment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                examType: lastExamType, 
-                currentScore: lastScore, 
-                historyScores: lastHistory,
-                userRebuttal: rebuttal,      // 重点：把你的回嘴发过去
-                previousComment: lastAiComment // 重点：把老师刚才的话发过去
-            })
-        });
-
-        const data = await res.json();
-        
-        if (data.comment) {
-            lastAiComment = data.comment; // 更新上下文
-            // 显示这一轮的战况
-            box.innerHTML = `<strong>😤 你：</strong> ${rebuttal}<br><br><strong>👩‍🏫 毒舌老师：</strong> ${data.comment}`;
-            
-            // 允许继续回嘴 (无限套娃)
-            document.getElementById('ai-actions').style.display = 'flex';
-            input.value = ''; // 清空输入框
-        }
-    } catch (err) {
-        box.innerHTML += '<br>(老师被气得掉线了)';
-    }
-}
- // ================= 桌面宠物逻辑 =================
-
-// 1. 毒舌语录库 (本地快速响应，不用等AI)
-const SASSY_QUOTES = [
-    "看什么看？单词背完了吗？😡",
-    "你今天的复习时长如果是 0，我对你的评价也是 0。",
-    "这么闲？还有空戳我？去刷题！👉",
-    "上次那点分，你怎么睡得着觉的？",
-    "再戳我，我就把你的成绩发给你爸妈。📱",
-    "只有弱者才会在意别人的评价，强者都在刷题。📚",
-    "哟，这不是那位总分 5.5 的选手吗？😏",
-    "这就是你对待学习的态度？再戳一下试试？👊"
-];
-
-// 2. 初始化宠物状态 (在 renderDashboard 里调用)
-function updatePetMood() {
-    const records = getRecords();
-    const avatar = document.getElementById('pet-avatar');
-    if (!records.length) {
-        avatar.innerHTML = '😴'; // 没成绩时在睡觉
-        return;
-    }
-
-    // 获取最近两次成绩来判断趋势
-    const last = records[records.length - 1];
-    const prev = records.length > 1 ? records[records.length - 2] : null;
-    
-    // 简单的变脸逻辑
-    if (!prev) {
-        avatar.innerHTML = '😐'; // 只有一次成绩，面无表情
-    } else if (last.total > prev.total) {
-        avatar.innerHTML = '😎'; // 进步了，戴墨镜
-    } else if (last.total < prev.total) {
-        avatar.innerHTML = '😡'; // 退步了，生气
-    } else {
-        avatar.innerHTML = '😑'; // 没变化，无语
-    }
-}
-
-// 3. 戳一戳互动函数
-let bubbleTimer = null;
-function pokeTeacher() {
-    const bubble = document.getElementById('pet-bubble');
-    const avatar = document.getElementById('desktop-pet');
-    
-    // 随机选一句骚话
-    const randomQuote = SASSY_QUOTES[Math.floor(Math.random() * SASSY_QUOTES.length)];
-    bubble.innerText = randomQuote;
-
-    // 显示气泡
-    bubble.style.opacity = '1';
-    bubble.style.visibility = 'visible';
-    bubble.style.transform = 'translateY(-10px)';
-
-    // 头像抖动特效
-    avatar.style.transform = 'scale(0.9) rotate(-5deg)';
-    setTimeout(() => avatar.style.transform = 'scale(1) rotate(0)', 200);
-
-    // 3秒后自动消失
-    if (bubbleTimer) clearTimeout(bubbleTimer);
-    bubbleTimer = setTimeout(() => {
-        bubble.style.opacity = '0';
-        bubble.style.visibility = 'hidden';
-        bubble.style.transform = 'translateY(0)';
-    }, 3000);
-}
-
-// 页面加载完成后，顺便初始化一下心情
-document.addEventListener('DOMContentLoaded', updatePetMood);
         // ==================== 初始化 ====================
         document.addEventListener('DOMContentLoaded', function () {
             renderDashboard();
         });
     </script>
- <div id="desktop-pet" onclick="pokeTeacher()" style="position: fixed; bottom: 2rem; right: 2rem; z-index: 999; cursor: pointer; transition: transform 0.2s ease;">
-    <div id="pet-bubble" style="
-        position: absolute; 
-        bottom: 110%; 
-        right: 0; 
-        width: 220px; 
-        background: white; 
-        padding: 1rem; 
-        border-radius: 1rem 1rem 0 1rem; 
-        box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
-        border: 2px solid #10b981;
-        color: #374151;
-        font-size: 0.9rem;
-        opacity: 0; 
-        visibility: hidden; 
-        transition: all 0.3s ease;
-        pointer-events: none;">
-        今天背单词了吗？😡
-    </div>
-    
-    <div id="pet-avatar" style="font-size: 4.5rem; filter: drop-shadow(0 5px 15px rgba(16, 185, 129, 0.3)); user-select: none;">
-        👨‍🏫
-    </div>
-</div>   
 </body>
 </html>

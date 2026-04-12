@@ -3,205 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="myscore-comment-endpoint" content="/api/comment">
-    <title>MyScore V8.0 - AI 智能成绩单 | 碳碳四键的个人开发应用实践</title>
+    <title>MyScore 2.4.0 - AI 智能成绩单 | 碳碳四键的个人开发应用实践</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-main: #f7f5ff;
-            --bg-soft: #eef7f5;
-            --bg-card: rgba(255, 255, 255, 0.82);
-            --panel-strong: #fbfcff;
-            --primary: #2e6b79;
-            --primary-dark: #214d58;
-            --primary-light: #dff1f3;
-            --primary-ink: #1f3f49;
-            --accent: #f07c63;
-            --accent-soft: #ffe1d9;
-            --support: #8f7cf7;
-            --support-soft: #ece6ff;
-            --text-main: #22303a;
-            --text-secondary: #5d6875;
-            --text-muted: #8a91a4;
-            --border: rgba(84, 99, 125, 0.14);
-            --border-light: rgba(84, 99, 125, 0.08);
-            --shadow-sm: 0 16px 38px rgba(96, 108, 139, 0.08);
-            --shadow-md: 0 24px 60px rgba(96, 108, 139, 0.14);
-            --shadow-lg: 0 36px 100px rgba(79, 88, 120, 0.18);
-            --listening: #5b8def;
-            --reading: #39a67d;
-            --writing: #f0a531;
-            --speaking: #8f7cf7;
-            --translation: #ef6a6a;
+            --bg-main: #f8f9fa;
+            --bg-card: #ffffff;
+            --primary: #0f9d6e;
+            --primary-dark: #0a7b56;
+            --primary-light: #e8f5ef;
+            --text-main: #202124;
+            --text-secondary: #5f6368;
+            --border: #e0e0e0;
+            --border-light: #f1f3f4;
+            --listening: #4285f4;
+            --reading: #0f9d6e;
+            --writing: #f9ab00;
+            --speaking: #a142f4;
+            --translation: #ea4335;
         }
 
-        * { box-sizing: border-box; font-family: 'Manrope', 'Noto Sans SC', sans-serif; }
+        * { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif; }
 
         body {
             background: var(--bg-main);
             min-height: 100vh;
             color: var(--text-main);
-            background-image:
-                radial-gradient(circle at 10% 12%, rgba(240, 124, 99, 0.22), transparent 24%),
-                radial-gradient(circle at 86% 18%, rgba(46, 107, 121, 0.18), transparent 28%),
-                radial-gradient(circle at 68% 84%, rgba(143, 124, 247, 0.18), transparent 24%),
-                linear-gradient(180deg, #fcfbff 0%, #f4f7ff 46%, #eef7f5 100%);
-            background-attachment: fixed;
-        }
-
-        body::before,
-        body::after {
-            content: '';
-            position: fixed;
-            inset: auto;
-            pointer-events: none;
-            z-index: 0;
-            filter: blur(10px);
-            opacity: 0.55;
-            animation: floatAura 18s ease-in-out infinite;
-        }
-
-        body::before {
-            top: 8%;
-            right: 6%;
-            width: 280px;
-            height: 280px;
-            border-radius: 42% 58% 57% 43% / 42% 43% 57% 58%;
-            background: radial-gradient(circle, rgba(240, 124, 99, 0.24), rgba(240, 124, 99, 0));
-        }
-
-        body::after {
-            left: 4%;
-            bottom: 10%;
-            width: 340px;
-            height: 340px;
-            border-radius: 54% 46% 36% 64% / 48% 58% 42% 52%;
-            background: radial-gradient(circle, rgba(143, 124, 247, 0.18), rgba(143, 124, 247, 0));
-            animation-delay: -8s;
-        }
-
-        #app {
-            position: relative;
-            z-index: 1;
-        }
-
-        @keyframes floatAura {
-            0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-            50% { transform: translate3d(0, 18px, 0) scale(1.06); }
         }
 
         .brand-meta {
-            margin-top: 0.18rem;
+            margin-top: 0.2rem;
             font-size: 0.72rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--text-muted);
+            letter-spacing: 0.02em;
+            color: #9ca3af;
         }
 
         .hidden { display: none !important; }
 
+        /* 卡片样式 — Google Material 3 风格 */
         .card {
             background: var(--bg-card);
-            backdrop-filter: blur(18px);
-            border-radius: 28px;
-            box-shadow: var(--shadow-sm);
-            transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+            border-radius: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
             border: 1px solid var(--border-light);
         }
 
         .card:hover {
-            box-shadow: var(--shadow-md);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.06);
             border-color: var(--border);
-            transform: translateY(-2px);
         }
 
+        /* 导航按钮 — 简洁 pill 风格 */
         .nav-btn {
-            padding: 0.8rem 1.1rem;
-            border-radius: 999px;
-            font-weight: 700;
-            transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 500;
+            transition: background 0.15s ease, color 0.15s ease;
             cursor: pointer;
-            border: 1px solid transparent;
-            background: rgba(255, 251, 245, 0.66);
+            border: none;
+            background: transparent;
             color: var(--text-secondary);
-            letter-spacing: 0.01em;
         }
 
         .nav-btn:hover {
-            background: rgba(255, 251, 245, 0.96);
+            background: #f1f3f4;
             color: var(--text-main);
-            border-color: var(--border);
-            transform: translateY(-1px);
         }
 
         .nav-btn.active {
-            background: var(--primary);
-            color: #f8f4ec;
+            background: var(--primary-light);
+            color: var(--primary);
             font-weight: 600;
-            box-shadow: 0 10px 22px rgba(31, 106, 82, 0.22);
         }
 
+        /* 主按钮 — 纯色，无渐变 */
         .btn-primary {
             background: var(--primary);
-            color: #f8f4ec;
-            border: 1px solid rgba(15, 58, 45, 0.14);
-            border-radius: 16px;
-            padding: 0.95rem 1.5rem;
-            font-weight: 700;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
-            box-shadow: 0 14px 28px rgba(31, 106, 82, 0.18);
+            transition: background 0.15s ease, box-shadow 0.15s ease;
         }
 
         .btn-primary:hover {
             background: var(--primary-dark);
-            box-shadow: 0 18px 34px rgba(31, 106, 82, 0.24);
-            transform: translateY(-1px);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
         }
 
+        /* 次按钮 */
         .btn-secondary {
-            background: rgba(255, 251, 245, 0.82);
-            color: var(--primary-ink);
+            background: white;
+            color: var(--primary);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 0.8rem 1.15rem;
-            font-weight: 700;
+            border-radius: 12px;
+            padding: 0.625rem 1.25rem;
+            font-weight: 500;
             font-size: 0.875rem;
             cursor: pointer;
-            transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+            transition: background 0.15s ease, border-color 0.15s ease;
         }
 
         .btn-secondary:hover {
             background: var(--primary-light);
             border-color: var(--primary);
-            transform: translateY(-1px);
         }
 
+        /* 考试类型卡片 */
         .exam-card {
-            background: rgba(255, 251, 245, 0.84);
+            background: white;
             border: 1.5px solid var(--border);
-            border-radius: 22px;
+            border-radius: 16px;
             padding: 1.5rem;
             text-align: center;
             cursor: pointer;
-            transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            transition: background 0.2s ease, border-color 0.2s ease;
         }
 
         .exam-card:hover {
-            border-color: rgba(31, 106, 82, 0.4);
-            background: rgba(255, 248, 240, 0.95);
-            box-shadow: var(--shadow-sm);
-            transform: translateY(-2px);
+            border-color: var(--primary);
+            background: var(--primary-light);
         }
 
         .exam-card.active {
             background: var(--primary-light);
             border-color: var(--primary);
-            box-shadow: inset 0 0 0 1px rgba(31, 106, 82, 0.06);
         }
 
         /* 科目手风琴 */
@@ -576,9 +509,9 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            border: 1px solid rgba(195, 95, 61, 0.2);
-            background: rgba(251, 247, 241, 0.96);
-            color: var(--accent);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            background: rgba(255, 255, 255, 0.96);
+            color: #1d4ed8;
             border-radius: 9999px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             padding: 0.6rem 0.7rem;
@@ -626,7 +559,7 @@
             width: min(360px, calc(100vw - 1.5rem));
             height: 470px;
             background: #ffffff;
-            border: 1px solid #efd3c8;
+            border: 1px solid #dbeafe;
             border-radius: 20px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
             z-index: 980;
@@ -636,8 +569,8 @@
         }
 
         .tutuer-panel-header {
-            background: #fff1ea;
-            border-bottom: 1px solid #efd3c8;
+            background: #eff6ff;
+            border-bottom: 1px solid #bfdbfe;
             padding: 0.85rem 1rem;
             display: flex;
             align-items: center;
@@ -691,9 +624,9 @@
         }
 
         .tutuer-msg.user {
-            background: #dbe7e1;
-            color: var(--primary-ink);
-            border: 1px solid #bfd5ca;
+            background: #dbeafe;
+            color: #1e3a8a;
+            border: 1px solid #bfdbfe;
             align-self: flex-end;
         }
 
@@ -711,10 +644,10 @@
         }
 
         .tutuer-quick-btn {
-            border: 1px solid #efd3c8;
+            border: 1px solid #bfdbfe;
             border-radius: 9999px;
-            background: #fff1ea;
-            color: #a24c30;
+            background: #eff6ff;
+            color: #1e40af;
             font-size: 0.78rem;
             font-weight: 600;
             padding: 0.33rem 0.72rem;
@@ -723,8 +656,8 @@
         }
 
         .tutuer-quick-btn:hover {
-            background: #f8dfd5;
-            border-color: #e8bcae;
+            background: #dbeafe;
+            border-color: #93c5fd;
         }
 
         .tutuer-input-row {
@@ -746,692 +679,16 @@
         }
 
         .tutuer-input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px rgba(195, 95, 61, 0.15);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
         }
 
         .site-footer {
-            padding: 1.8rem 1rem 5.8rem;
-        }
-
-        .footer-shell {
-            max-width: 1180px;
-            margin: 0 auto;
-            padding: 1.1rem;
-            border-radius: 30px;
-            background:
-                radial-gradient(circle at top right, rgba(255, 138, 99, 0.14), transparent 28%),
-                radial-gradient(circle at bottom left, rgba(91, 124, 255, 0.12), transparent 24%),
-                rgba(255, 255, 255, 0.72);
-            border: 1px solid rgba(92, 104, 138, 0.1);
-            box-shadow: 0 24px 50px -40px rgba(66, 75, 102, 0.42);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-        }
-
-        .footer-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 1rem;
-            margin-bottom: 0.95rem;
-        }
-
-        .footer-brand {
-            display: flex;
-            align-items: center;
-            gap: 0.9rem;
-            min-width: 0;
-        }
-
-        .footer-brand-mark {
-            width: 46px;
-            height: 46px;
-            border-radius: 16px;
-            background: linear-gradient(135deg, #5b7cff, #ff8a63);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 16px 34px -20px rgba(91, 124, 255, 0.55);
-            flex-shrink: 0;
-        }
-
-        .footer-brand-mark svg {
-            display: block;
-        }
-
-        .footer-title {
-            font-family: 'Noto Serif SC', serif;
-            font-size: 1.02rem;
-            font-weight: 700;
-            color: var(--primary-ink);
-            margin-bottom: 0.12rem;
-        }
-
-        .footer-desc {
-            font-size: 0.84rem;
-            color: #7a8197;
-        }
-
-        .footer-pills {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-            gap: 0.65rem;
-        }
-
-        .footer-pill,
-        .footer-link-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.6rem 0.9rem;
-            border-radius: 999px;
-            font-size: 0.82rem;
-            line-height: 1;
-            border: 1px solid rgba(92, 104, 138, 0.1);
-            background: rgba(255, 255, 255, 0.88);
-            color: #5b6278;
-            box-shadow: 0 14px 30px -26px rgba(66, 75, 102, 0.45);
-        }
-
-        .footer-pill strong,
-        .footer-link-pill strong {
-            color: var(--primary-ink);
-            font-weight: 700;
-        }
-
-        .footer-link-pill {
-            text-decoration: none;
-            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-        }
-
-        .footer-link-pill:hover {
-            transform: translateY(-1px);
-            border-color: rgba(91, 124, 255, 0.24);
-            box-shadow: 0 18px 32px -24px rgba(91, 124, 255, 0.38);
-        }
-
-        .footer-pill-icon {
-            width: 1.55rem;
-            height: 1.55rem;
-            border-radius: 999px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .footer-pill-icon svg {
-            display: block;
-        }
-
-        .footer-meta {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
-            flex-wrap: wrap;
-            padding-top: 0.95rem;
-            border-top: 1px solid rgba(92, 104, 138, 0.1);
-            color: #7a8197;
-            font-size: 0.82rem;
-        }
-
-        .footer-meta-copy {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.6rem 1rem;
-            align-items: center;
-        }
-
-        .site-header {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            background: rgba(248, 249, 255, 0.72);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            border-bottom: 1px solid rgba(84, 99, 125, 0.1);
-        }
-
-        .site-header-inner,
-        .site-main {
-            max-width: 1180px;
-            margin: 0 auto;
-        }
-
-        .site-header-inner {
-            padding: 1rem;
-        }
-
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .brand-lockup {
-            display: flex;
-            align-items: center;
-            gap: 0.95rem;
-        }
-
-        .brand-mark {
-            width: 58px;
-            height: 58px;
-            border-radius: 20px;
-            background:
-                radial-gradient(circle at 30% 28%, rgba(255,255,255,0.34), transparent 28%),
-                linear-gradient(145deg, #2e6b79, #f07c63 62%, #8f7cf7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 18px 34px rgba(93, 103, 147, 0.24);
-        }
-
-        .brand-mark svg {
-            display: block;
-        }
-
-        .brand-title {
-            font-family: 'Noto Serif SC', serif;
-            font-size: 1.82rem;
-            font-weight: 700;
-            color: var(--primary-ink);
-            letter-spacing: -0.03em;
-        }
-
-        .brand-subtitle {
-            font-size: 0.92rem;
-            color: var(--text-secondary);
-        }
-
-        .nav-shell {
-            display: flex;
-            gap: 0.55rem;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-            padding: 0.35rem;
-            border: 1px solid rgba(84, 99, 125, 0.08);
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.62);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
-        }
-
-        .site-main {
-            padding: 2rem 1rem;
-        }
-
-        .hero-card {
-            padding: 2rem;
-            margin-bottom: 1.75rem;
-            overflow: hidden;
-            position: relative;
-            background:
-                radial-gradient(circle at top left, rgba(46, 107, 121, 0.16), transparent 24%),
-                radial-gradient(circle at 85% 18%, rgba(240, 124, 99, 0.16), transparent 22%),
-                linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(248, 249, 255, 0.92));
-        }
-
-        .hero-card::after {
-            content: '';
-            position: absolute;
-            inset: auto -8% -32% auto;
-            width: 220px;
-            height: 220px;
-            background: radial-gradient(circle, rgba(31, 106, 82, 0.12), transparent 68%);
-            pointer-events: none;
-        }
-
-        .hero-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.9fr);
-            gap: 1.25rem;
-            align-items: stretch;
-        }
-
-        .hero-copy,
-        .hero-side {
-            position: relative;
-            z-index: 1;
-        }
-
-        .eyebrow {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            padding: 0.42rem 0.8rem;
-            border-radius: 999px;
-            background: rgba(236, 230, 255, 0.84);
-            border: 1px solid rgba(143, 124, 247, 0.16);
-            color: var(--support);
-            font-size: 0.78rem;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-
-        .hero-title {
-            margin-top: 1rem;
-            font-family: 'Noto Serif SC', serif;
-            font-size: clamp(1.8rem, 3vw, 2.8rem);
-            line-height: 1.14;
-            letter-spacing: -0.04em;
-            color: #1a332b;
-        }
-
-        .hero-desc {
-            margin-top: 1rem;
-            max-width: 42rem;
-            font-size: 1rem;
-            line-height: 1.8;
-            color: var(--text-secondary);
-        }
-
-        .hero-actions {
-            display: flex;
-            gap: 0.85rem;
-            flex-wrap: wrap;
-            margin-top: 1.35rem;
-        }
-
-        .hero-note {
-            margin-top: 1.1rem;
-            color: var(--text-muted);
+            text-align: center;
+            padding: 1.7rem 1rem 5.8rem;
+            color: #9ca3af;
             font-size: 0.9rem;
-        }
-
-        .hero-side {
-            padding: 1.3rem;
-            border-radius: 24px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(245,247,255,0.92));
-            border: 1px solid rgba(84, 99, 125, 0.08);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.76);
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            gap: 1rem;
-        }
-
-        .hero-side-label {
-            color: var(--text-muted);
-            font-size: 0.78rem;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-        }
-
-        .hero-side-score {
-            font-size: 3.25rem;
-            font-weight: 800;
-            color: var(--primary);
-            line-height: 1;
-        }
-
-        .hero-side-meta {
-            display: grid;
-            gap: 0.75rem;
-        }
-
-        .hero-archive-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 0.75rem;
-            margin-top: 1rem;
-        }
-
-        .hero-archive-pill {
-            padding: 0.88rem 0.95rem;
-            border-radius: 18px;
-            background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(249,250,255,0.92));
-            border: 1px solid rgba(84, 99, 125, 0.1);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
-            min-width: 0;
-            text-align: left;
-        }
-
-        .hero-archive-pill-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 0.65rem;
-            margin-bottom: 0.45rem;
-        }
-
-        .hero-archive-name {
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--text-main);
-            min-width: 0;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .hero-archive-value {
-            font-family: 'Noto Serif SC', serif;
-            font-style: italic;
-            font-size: 1.28rem;
-            line-height: 1;
-            letter-spacing: -0.03em;
-            color: var(--primary);
-            white-space: nowrap;
-        }
-
-        .hero-archive-meta {
-            display: grid;
-            gap: 0.22rem;
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            line-height: 1.45;
-        }
-
-        .hero-archive-meta-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .hero-archive-meta-label {
-            color: var(--text-muted);
-        }
-
-        .hero-archive-meta-value {
-            color: var(--text-secondary);
-            font-weight: 700;
-            text-align: right;
-            white-space: nowrap;
-        }
-
-        .hero-archive-pill.c1 {
-            background: linear-gradient(180deg, rgba(233, 243, 255, 0.96), rgba(245, 249, 255, 0.92));
-            border-color: rgba(91, 141, 239, 0.2);
-        }
-
-        .hero-archive-pill.c1 .hero-archive-value {
-            color: #5b8def;
-        }
-
-        .hero-archive-pill.c2 {
-            background: linear-gradient(180deg, rgba(232, 250, 240, 0.96), rgba(244, 253, 247, 0.92));
-            border-color: rgba(57, 166, 125, 0.2);
-        }
-
-        .hero-archive-pill.c2 .hero-archive-value {
-            color: #39a67d;
-        }
-
-        .hero-archive-pill.c3 {
-            background: linear-gradient(180deg, rgba(255, 245, 225, 0.96), rgba(255, 250, 240, 0.92));
-            border-color: rgba(240, 165, 49, 0.2);
-        }
-
-        .hero-archive-pill.c3 .hero-archive-value {
-            color: #f0a531;
-        }
-
-        .hero-archive-pill.c4 {
-            background: linear-gradient(180deg, rgba(241, 236, 255, 0.96), rgba(248, 245, 255, 0.92));
-            border-color: rgba(143, 124, 247, 0.2);
-        }
-
-        .hero-archive-pill.c4 .hero-archive-value {
-            color: #8f7cf7;
-        }
-
-        .hero-side-row {
-            display: flex;
-            justify-content: space-between;
-            gap: 0.8rem;
-            font-size: 0.92rem;
-            color: var(--text-secondary);
-        }
-
-        .hero-side-row strong {
-            color: var(--text-main);
-        }
-
-        .section-head {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            gap: 1rem;
-            margin-bottom: 1.2rem;
-        }
-
-        .section-title {
-            font-family: 'Noto Serif SC', serif;
-            font-size: 1.35rem;
-            line-height: 1.2;
-            letter-spacing: -0.03em;
-            color: #1c362d;
-        }
-
-        .section-caption {
-            color: var(--text-muted);
-            font-size: 0.92rem;
             line-height: 1.7;
-        }
-
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1.25fr 0.95fr;
-            gap: 1.5rem;
-            align-items: stretch;
-            margin-bottom: 1.75rem;
-        }
-
-        .dashboard-grid > .card {
-            min-width: 0;
-            height: 100%;
-        }
-
-        .insight-strip {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 1rem;
-            margin-top: 1.4rem;
-        }
-
-        .metric-card {
-            padding: 1.1rem 1.2rem;
-            border-radius: 22px;
-            background: rgba(255, 255, 255, 0.74);
-            border: 1px solid rgba(84, 99, 125, 0.08);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
-        }
-
-        .metric-label {
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            margin-bottom: 0.55rem;
-        }
-
-        .metric-value {
-            font-size: clamp(1.6rem, 2vw, 2.3rem);
-            font-weight: 800;
-            color: var(--primary-ink);
-            letter-spacing: -0.03em;
-        }
-
-        .content-card {
-            padding: 1.7rem;
-        }
-
-        .soft-block {
-            background: rgba(255, 255, 255, 0.7);
-            border: 1px solid rgba(84, 99, 125, 0.08);
-            border-radius: 22px;
-            padding: 1rem;
-        }
-
-        .dashboard-actions {
-            display: grid;
-            gap: 1rem;
-            align-content: stretch;
-            flex: 1;
-        }
-
-        .actions-card {
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .actions-card .soft-block {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .actions-card .soft-block:last-child {
-            flex: 1;
-            justify-content: space-between;
-        }
-
-        .site-footer {
-            color: var(--text-muted);
-        }
-
-        .card,
-        .stat-box,
-        .record-box,
-        .exam-card,
-        .modal-content {
-            background: rgba(255, 255, 255, 0.82);
-            border-radius: 24px;
-            border-color: rgba(84, 99, 125, 0.1);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .card:hover,
-        .stat-box:hover,
-        .record-box:hover,
-        .exam-card:hover {
-            box-shadow: var(--shadow-md);
-        }
-
-        .tab-btn,
-        .nav-btn {
-            border-radius: 999px;
-        }
-
-        .tab-btn {
-            background: rgba(255, 251, 245, 0.72);
-            border: 1px solid transparent;
-            color: var(--text-secondary);
-            font-weight: 700;
-        }
-
-        .tab-btn.active {
-            background: var(--primary);
-            color: #f8f4ec;
-            box-shadow: 0 12px 22px rgba(31, 106, 82, 0.16);
-        }
-
-        .doc-btn {
-            background: rgba(255, 248, 241, 0.84);
-            color: var(--accent);
-            border-color: rgba(188, 108, 37, 0.18);
-        }
-
-        .changelog-fab,
-        .tutuer-fab {
-            background: rgba(255, 250, 243, 0.95);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .tutuer-fab {
-            color: var(--accent);
-            border-color: rgba(188, 108, 37, 0.18);
-        }
-
-        .tutuer-fab:hover {
-            background: var(--accent-soft);
-            border-color: rgba(188, 108, 37, 0.35);
-        }
-
-        .tutuer-panel {
-            background: rgba(255, 251, 245, 0.97);
-            border-color: rgba(188, 108, 37, 0.12);
-            border-radius: 24px;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .tutuer-panel-header {
-            background: linear-gradient(180deg, rgba(243, 224, 207, 0.8), rgba(255, 247, 238, 0.95));
-            border-bottom-color: rgba(188, 108, 37, 0.12);
-        }
-
-        .tutuer-chat-list {
-            background:
-                linear-gradient(180deg, rgba(255, 250, 243, 0.92), rgba(247, 239, 228, 0.92)),
-                radial-gradient(circle at top left, rgba(31, 106, 82, 0.04), transparent 30%);
-        }
-
-        .tutuer-msg.assistant {
-            background: rgba(255, 255, 255, 0.92);
-            border-color: rgba(81, 63, 44, 0.1);
-        }
-
-        .tutuer-msg.user {
-            background: rgba(221, 238, 231, 0.95);
-            color: var(--primary-ink);
-            border-color: rgba(31, 106, 82, 0.14);
-        }
-
-        .tutuer-quick-btn {
-            border-color: rgba(188, 108, 37, 0.18);
-            background: rgba(255, 246, 237, 0.9);
-            color: #8e5520;
-        }
-
-        .tutuer-input {
-            border-color: rgba(81, 63, 44, 0.14);
-            border-radius: 16px;
-        }
-
-        .tutuer-input:focus {
-            border-color: rgba(188, 108, 37, 0.6);
-            box-shadow: 0 0 0 3px rgba(188, 108, 37, 0.12);
-        }
-
-        .subject-box.listening {
-            background: #eef1f7;
-            border-color: #b2c2d6;
-        }
-
-        .subject-box.reading {
-            background: #eaf4ef;
-            border-color: #a9d1bf;
-        }
-
-        .subject-box.writing {
-            background: #fff1ea;
-            border-color: #f0bca7;
-        }
-
-        .subject-box.speaking {
-            background: #f1edfa;
-            border-color: #cbbde8;
-        }
-
-        .subject-box.translation {
-            background: #fbeaea;
-            border-color: #e1b3b3;
-        }
-
-        @media (max-width: 980px) {
-            .hero-grid,
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .insight-strip {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
         }
 
         .icp-link {
@@ -1461,98 +718,6 @@
         }
     
         @media (max-width: 768px) {
-            body::before,
-            body::after {
-                opacity: 0.38;
-                filter: blur(18px);
-            }
-
-            .site-header-inner {
-                padding: 0.75rem;
-            }
-
-            .topbar {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 0.85rem;
-            }
-
-            .brand-lockup {
-                align-items: flex-start;
-            }
-
-            .brand-mark {
-                width: 50px;
-                height: 50px;
-                border-radius: 16px;
-            }
-
-            .brand-title {
-                font-size: 1.58rem;
-            }
-
-            .brand-subtitle {
-                font-size: 0.86rem;
-                line-height: 1.6;
-            }
-
-            .nav-shell {
-                width: 100%;
-                border-radius: 18px;
-                padding: 0;
-                background: transparent;
-                border: none;
-                box-shadow: none;
-            }
-
-            .hero-card,
-            .content-card {
-                padding: 1.2rem;
-            }
-
-            .hero-title {
-                font-size: 1.72rem;
-                line-height: 1.15;
-            }
-
-            .hero-desc,
-            .section-caption {
-                font-size: 0.92rem;
-                line-height: 1.75;
-            }
-
-            .hero-actions {
-                flex-direction: column;
-            }
-
-            .hero-actions .btn-primary,
-            .hero-actions .btn-secondary {
-                width: 100%;
-            }
-
-            .insight-strip {
-                grid-template-columns: 1fr;
-                gap: 0.7rem;
-            }
-
-            .metric-card {
-                padding: 0.95rem 1rem;
-            }
-
-            .metric-value {
-                font-size: 1.8rem;
-            }
-
-            .section-head {
-                flex-direction: column;
-                align-items: stretch;
-                margin-bottom: 1rem;
-            }
-
-            .hero-archive-grid {
-                grid-template-columns: 1fr;
-            }
-
             header > div {
                 padding: 0.75rem !important;
             }
@@ -1627,35 +792,6 @@
             .site-footer {
                 padding: 1.4rem 1rem 7.2rem;
                 font-size: 0.83rem;
-            }
-
-            .footer-shell {
-                padding: 1rem;
-                border-radius: 22px;
-            }
-
-            .footer-top {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .footer-brand {
-                align-items: flex-start;
-            }
-
-            .footer-pills {
-                justify-content: flex-start;
-            }
-
-            .footer-pill,
-            .footer-link-pill {
-                width: 100%;
-                justify-content: flex-start;
-            }
-
-            .footer-meta {
-                flex-direction: column;
-                align-items: flex-start;
             }
 
             .brand-meta {
@@ -1835,30 +971,22 @@
 <body>
     <div id="app">
         <!-- 头部 -->
-        <header class="site-header">
-            <div class="site-header-inner">
-                <div class="topbar">
-                    <div class="brand-lockup">
-                        <div class="brand-mark">
-                            <svg width="46" height="46" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-                                <path d="M10 50H54" stroke="rgba(255,255,255,0.34)" stroke-width="5" stroke-linecap="round"/>
-                                <rect x="14" y="29" width="10" height="21" rx="5" fill="rgba(255,255,255,0.94)"/>
-                                <rect x="27" y="21" width="10" height="29" rx="5" fill="rgba(255,255,255,0.94)"/>
-                                <rect x="40" y="12" width="10" height="38" rx="5" fill="rgba(255,255,255,0.94)"/>
-                                <path d="M14 20L27 13L39 15L50 6" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-                                <circle cx="14" cy="20" r="3.2" fill="white"/>
-                                <circle cx="27" cy="13" r="3.2" fill="white"/>
-                                <circle cx="39" cy="15" r="3.2" fill="white"/>
-                                <circle cx="50" cy="6" r="3.2" fill="white"/>
+        <header style="position: sticky; top: 0; z-index: 50; background: rgba(248, 249, 250, 0.9); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-light);">
+            <div style="max-width: 1200px; margin: 0 auto; padding: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--primary); display: flex; align-items: center; justify-content: center;">
+                            <svg width="24" height="24" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                             </svg>
                         </div>
-                        <div>
-                         <h1 class="brand-title">MyScore</h1>
-                         <p class="brand-subtitle">把成绩记录、复盘和陪学，做得更像一个真正可用的工具</p>
-                         <p class="brand-meta">Score Journal · Reflection · Companion</p>
+                            <div>
+                         <h1 style="font-family: 'Poppins', sans-serif; font-size: 1.75rem; font-weight: 600; color: var(--primary); letter-spacing: -0.02em;">MyScore</h1>
+                         <p style="font-size: 0.875rem; color: var(--text-secondary);">V7.5 AI智能成绩单</p>
+                         <p class="brand-meta">碳碳四键的个人开发应用实践</p>
                         </div>
                     </div>
-                    <nav class="nav-shell">
+                    <nav style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end;">
                         <button class="nav-btn active" id="nav-dashboard" onclick="showPage('dashboard')">仪表盘</button>
                         <button class="nav-btn" id="nav-entry" onclick="showPage('entry')">录入成绩</button>
                         <button class="nav-btn" id="nav-custom" onclick="showPage('custom')">自定义考试</button>
@@ -1868,80 +996,70 @@
             </div>
         </header>
 
-        <main class="site-main">
+        <main style="max-width: 1200px; margin: 0 auto; padding: 2rem 1rem;">
             <!-- 仪表盘 -->
             <div id="page-dashboard" class="page">
-                <section class="card hero-card">
-                    <div class="hero-grid">
-                        <div class="hero-copy">
-                            <div class="eyebrow">成绩管理 · 陪学反馈</div>
-                            <h2 class="hero-title">把每一次考试，整理成你看得懂、愿意回看的成长轨迹。</h2>
-                            <p class="hero-desc">记录分数、查看趋势、整理报告，也保留一点被鼓励和被提醒的空间。MyScore 想做的不是堆功能，而是让你更轻松地持续记录。</p>
-                            <div class="hero-actions">
-                                <button class="btn-primary" onclick="showPage('entry')">开始记录新的成绩</button>
-                                <button class="btn-secondary" type="button" onclick="openInfoModal('guide')">查看使用说明</button>
-                            </div>
-                            <p class="hero-note">从最近一次成绩开始，看清当下状态，再决定下一步该记录、导出还是复盘。</p>
-                            <div class="insight-strip">
-                                <div class="metric-card">
-                                    <div class="metric-label">总考试次数</div>
-                                    <div id="total-count" class="metric-value">0</div>
-                                </div>
-                                <div class="metric-card">
-                                    <div class="metric-label">考试类型</div>
-                                    <div id="exam-types-count" class="metric-value">0</div>
-                                </div>
-                                <div class="metric-card">
-                                    <div class="metric-label">最近考试</div>
-                                    <div id="latest-exam-date" class="metric-value" style="font-size:1.4rem;">-</div>
-                                </div>
-                            </div>
-                        </div>
-                        <aside class="hero-side">
+                <!-- 概览卡片 -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                    <div class="card" style="padding: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <div class="hero-side-label">学习档案</div>
-                                <div class="hero-side-score" id="record-count">0</div>
-                                <div style="margin-top:0.45rem;color:var(--text-secondary);line-height:1.7;">每一次录入都会沉淀成你的个人成绩档案，方便回看阶段变化，也方便整理成报告或备份。</div>
-                                <div id="hero-archive-grid" class="hero-archive-grid">
-                                    <div class="hero-archive-pill">
-                                        <div class="hero-archive-pill-head">
-                                            <span class="hero-archive-name">等待记录</span>
-                                            <span class="hero-archive-value">0次</span>
-                                        </div>
-                                        <div class="hero-archive-meta">开始录入后，这里会出现你的常用考试摘要。</div>
-                                    </div>
-                                </div>
+                                <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">总考试次数</p>
+                                <p id="total-count" style="font-size: 2.5rem; font-weight: 600; color: var(--primary);">0</p>
                             </div>
-                            <div class="hero-side-meta">
-                                <div class="hero-side-row"><span>记录状态</span><strong>随手可存</strong></div>
-                                <div class="hero-side-row"><span>反馈方式</span><strong>点评 + 陪学</strong></div>
-                                <div class="hero-side-row"><span>适合场景</span><strong>日常刷题 / 模考 / 正式考试</strong></div>
+                            <div style="width: 56px; height: 56px; border-radius: 16px; background: #e8f5ef; display: flex; align-items: center; justify-content: center;">
+                                <svg width="28" height="28" fill="none" stroke="var(--primary)" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                </svg>
                             </div>
-                        </aside>
-                    </div>
-                </section>
-
-                <div class="dashboard-grid">
-                <section class="card content-card">
-                    <div class="section-head">
-                        <div>
-                            <h2 class="section-title">最近一次结果</h2>
-                            <p class="section-caption">先看看最近一次考试考了什么、表现如何，再决定下一步要不要补录、回顾或继续聊聊。</p>
                         </div>
                     </div>
+                    <div class="card" style="padding: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">考试类型</p>
+                                <p id="exam-types-count" style="font-size: 2.5rem; font-weight: 600;" class="gradient-text">0</p>
+                            </div>
+                            <div style="width: 56px; height: 56px; border-radius: 16px; background: #e8f0fe; display: flex; align-items: center; justify-content: center;">
+                                <svg width="28" height="28" fill="none" stroke="#4285f4" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card" style="padding: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">最近考试</p>
+                                <p id="latest-exam-date" style="font-size: 1.5rem; font-weight: 600; color: var(--text-main);">-</p>
+                            </div>
+                            <div style="width: 56px; height: 56px; border-radius: 16px; background: #f3e8fd; display: flex; align-items: center; justify-content: center;">
+                                <svg width="28" height="28" fill="none" stroke="#a142f4" stroke-width="2" viewBox="0 0 24 24">
+                                    <path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 最近成绩 -->
+                <div class="card" style="padding: 2rem; margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 1.75rem;">⚡</span> 最近成绩
+                    </h2>
                    <div id="ai-container" style="display:none; margin-bottom: 1rem;">
-                   <div id="ai-comment-box" style="background: rgba(221,238,231,0.72); border: 1px solid rgba(31,106,82,0.14); border-radius: 1rem; padding: 1rem; color: #174f3d; line-height: 1.7; font-size: 0.95rem; margin-bottom: 0.65rem; position: relative; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);">
-                     🤖 亲爱的YTUNer请耐心等待~突突老师正在批改...
+                   <div id="ai-comment-box" style="background: #ecfdf5; border: 2px dashed #10b981; border-radius: 0.75rem; padding: 1rem; color: #047857; line-height: 1.6; font-size: 0.95rem; margin-bottom: 0.5rem; position: relative;">
+                    🤖 亲爱的YTUNer请耐心等待~突突老师正在批改...
                  </div>
 
                  <div id="ai-actions" style="display:none; justify-content: flex-end; gap: 0.5rem;">
-                 <button onclick="showReplyInput()" style="font-size: 0.82rem; color: #174f3d; background: rgba(255,251,245,0.95); border: 1px solid rgba(31,106,82,0.16); padding: 0.42rem 0.9rem; border-radius: 99px; cursor: pointer; font-weight: 700;">继续聊聊</button>
+                 <button onclick="showReplyInput()" style="font-size: 0.8rem; color: #059669; background: white; border: 1px solid #10b981; padding: 0.3rem 0.8rem; border-radius: 99px; cursor: pointer;">💬 不服/回嘴</button>
                  </div>
 
     <div id="reply-input-area" style="display:none; margin-top: 0.5rem; animation: fadeIn 0.3s ease;">
         <div style="display: flex; gap: 0.5rem;">
-            <input type="text" id="user-rebuttal" placeholder="输入你想回应的话..." style="flex: 1; border: 1px solid rgba(81,63,44,0.14); border-radius: 0.9rem; padding: 0.65rem 0.8rem; outline: none; font-size: 0.92rem; background: rgba(255,251,245,0.94);">
-            <button onclick="sendRebuttal()" style="background: #1f6a52; color: white; border: none; padding: 0.65rem 1rem; border-radius: 0.9rem; cursor: pointer; font-size: 0.9rem; font-weight:700;">发送</button>
+            <input type="text" id="user-rebuttal" placeholder="输入你想反驳的话..." style="flex: 1; border: 1px solid #d1fae5; border-radius: 0.5rem; padding: 0.5rem; outline: none; font-size: 0.9rem;">
+            <button onclick="sendRebuttal()" style="background: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem;">发送</button>
         </div>
     </div>
 </div>
@@ -1954,55 +1072,11 @@
         <button onclick="showPage('entry')" style="color: #10b981; font-weight: 600; background: none; border: none; cursor: pointer;">开始录入 →</button>
     </div>
 </div>
-</section>
+</div>
 
-                <section class="card content-card actions-card">
-                    <div class="section-head">
-                        <div>
-                            <h2 class="section-title">数据与报告</h2>
-                            <p class="section-caption">把报告、备份和恢复放在一起，方便你在不同设备和不同阶段之间切换。</p>
-                        </div>
-                    </div>
-                    <div class="dashboard-actions">
-                        <div class="soft-block">
-                            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:0.9rem;">
-                                <div>
-                                    <h3 style="font-weight:700;font-size:1.05rem;margin-bottom:0.3rem;">导出报告</h3>
-                                    <p style="color:var(--text-secondary);font-size:0.92rem;line-height:1.7;">生成阶段性成绩单、分享卡片或复盘摘要。</p>
-                                </div>
-                                <div style="font-size:1.5rem;color:var(--accent);">↗</div>
-                            </div>
-                            <button class="btn-primary" onclick="openReportModal()" style="width:100%;">生成报告</button>
-                        </div>
-                        <div class="soft-block">
-                            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:0.9rem;">
-                                <div>
-                                    <h3 style="font-weight:700;font-size:1.05rem;margin-bottom:0.3rem;">导出与恢复</h3>
-                                    <p style="color:var(--text-secondary);font-size:0.92rem;line-height:1.7;">用备份保证你迁平台、换设备时不会丢数据。</p>
-                                </div>
-                                <div style="font-size:1.5rem;color:var(--primary);">⟲</div>
-                            </div>
-                            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.75rem;">
-                                <button class="btn-secondary" onclick="exportData()" style="width:100%;">导出数据</button>
-                                <label class="btn-primary" style="display:block;text-align:center;cursor:pointer;">
-                                    导入备份
-                                    <input type="file" id="import-file" style="display:none;" accept=".json" onchange="importData(this)">
-                                </label>
-                            </div>
-                            <p style="font-size:0.88rem;color:var(--text-muted);margin-top:0.75rem;">共 <span id="record-count-side">0</span> 条记录</p>
-                        </div>
-                    </div>
-                </section>
-                </div>
-
-                <section class="card content-card" style="margin-bottom:2rem;">
-                    <div class="section-head">
-                        <div>
-                            <h2 class="section-title">趋势与分项</h2>
-                            <p class="section-caption">选择考试类型后，可以直接查看成绩变化和各分项波动，适合复盘阶段性表现。</p>
-                        </div>
-                    </div>
-                    <div id="dashboard-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; padding-bottom: 0.2rem;">
+                <!-- 统计 Tabs -->
+                <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
+                    <div id="dashboard-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; border-bottom: 2px solid #f3f4f6; padding-bottom: 1rem;">
                         <button class="tab-btn active" onclick="switchDashboardTab('overview', this)">概览</button>
                     </div>
                     <div id="tab-content-overview">
@@ -2025,32 +1099,83 @@
                             <p style="color: #9ca3af;">选择上方考试类型查看详细统计</p>
                         </div>
                     </div>
-                </section>
+                </div>
 
-                <section class="card content-card">
-                    <div class="section-head">
-                        <div>
-                            <h2 class="section-title">历史记录</h2>
-                            <p class="section-caption">列表要更像“学习档案”，而不是简单的流水账。</p>
+                <!-- 数据管理 -->
+                <div class="card" style="padding: 2rem; margin-bottom: 2rem;">
+                    <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 1.75rem;">💾</span> 数据管理
+                    </h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                        <!-- 报告导出 V7.5新增 -->
+                        <div class="stat-box">
+                            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem;">
+                                <div>
+                                    <h3 style="font-weight: 700; font-size: 1.125rem; margin-bottom: 0.25rem;">📄 导出报告</h3>
+                                    <p style="color: #6b7280; font-size: 0.875rem;">生成成绩单/分享卡片</p>
+                                </div>
+                                <div style="width: 48px; height: 48px; border-radius: 12px; background: #fdf4ff; display: flex; align-items: center; justify-content: center;">
+                                    <svg width="24" height="24" fill="none" stroke="#a855f7" stroke-width="2" viewBox="0 0 24 24">
+                                        <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <button class="btn-primary" onclick="openReportModal()" style="width: 100%;">生成报告</button>
                         </div>
+                        <div class="stat-box">
+                            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem;">
+                                <div>
+                                    <h3 style="font-weight: 700; font-size: 1.125rem; margin-bottom: 0.25rem;">导出备份</h3>
+                                    <p style="color: #6b7280; font-size: 0.875rem;">导出所有成绩和设置</p>
+                                </div>
+                                <div style="width: 48px; height: 48px; border-radius: 12px; background: #eff6ff; display: flex; align-items: center; justify-content: center;">
+                                    <svg width="24" height="24" fill="none" stroke="#3b82f6" stroke-width="2" viewBox="0 0 24 24">
+                                        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <button class="btn-secondary" onclick="exportData()" style="width: 100%;">导出数据</button>
+                            <p style="font-size: 0.875rem; color: #9ca3af; margin-top: 0.75rem;">共 <span id="record-count">0</span> 条记录</p>
+                        </div>
+                        <div class="stat-box">
+                            <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem;">
+                                <div>
+                                    <h3 style="font-weight: 700; font-size: 1.125rem; margin-bottom: 0.25rem;">导入备份</h3>
+                                    <p style="color: #6b7280; font-size: 0.875rem;">从文件恢复数据</p>
+                                </div>
+                                <div style="width: 48px; height: 48px; border-radius: 12px; background: #ecfdf5; display: flex; align-items: center; justify-content: center;">
+                                    <svg width="24" height="24" fill="none" stroke="#10b981" stroke-width="2" viewBox="0 0 24 24">
+                                        <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <label class="btn-primary" style="display: block; text-align: center; cursor: pointer;">
+                                选择文件
+                                <input type="file" id="import-file" style="display: none;" accept=".json" onchange="importData(this)">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 历史记录 -->
+                <div class="card" style="padding: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 style="font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="font-size: 1.75rem;">📜</span> 历史记录
+                        </h2>
                         <button onclick="clearAllRecords()" style="color: #ef4444; background: none; border: none; cursor: pointer; font-weight: 500;">清空所有</button>
                     </div>
                     <div id="records-list"></div>
-                </section>
+                </div>
             </div>
 
             <!-- 录入成绩 -->
             <div id="page-entry" class="page hidden">
-                <section class="card hero-card" style="margin-bottom:1.5rem;">
-                    <div class="section-head" style="margin-bottom:1rem;">
-                        <div>
-                            <h2 class="section-title">录入新的成绩</h2>
-                            <p class="section-caption">先选考试类型，再录入分项成绩。常用考试可以快速填写，自定义考试也能灵活扩展。</p>
-                        </div>
-                    </div>
+                <div class="card" style="padding: 2rem; margin-bottom: 1.5rem;">
+                    <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem;">选择考试类型</h2>
                     <div id="exam-type-selector" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem;"></div>
-                </section>
-                <div id="entry-form-container" class="card content-card">
+                </div>
+                <div id="entry-form-container" class="card" style="padding: 2rem;">
                     <div class="empty-state">
                         <svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 1rem;">
                             <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -2062,11 +1187,11 @@
 
             <!-- 自定义考试 -->
             <div id="page-custom" class="page hidden">
-                <div class="card content-card">
-                    <div class="section-head" style="margin-bottom:2rem;">
+                <div class="card" style="padding: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                         <div>
-                            <h2 class="section-title">自定义考试类型</h2>
-                            <p class="section-caption">如果你的考试结构和常见模板不同，可以在这里按自己的习惯重新定义分项与计分方式。</p>
+                            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.25rem;">自定义考试类型</h2>
+                            <p style="color: #6b7280;">创建你自己的考试评分系统</p>
                         </div>
                         <button class="btn-primary" onclick="openCreateModal()">+ 新建考试</button>
                     </div>
@@ -2107,57 +1232,18 @@
         </div>
 
     <footer class="site-footer">
-        <div class="footer-shell">
-            <div class="footer-top">
-                <div class="footer-brand">
-                    <span class="footer-brand-mark" aria-hidden="true">
-                        <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
-                            <path d="M6 23h20" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/>
-                            <rect x="8" y="16" width="4.2" height="7" rx="1.4" fill="#ffffff"/>
-                            <rect x="14" y="12" width="4.2" height="11" rx="1.4" fill="#ffffff" opacity="0.92"/>
-                            <rect x="20" y="8" width="4.2" height="15" rx="1.4" fill="#ffffff" opacity="0.82"/>
-                            <path d="M8 11.5c2.5-.3 4.7-1.1 6.7-2.5 1.9-1.3 3.6-3.3 5.1-5.8" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M19.8 3.1h3.1v3.1" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </span>
-                    <div>
-                        <div class="footer-title">MyScore V8.0</div>
-                        <div class="footer-desc">碳碳四键的个人开发实践项目 · 把成绩记录、趋势和陪学反馈收进一个更顺手的仪表盘。</div>
-                    </div>
-                </div>
-
-                <div class="footer-pills">
-                    <a class="footer-link-pill" href="https://github.com/Yuntian-Liu/MyScore" target="_blank" rel="noopener noreferrer">
-                        <span class="footer-pill-icon" style="background:#edf0ff;color:#4a60d8;">
-                            <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-                        </span>
-                        <span><strong>开源仓库</strong> GitHub</span>
-                    </a>
-
-                    <span class="footer-pill">
-                        <span class="footer-pill-icon" style="background:#fff0e8;color:#e26d4a;">
-                            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3.2v13.6M3.2 10h13.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-                        </span>
-                        <span><strong>版本</strong> V8.0</span>
-                    </span>
-
-                    <a class="footer-link-pill" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
-                        <span class="footer-pill-icon" style="background:#eef9f7;color:#2f7a74;">
-                            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true"><rect x="3.5" y="4.5" width="13" height="11" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M7 9.8h6M7 12.8h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-                        </span>
-                        <span><strong>备案</strong> 蜀ICP备2026006689号</span>
-                    </a>
-                </div>
-            </div>
-
-            <div class="footer-meta">
-                <div class="footer-meta-copy">
-                    <span>成绩记录、趋势查看、陪学反馈与数据归档</span>
-                    <span>Copyright © YTUN 2026 All Rights Reserved</span>
-                </div>
-                <span>Designed for a calmer, brighter study workflow</span>
-            </div>
-        </div>
+    <p style="margin-bottom: 0.5rem;">
+        <a href="https://github.com/Yuntian-Liu/MyScore" target="_blank" rel="noopener noreferrer" style="display:inline-flex;align-items:center;gap:0.4rem;color:var(--text-secondary);text-decoration:none;transition:color 0.15s ease;" onmouseover="this.style.color='#202124'" onmouseout="this.style.color=''">
+            <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            <span style="font-size:0.85rem;font-weight:500;">Open Source on GitHub</span>
+        </a>
+    </p>
+    <p style="margin-bottom: 0.22rem;">MyScore V7.5</p>
+    <p style="margin-bottom: 0.22rem;">碳碳四键的个人开发应用实践</p>
+    <p style="margin-bottom: 0.22rem;">
+        <a class="icp-link" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">蜀ICP备2026006689号</a>
+    </p>
+    <p style="font-size: 0.82em; opacity: 0.85;">Copyright © YTUN 2026 All Rights Reserved</p>
     </footer>
     </div>
 
@@ -2167,10 +1253,6 @@
             RECORDS: 'myscore_v51_records',  // 保持与V5.2兼容
             CUSTOM: 'myscore_v51_custom'
         };
-        const COMMENT_API_ENDPOINT = (() => {
-            const meta = document.querySelector('meta[name="myscore-comment-endpoint"]');
-            return meta && meta.content ? meta.content.trim() : '/api/comment';
-        })();
 
         // 图表实例变量
         let mainChartInstance = null;
@@ -2237,43 +1319,6 @@
             }
         };
 
-        const EXAM_THEME_MAP = {
-            ielts: {
-                accent: '#5b7cff',
-                strong: '#2f4fcb',
-                soft: '#eef1ff',
-                softAlt: '#fff2ea',
-                contrast: '#ffffff',
-                reportGradientStart: '#5b7cff',
-                reportGradientEnd: '#ff8a63'
-            },
-            cet4: {
-                accent: '#23a17b',
-                strong: '#16765c',
-                soft: '#e9fbf3',
-                softAlt: '#fff0db',
-                contrast: '#ffffff',
-                reportGradientStart: '#23a17b',
-                reportGradientEnd: '#f4a63e'
-            },
-            cet6: {
-                accent: '#8d63ff',
-                strong: '#6542c9',
-                soft: '#f1edff',
-                softAlt: '#ffe9f3',
-                contrast: '#ffffff',
-                reportGradientStart: '#7d61ff',
-                reportGradientEnd: '#ff7fab'
-            }
-        };
-
-        const FALLBACK_THEME_POOL = [
-            { accent: '#ff8b68', strong: '#d86343', soft: '#fff0e8', softAlt: '#fff8ef', contrast: '#ffffff', reportGradientStart: '#ff8b68', reportGradientEnd: '#ffb36a' },
-            { accent: '#48a7a0', strong: '#2f7a74', soft: '#e8f9f7', softAlt: '#eef9ff', contrast: '#ffffff', reportGradientStart: '#48a7a0', reportGradientEnd: '#7ac8f7' },
-            { accent: '#6b7cff', strong: '#4958cb', soft: '#edf0ff', softAlt: '#f7edff', contrast: '#ffffff', reportGradientStart: '#6b7cff', reportGradientEnd: '#b37cff' },
-            { accent: '#f08b36', strong: '#c36a1d', soft: '#fff2e5', softAlt: '#fff9ef', contrast: '#ffffff', reportGradientStart: '#f08b36', reportGradientEnd: '#ffbf66' }
-        ];
-
         // 雅思查找表
         const IELTS_TABLES = {
             listening: [
@@ -2291,111 +1336,9 @@
         };
 
         // ==================== 工具函数 ====================
-        function readStorageJson(key, fallback) {
-            try {
-                const raw = localStorage.getItem(key);
-                return raw ? JSON.parse(raw) : fallback;
-            } catch (error) {
-                console.warn('Failed to parse localStorage key:', key, error);
-                return fallback;
-            }
-        }
-
-        function escapeHtml(value) {
-            return String(value ?? '')
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-        }
-
-        function escapeAttr(value) {
-            return escapeHtml(value);
-        }
-
-        function getExamTheme(examType) {
-            if (EXAM_THEME_MAP[examType]) return EXAM_THEME_MAP[examType];
-            const seed = String(examType || 'custom').split('').reduce(function (acc, ch) {
-                return acc + ch.charCodeAt(0);
-            }, 0);
-            return FALLBACK_THEME_POOL[seed % FALLBACK_THEME_POOL.length];
-        }
-
-        function getExamBadgeMarkup(examType, label, size) {
-            const theme = getExamTheme(examType);
-            const boxSize = size || 42;
-            const iconSize = Math.round(boxSize * 0.64);
-            const padding = Math.round((boxSize - iconSize) / 2);
-            let iconMarkup = '';
-
-            if (examType === 'ielts') {
-                iconMarkup = `
-                    <path d="M11 11h10" stroke="${theme.contrast}" stroke-width="2.2" stroke-linecap="round"/>
-                    <path d="M11 16h10" stroke="${theme.contrast}" stroke-width="2.2" stroke-linecap="round"/>
-                    <path d="M11 21h7" stroke="${theme.contrast}" stroke-width="2.2" stroke-linecap="round"/>
-                    <rect x="6" y="9" width="3" height="3" rx="1.2" fill="${theme.contrast}"/>
-                    <rect x="6" y="14" width="3" height="3" rx="1.2" fill="${theme.contrast}"/>
-                    <rect x="6" y="19" width="3" height="3" rx="1.2" fill="${theme.contrast}"/>
-                `;
-            } else if (examType === 'cet4') {
-                iconMarkup = `
-                    <path d="M8 22V11.5c0-1 .8-1.8 1.8-1.8h11.6c1 0 1.8.8 1.8 1.8V22" stroke="${theme.contrast}" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 9V7.8c0-1 .8-1.8 1.8-1.8h3.4c1 0 1.8.8 1.8 1.8V9" stroke="${theme.contrast}" stroke-width="2.1" stroke-linecap="round"/>
-                    <path d="M8 15h15" stroke="${theme.contrast}" stroke-width="2.1" stroke-linecap="round"/>
-                    <path d="m14 15.2 1.7 1.7 3.3-3.4" stroke="${theme.contrast}" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
-                `;
-            } else if (examType === 'cet6') {
-                iconMarkup = `
-                    <path d="M7 22h18" stroke="${theme.contrast}" stroke-width="2.1" stroke-linecap="round"/>
-                    <rect x="9" y="14" width="3.4" height="8" rx="1.2" fill="${theme.contrast}"/>
-                    <rect x="14.4" y="11" width="3.4" height="11" rx="1.2" fill="${theme.contrast}" opacity="0.92"/>
-                    <rect x="19.8" y="8" width="3.4" height="14" rx="1.2" fill="${theme.contrast}" opacity="0.82"/>
-                    <path d="M9 10.2c2-.2 3.8-.8 5.4-2 1.7-1.2 3.2-2.9 4.6-5.2" stroke="${theme.contrast}" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="m18.6 3 1.8.1-.1 1.8" stroke="${theme.contrast}" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
-                `;
-            } else {
-                const initial = escapeHtml(String(label || examType || 'M').slice(0, 1).toUpperCase());
-                iconMarkup = `<text x="16" y="21" text-anchor="middle" font-size="13" font-weight="700" fill="${theme.contrast}" font-family="Manrope, sans-serif">${initial}</text>`;
-            }
-
-            return '<span style="display:inline-flex;align-items:center;justify-content:center;width:' + boxSize + 'px;height:' + boxSize + 'px;border-radius:' + Math.round(boxSize * 0.34) + 'px;background:linear-gradient(135deg,' + theme.reportGradientStart + ', ' + theme.reportGradientEnd + ');box-shadow:0 12px 30px -18px rgba(40,55,90,0.45);flex-shrink:0;"><svg width="' + iconSize + '" height="' + iconSize + '" viewBox="0 0 32 32" fill="none" aria-hidden="true" style="display:block">' + iconMarkup + '</svg></span>';
-        }
-
-        function getReportTypeIconMarkup(kind, size) {
-            const iconSize = size || 30;
-            if (kind === 'scorecard') {
-                return '<svg width="' + iconSize + '" height="' + iconSize + '" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect x="6" y="5.5" width="20" height="21" rx="5" fill="#eef1ff" stroke="#5b7cff" stroke-width="1.8"/><path d="M11 12h10M11 17h10M11 22h6" stroke="#3f5ee8" stroke-width="2" stroke-linecap="round"/></svg>';
-            }
-            return '<svg width="' + iconSize + '" height="' + iconSize + '" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect x="5.5" y="7" width="21" height="18" rx="6" fill="#fff2ea" stroke="#ff8a63" stroke-width="1.8"/><path d="M10 21l4.5-5 4 3.5 4.5-6" stroke="#f26d44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="21" r="1.6" fill="#f26d44"/><circle cx="18.5" cy="19.5" r="1.6" fill="#f26d44"/><circle cx="23" cy="13.5" r="1.6" fill="#f26d44"/></svg>';
-        }
-
-        async function postComment(payload) {
-            const res = await fetch(COMMENT_API_ENDPOINT, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            let data = {};
-            try {
-                data = await res.json();
-            } catch (error) {
-                if (!res.ok) {
-                    throw new Error('AI 服务返回了不可解析的响应');
-                }
-            }
-
-            if (!res.ok) {
-                throw new Error(data.error || ('AI 请求失败（' + res.status + '）'));
-            }
-
-            return data;
-        }
-
         function getRecords() {
-            const data = readStorageJson(STORAGE.RECORDS, []);
-            return Array.isArray(data) ? data : [];
+            const d = localStorage.getItem(STORAGE.RECORDS);
+            return d ? JSON.parse(d) : [];
         }
 
         function saveRecords(r) {
@@ -2403,8 +1346,8 @@
         }
 
         function getCustom() {
-            const data = readStorageJson(STORAGE.CUSTOM, {});
-            return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+            const d = localStorage.getItem(STORAGE.CUSTOM);
+            return d ? JSON.parse(d) : {};
         }
 
         function saveCustom(c) {
@@ -2413,44 +1356,6 @@
 
         function allExams() {
             return { ...BUILTIN_EXAMS, ...getCustom() };
-        }
-
-        function buildArchiveHighlights(records, exams) {
-            if (!records.length) return [];
-
-            const grouped = {};
-            for (const record of records) {
-                if (!grouped[record.examType]) {
-                    grouped[record.examType] = [];
-                }
-                grouped[record.examType].push(record);
-            }
-
-            return Object.entries(grouped)
-                .map(function (entry) {
-                    const examType = entry[0];
-                    const examRecords = entry[1];
-                    const exam = exams[examType];
-                    const totals = examRecords
-                        .map(function (record) { return typeof record.total === 'number' ? record.total : null; })
-                        .filter(function (value) { return value !== null; });
-
-                    return {
-                        examType: examType,
-                        name: exam ? exam.name : examType,
-                        count: examRecords.length,
-                        best: totals.length ? Math.max.apply(null, totals) : null,
-                        lastDate: examRecords
-                            .map(function (record) { return record.date; })
-                            .sort()
-                            .slice(-1)[0] || '-'
-                    };
-                })
-                .sort(function (a, b) {
-                    if (b.count !== a.count) return b.count - a.count;
-                    return a.name.localeCompare(b.name, 'zh-CN');
-                })
-                .slice(0, 4);
         }
 
         function roundUp(n) { return Math.ceil(n); }
@@ -2511,23 +1416,7 @@
             const types = [...new Set(records.map(r => r.examType))];
             document.getElementById('exam-types-count').textContent = types.length;
             document.getElementById('record-count').textContent = records.length;
-            const recordCountSide = document.getElementById('record-count-side');
-            if (recordCountSide) recordCountSide.textContent = records.length;
             document.getElementById('latest-exam-date').textContent = records.length ? records[records.length-1].date : '-';
-            const archiveGrid = document.getElementById('hero-archive-grid');
-            if (archiveGrid) {
-                const highlights = buildArchiveHighlights(records, exams);
-                if (!highlights.length) {
-                    archiveGrid.innerHTML = '<div class="hero-archive-pill c1"><div class="hero-archive-pill-head"><span class="hero-archive-name">等待记录</span><span class="hero-archive-value">0次</span></div><div class="hero-archive-meta"><div class="hero-archive-meta-row"><span class="hero-archive-meta-label">最高成绩</span><span class="hero-archive-meta-value">-</span></div><div class="hero-archive-meta-row"><span class="hero-archive-meta-label">最近记录</span><span class="hero-archive-meta-value">开始录入后出现</span></div></div></div>';
-                } else {
-                    archiveGrid.innerHTML = highlights.map(function (item, index) {
-                        const bestText = item.best === null ? '-' : item.best.toFixed(1);
-                        const colorClass = 'c' + ((index % 4) + 1);
-                        const theme = getExamTheme(item.examType);
-                        return '<div class="hero-archive-pill ' + colorClass + '" style="background:linear-gradient(180deg,#ffffff,' + theme.soft + ');border-color:' + theme.accent + '30;"><div class="hero-archive-pill-head"><span class="hero-archive-name" style="color:' + theme.strong + ';">' + escapeHtml(item.name) + '</span><span class="hero-archive-value" style="color:' + theme.strong + ';">' + item.count + '次</span></div><div class="hero-archive-meta"><div class="hero-archive-meta-row"><span class="hero-archive-meta-label">最高成绩</span><span class="hero-archive-meta-value">' + escapeHtml(bestText) + '</span></div><div class="hero-archive-meta-row"><span class="hero-archive-meta-label">最近记录</span><span class="hero-archive-meta-value">' + escapeHtml(item.lastDate) + '</span></div></div></div>';
-                    }).join('');
-                }
-            }
 
             // 最近成绩
             const recentDiv = document.getElementById('recent-score-content');
@@ -2538,7 +1427,7 @@
                 const exam = exams[last.examType];
                 const isCet = last.examType === 'cet4' || last.examType === 'cet6';
 
-                let html = '<div style="margin-bottom:0.5rem;color:#6b7280;">' + escapeHtml(last.date) + ' - ' + escapeHtml(exam ? exam.name : '未知') + '</div>';
+                let html = '<div style="margin-bottom:0.5rem;color:#6b7280;">' + last.date + ' - ' + (exam ? exam.name : '未知') + '</div>';
                 html += '<div class="recent-score-grid">';
                 if (exam) {
                     // 先显示非写作翻译的科目
@@ -2547,7 +1436,7 @@
 
                         const sc = last.scores[s.id] || 0;
                         html += '<div class="recent-score-item" style="background:' + s.color + '15;border:2px solid ' + s.color + '40;">';
-                        html += '<div class="recent-score-item-label" style="color:' + s.color + ';">' + escapeHtml(s.name) + '</div>';
+                        html += '<div class="recent-score-item-label" style="color:' + s.color + ';">' + s.name + '</div>';
                         html += '<div class="recent-score-item-value" style="color:' + s.color + ';">' + sc.toFixed(s.dec) + '</div></div>';
                     }
 
@@ -2579,7 +1468,7 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
             let tabsHtml = '<button class="tab-btn active" onclick="switchDashboardTab(\'overview\', this)">概览</button>';
             for (const tid of types) {
                 const e = exams[tid];
-                if (e) tabsHtml += '<button class="tab-btn" onclick="switchDashboardTab(\'' + tid + '\', this)">' + escapeHtml(e.name) + '</button>';
+                if (e) tabsHtml += '<button class="tab-btn" onclick="switchDashboardTab(\'' + tid + '\', this)">' + e.icon + ' ' + e.name + '</button>';
             }
             tabsDiv.innerHTML = tabsHtml;
 
@@ -2600,7 +1489,7 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
                     for (const s of e.subjects) {
                         if (isCet && (s.id === 'writing' || s.id === 'translation')) continue;
                         const sc = r.scores[s.id] || 0;
-                        badges += '<span class="score-badge" style="background:' + s.color + '15;color:' + s.color + ';">' + escapeHtml(s.short) + ': ' + sc.toFixed(s.dec) + '</span>';
+                        badges += '<span class="score-badge" style="background:' + s.color + '15;color:' + s.color + ';">' + s.short + ': ' + sc.toFixed(s.dec) + '</span>';
                     }
 
                     if (isCet) {
@@ -2611,11 +1500,10 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
                         badges += '<span class="score-badge" style="background:' + wtColor + '15;color:' + wtColor + ';">写作和翻译: ' + wtTotal + '</span>';
                     }
 
-                    const theme = getExamTheme(r.examType);
-                    listHtml += '<div class="record-box" style="border-color:' + theme.accent + '26;box-shadow:0 16px 34px -30px ' + theme.accent + '66;"><div class="record-row"><div class="record-main"><div class="record-meta">' + getExamBadgeMarkup(r.examType, e.name, 38) + '<span style="font-weight:700;color:' + theme.strong + ';">' + escapeHtml(e.name) + '</span><span style="color:#9ca3af;font-size:0.875rem;">' + escapeHtml(r.date) + '</span></div><div class="record-badges">' + badges + '</div></div><div class="record-side">';
+                    listHtml += '<div class="record-box"><div class="record-row"><div class="record-main"><div class="record-meta"><span style="font-size:1.25rem;">' + e.icon + '</span><span style="font-weight:700;">' + e.name + '</span><span style="color:#9ca3af;font-size:0.875rem;">' + r.date + '</span></div><div class="record-badges">' + badges + '</div></div><div class="record-side">';
                     if (r.total !== null) {
                         const totalLabel = r.examType === 'ielts' ? 'Overall' : '总分';
-                        listHtml += '<div class="record-total"><div style="font-size:0.75rem;color:#9ca3af;">' + totalLabel + '</div><div style="font-size:1.75rem;font-weight:bold;color:' + theme.strong + ';">' + r.total.toFixed(1) + '</div></div>';
+                        listHtml += '<div class="record-total"><div style="font-size:0.75rem;color:#9ca3af;">' + totalLabel + '</div><div style="font-size:1.75rem;font-weight:bold;" class="gradient-text">' + r.total.toFixed(1) + '</div></div>';
                     }
                     listHtml += '<button class="record-delete" onclick="deleteRecord(' + r.id + ')">×</button></div></div></div>';
                 }
@@ -2649,7 +1537,7 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
 
             overviewEmpty.style.display = 'none';
             if (!recs.length) {
-                overviewEmpty.innerHTML = '<p style="color:#9ca3af;">暂无' + escapeHtml(exam ? exam.name : '') + '数据</p>';
+                overviewEmpty.innerHTML = '<p style="color:#9ca3af;">暂无' + (exam ? exam.name : '') + '数据</p>';
                 chartsContainer.style.display = 'none';
                 return;
             }
@@ -2657,14 +1545,11 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
             // 显示统计卡片 - 不破坏chartsContainer
             let statsHtml = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem;">';
             statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">考试次数</p><p style="font-size:2rem;font-weight:bold;" class="gradient-text">' + recs.length + '</p></div>';
-            statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">最近</p><p style="font-size:1.25rem;font-weight:bold;">' + escapeHtml(recs[recs.length-1].date) + '</p></div>';
+            statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">最近</p><p style="font-size:1.25rem;font-weight:bold;">' + recs[recs.length-1].date + '</p></div>';
             if (exam.calcTotal) {
                 const totals = recs.map(r => r.total);
-                const rootStyle = getComputedStyle(document.documentElement);
-                const accentColor = rootStyle.getPropertyValue('--accent').trim() || '#c35f3d';
-                const supportColor = rootStyle.getPropertyValue('--support').trim() || '#7b6aa6';
-                statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">最佳</p><p style="font-size:2rem;font-weight:bold;color:' + accentColor + ';">' + Math.max(...totals).toFixed(1) + '</p></div>';
-                statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">平均</p><p style="font-size:2rem;font-weight:bold;color:' + supportColor + ';">' + (totals.reduce((a,b)=>a+b,0)/totals.length).toFixed(1) + '</p></div>';
+                statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">最佳</p><p style="font-size:2rem;font-weight:bold;color:#3b82f6;">' + Math.max(...totals).toFixed(1) + '</p></div>';
+                statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">平均</p><p style="font-size:2rem;font-weight:bold;color:#8b5cf6;">' + (totals.reduce((a,b)=>a+b,0)/totals.length).toFixed(1) + '</p></div>';
             }
             statsHtml += '</div>';
 
@@ -2710,25 +1595,25 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
             if (examId === 'ielts') {
                 // 雅思图表
                 datasets = [
-                    { label: 'Overall', data: sorted.map(r => r.total), borderColor: '#275b56', backgroundColor: 'rgba(39, 91, 86, 0.12)', borderWidth: 3, fill: true, tension: 0.3, pointRadius: 5 },
-                    { label: 'Listening', data: sorted.map(r => r.scores.listening || 0), borderColor: '#4d7298', borderWidth: 2, tension: 0.3, pointRadius: 4 },
-                    { label: 'Reading', data: sorted.map(r => r.scores.reading || 0), borderColor: '#275b56', borderWidth: 2, tension: 0.3, pointRadius: 4 },
-                    { label: 'Writing', data: sorted.map(r => r.scores.writing || 0), borderColor: '#c35f3d', borderWidth: 2, tension: 0.3, pointRadius: 4 },
-                    { label: 'Speaking', data: sorted.map(r => r.scores.speaking || 0), borderColor: '#7b6aa6', borderWidth: 2, tension: 0.3, pointRadius: 4 }
+                    { label: 'Overall', data: sorted.map(r => r.total), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 3, fill: true, tension: 0.3, pointRadius: 5 },
+                    { label: 'Listening', data: sorted.map(r => r.scores.listening || 0), borderColor: '#3b82f6', borderWidth: 2, tension: 0.3, pointRadius: 4 },
+                    { label: 'Reading', data: sorted.map(r => r.scores.reading || 0), borderColor: '#10b981', borderWidth: 2, tension: 0.3, pointRadius: 4 },
+                    { label: 'Writing', data: sorted.map(r => r.scores.writing || 0), borderColor: '#f59e0b', borderWidth: 2, tension: 0.3, pointRadius: 4 },
+                    { label: 'Speaking', data: sorted.map(r => r.scores.speaking || 0), borderColor: '#8b5cf6', borderWidth: 2, tension: 0.3, pointRadius: 4 }
                 ];
             } else if (examId === 'cet4' || examId === 'cet6') {
                 // 四六级图表 - 写作和翻译合并显示
-                const color = examId === 'cet4' ? '#275b56' : '#7b6aa6';
+                const color = examId === 'cet4' ? '#10b981' : '#8b5cf6';
                 datasets = [
                     { label: '总分', data: sorted.map(r => r.total), borderColor: color, backgroundColor: color + '20', borderWidth: 3, fill: true, tension: 0.3, pointRadius: 5 },
-                    { label: '听力', data: sorted.map(r => r.scores.listening || 0), borderColor: '#4d7298', borderWidth: 2, tension: 0.3, pointRadius: 4 },
-                    { label: '阅读', data: sorted.map(r => r.scores.reading || 0), borderColor: '#275b56', borderWidth: 2, tension: 0.3, pointRadius: 4 },
-                    { label: '写作和翻译', data: sorted.map(r => (r.scores.writing || 0) + (r.scores.translation || 0)), borderColor: '#c35f3d', borderWidth: 2, tension: 0.3, pointRadius: 4 }
+                    { label: '听力', data: sorted.map(r => r.scores.listening || 0), borderColor: '#3b82f6', borderWidth: 2, tension: 0.3, pointRadius: 4 },
+                    { label: '阅读', data: sorted.map(r => r.scores.reading || 0), borderColor: '#10b981', borderWidth: 2, tension: 0.3, pointRadius: 4 },
+                    { label: '写作和翻译', data: sorted.map(r => (r.scores.writing || 0) + (r.scores.translation || 0)), borderColor: '#f59e0b', borderWidth: 2, tension: 0.3, pointRadius: 4 }
                 ];
             } else {
                 // 自定义考试 - 显示总分和各科目
                 datasets = [
-                    { label: '总分', data: sorted.map(r => r.total), borderColor: '#275b56', backgroundColor: 'rgba(39, 91, 86, 0.12)', borderWidth: 3, fill: true, tension: 0.3, pointRadius: 5 }
+                    { label: '总分', data: sorted.map(r => r.total), borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 3, fill: true, tension: 0.3, pointRadius: 5 }
                 ];
                 // 添加各科目数据
                 for (const s of exam.subjects) {
@@ -2796,7 +1681,7 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
                 for (const s of e.subjects) {
                     if (isCet && (s.id === 'writing' || s.id === 'translation')) continue;
                     const sc = r.scores[s.id] || 0;
-                        badges += '<span class="score-badge" style="background:' + s.color + '15;color:' + s.color + ';">' + escapeHtml(s.short) + ': ' + sc.toFixed(s.dec) + '</span>';
+                    badges += '<span class="score-badge" style="background:' + s.color + '15;color:' + s.color + ';">' + s.short + ': ' + sc.toFixed(s.dec) + '</span>';
                 }
 
                 if (isCet) {
@@ -2807,11 +1692,10 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
                     badges += '<span class="score-badge" style="background:' + wtColor + '15;color:' + wtColor + ';">写作和翻译: ' + wtTotal + '</span>';
                 }
 
-                const theme = getExamTheme(r.examType);
-                listHtml += '<div class="record-box" style="border-color:' + theme.accent + '26;box-shadow:0 16px 34px -30px ' + theme.accent + '66;"><div class="record-row"><div class="record-main"><div class="record-meta">' + getExamBadgeMarkup(r.examType, e.name, 38) + '<span style="font-weight:700;color:' + theme.strong + ';">' + escapeHtml(e.name) + '</span><span style="color:#9ca3af;font-size:0.875rem;">' + escapeHtml(r.date) + '</span></div><div class="record-badges">' + badges + '</div></div><div class="record-side">';
+                listHtml += '<div class="record-box"><div class="record-row"><div class="record-main"><div class="record-meta"><span style="font-size:1.25rem;">' + e.icon + '</span><span style="font-weight:700;">' + e.name + '</span><span style="color:#9ca3af;font-size:0.875rem;">' + r.date + '</span></div><div class="record-badges">' + badges + '</div></div><div class="record-side">';
                 if (r.total !== null) {
                     const totalLabel = r.examType === 'ielts' ? 'Overall' : '总分';
-                    listHtml += '<div class="record-total"><div style="font-size:0.75rem;color:#9ca3af;">' + totalLabel + '</div><div style="font-size:1.75rem;font-weight:bold;color:' + theme.strong + ';">' + r.total.toFixed(1) + '</div></div>';
+                    listHtml += '<div class="record-total"><div style="font-size:0.75rem;color:#9ca3af;">' + totalLabel + '</div><div style="font-size:1.75rem;font-weight:bold;" class="gradient-text">' + r.total.toFixed(1) + '</div></div>';
                 }
                 listHtml += '<button class="record-delete" onclick="deleteRecord(' + r.id + ')">×</button></div></div></div>';
             }
@@ -2841,8 +1725,7 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
             const container = document.getElementById('exam-type-selector');
             let html = '';
             for (const [id, e] of Object.entries(exams)) {
-                const theme = getExamTheme(id);
-                html += '<div class="exam-card" onclick="selectExam(\'' + id + '\')" style="border-color:' + theme.accent + '24;background:linear-gradient(180deg,#ffffff, ' + theme.soft + ');box-shadow:0 18px 42px -34px ' + theme.accent + '66;">' + getExamBadgeMarkup(id, e.name, 52) + '<div style="font-weight:700;color:' + theme.strong + ';margin-top:0.85rem;">' + escapeHtml(e.name) + '</div><div style="font-size:0.875rem;color:#7c8298;">' + escapeHtml(e.desc) + '</div></div>';
+                html += '<div class="exam-card" onclick="selectExam(\'' + id + '\')"><div style="font-size:2.5rem;margin-bottom:0.5rem;">' + e.icon + '</div><div style="font-weight:700;">' + e.name + '</div><div style="font-size:0.875rem;color:#9ca3af;">' + e.desc + '</div></div>';
             }
             container.innerHTML = html;
         }
@@ -3127,11 +2010,10 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
             let html = '';
             for (const [id, e] of Object.entries(custom)) {
                 let subs = '';
-                const theme = getExamTheme(id);
                 for (const s of e.subjects) {
-                    subs += '<span style="display:inline-block;padding:0.375rem 0.875rem;border-radius:9999px;font-size:0.75rem;margin-right:0.5rem;background:' + s.color + '15;color:' + s.color + ';">' + escapeHtml(s.name) + '</span>';
+                    subs += '<span style="display:inline-block;padding:0.375rem 0.875rem;border-radius:9999px;font-size:0.75rem;margin-right:0.5rem;background:' + s.color + '15;color:' + s.color + ';">' + s.name + '</span>';
                 }
-                html += '<div class="record-box" style="border-color:' + theme.accent + '24;box-shadow:0 18px 40px -34px ' + theme.accent + '66;"><div style="display:flex;justify-content:space-between;align-items:center;"><div style="display:flex;align-items:center;gap:1rem;">' + getExamBadgeMarkup(id, e.name, 44) + '<div><div style="font-weight:700;color:' + theme.strong + ';">' + escapeHtml(e.name) + '</div><div style="font-size:0.875rem;color:#9ca3af;">' + escapeHtml(e.desc || '无描述') + '</div><div style="margin-top:0.5rem;">' + subs + '</div></div></div><button onclick="deleteCustom(\'' + id + '\')" style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:1.5rem;">×</button></div></div>';
+                html += '<div class="record-box"><div style="display:flex;justify-content:space-between;align-items:center;"><div style="display:flex;align-items:center;gap:1rem;"><div style="font-size:2rem;">' + e.icon + '</div><div><div style="font-weight:700;">' + e.name + '</div><div style="font-size:0.875rem;color:#9ca3af;">' + (e.desc || '无描述') + '</div><div style="margin-top:0.5rem;">' + subs + '</div></div></div><button onclick="deleteCustom(\'' + id + '\')" style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:1.5rem;">×</button></div></div>';
             }
             container.innerHTML = html;
         }
@@ -3168,8 +2050,8 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
                 const s = customSubs[i];
                 html += '<div style="padding:1rem;background:#f9fafb;border-radius:12px;margin-bottom:0.75rem;border:1.5px solid #e5e7eb;">';
                 html += '<div style="display:grid;grid-template-columns:1fr 80px 40px;gap:0.5rem;margin-bottom:0.5rem;">';
-                html += '<input type="text" placeholder="科目名称" value="' + escapeAttr(s.name) + '" onchange="customSubs[' + i + '].name=this.value" class="input">';
-                html += '<input type="text" placeholder="简称" value="' + escapeAttr(s.short) + '" onchange="customSubs[' + i + '].short=this.value" class="input">';
+                html += '<input type="text" placeholder="科目名称" value="' + s.name + '" onchange="customSubs[' + i + '].name=this.value" class="input">';
+                html += '<input type="text" placeholder="简称" value="' + s.short + '" onchange="customSubs[' + i + '].short=this.value" class="input">';
                 html += '<input type="color" value="' + s.color + '" onchange="customSubs[' + i + '].color=this.value" style="width:40px;height:40px;border:none;border-radius:0.5rem;cursor:pointer;">';
                 html += '</div>';
                 html += '<select onchange="customSubs[' + i + '].type=this.value;renderSubList()" class="input" style="margin-bottom:0.5rem;">';
@@ -3186,7 +2068,7 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
                     html += '<div id="subqs-' + i + '">';
                     for (let j = 0; j < s.subquestions.length; j++) {
                         const sq = s.subquestions[j];
-                        html += '<div style="display:flex;gap:0.5rem;margin-bottom:0.25rem;"><input type="text" placeholder="小题名称" value="' + escapeAttr(sq.name) + '" onchange="customSubs[' + i + '].subquestions[' + j + '].name=this.value" class="input" style="flex:1;"><input type="number" placeholder="满分" value="' + sq.max + '" onchange="customSubs[' + i + '].subquestions[' + j + '].max=parseFloat(this.value)" class="input" style="width:80px;"></div>';
+                        html += '<div style="display:flex;gap:0.5rem;margin-bottom:0.25rem;"><input type="text" placeholder="小题名称" value="' + sq.name + '" onchange="customSubs[' + i + '].subquestions[' + j + '].name=this.value" class="input" style="flex:1;"><input type="number" placeholder="满分" value="' + sq.max + '" onchange="customSubs[' + i + '].subquestions[' + j + '].max=parseFloat(this.value)" class="input" style="width:80px;"></div>';
                     }
                     html += '</div><button type="button" onclick="addSubQuestion(' + i + ')" style="color:#10b981;background:none;border:none;cursor:pointer;font-size:0.875rem;">+ 添加小题</button>';
                 } else if (s.type === 'formula') {
@@ -3196,7 +2078,7 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
                     html += '<div id="secs-' + i + '">';
                     for (let j = 0; j < s.sections.length; j++) {
                         const sec = s.sections[j];
-                        html += '<div style="display:flex;gap:0.5rem;margin-bottom:0.25rem;"><input type="text" placeholder="名称" value="' + escapeAttr(sec.name) + '" onchange="customSubs[' + i + '].sections[' + j + '].name=this.value" class="input" style="flex:1;"><input type="number" placeholder="分值" value="' + sec.score + '" onchange="customSubs[' + i + '].sections[' + j + '].score=parseFloat(this.value)" class="input" style="width:80px;"><input type="number" placeholder="最大题数" value="' + sec.max + '" onchange="customSubs[' + i + '].sections[' + j + '].max=parseInt(this.value)" class="input" style="width:80px;"></div>';
+                        html += '<div style="display:flex;gap:0.5rem;margin-bottom:0.25rem;"><input type="text" placeholder="名称" value="' + sec.name + '" onchange="customSubs[' + i + '].sections[' + j + '].name=this.value" class="input" style="flex:1;"><input type="number" placeholder="分值" value="' + sec.score + '" onchange="customSubs[' + i + '].sections[' + j + '].score=parseFloat(this.value)" class="input" style="width:80px;"><input type="number" placeholder="最大题数" value="' + sec.max + '" onchange="customSubs[' + i + '].sections[' + j + '].max=parseInt(this.value)" class="input" style="width:80px;"></div>';
                     }
                     html += '</div><button type="button" onclick="addSec(' + i + ')" style="color:#10b981;background:none;border:none;cursor:pointer;font-size:0.875rem;">+ 添加部分</button>';
                 }
@@ -3347,20 +2229,24 @@ async function fetchAIComment(examType, currentScore, historyScores) {
     actions.style.display = 'none'; // 先藏起按钮
     replyArea.style.display = 'none'; // 先藏起输入框
     box.innerHTML = '🤖 毒舌老师正在推眼镜分析你的成绩...';
-    box.style.background = 'rgba(221,238,231,0.72)'; // 恢复绿色背景
-    box.style.color = '#174f3d';
-    box.style.borderColor = 'rgba(31,106,82,0.14)';
+    box.style.background = '#ecfdf5'; // 恢复绿色背景
 
     try {
-        const data = await postComment({
-            examType,
-            currentScore,
-            historyScores
+        const res = await fetch('/.netlify/functions/comment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                examType, 
+                currentScore, 
+                historyScores 
+            })
         });
+
+        const data = await res.json();
         
         if (data.comment) {
             lastAiComment = data.comment; // 记住老师骂了什么
-            box.innerHTML = `<strong>👩‍🏫 毒舌老师：</strong> ${escapeHtml(data.comment)}`;
+            box.innerHTML = `<strong>👩‍🏫 毒舌老师：</strong> ${data.comment}`;
             actions.style.display = 'flex'; // 显示"回嘴"按钮
         } else {
             box.innerHTML = '老师去吃饭了...';
@@ -3387,26 +2273,32 @@ async function sendRebuttal() {
     const box = document.getElementById('ai-comment-box');
     
     // 界面变身：变成"对战中"状态
-    box.innerHTML = `<strong>😤 你：</strong> ${escapeHtml(rebuttal)}<br><hr style="margin:8px 0; border:0; border-top:1px dashed #a7f3d0">🤖 老师正在思考怎么怼回来...`;
-    box.style.background = 'rgba(243,224,207,0.82)';
-    box.style.color = '#8e5520';
-    box.style.borderColor = 'rgba(188,108,37,0.24)';
+    box.innerHTML = `<strong>😤 你：</strong> ${rebuttal}<br><hr style="margin:8px 0; border:0; border-top:1px dashed #a7f3d0">🤖 老师正在思考怎么怼回来...`;
+    box.style.background = '#fff1f2'; // 变成淡红色，表示气氛紧张
+    box.style.color = '#be123c';
+    box.style.borderColor = '#fb7185';
     
     document.getElementById('reply-input-area').style.display = 'none'; // 隐藏输入框
 
     try {
-        const data = await postComment({
-            examType: lastExamType,
-            currentScore: lastScore,
-            historyScores: lastHistory,
-            userRebuttal: rebuttal,      // 重点：把你的回嘴发过去
-            previousComment: lastAiComment // 重点：把老师刚才的话发过去
+        const res = await fetch('/.netlify/functions/comment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                examType: lastExamType, 
+                currentScore: lastScore, 
+                historyScores: lastHistory,
+                userRebuttal: rebuttal,      // 重点：把你的回嘴发过去
+                previousComment: lastAiComment // 重点：把老师刚才的话发过去
+            })
         });
+
+        const data = await res.json();
         
         if (data.comment) {
             lastAiComment = data.comment; // 更新上下文
             // 显示这一轮的战况
-            box.innerHTML = `<strong>😤 你：</strong> ${escapeHtml(rebuttal)}<br><br><strong>👩‍🏫 毒舌老师：</strong> ${escapeHtml(data.comment)}`;
+            box.innerHTML = `<strong>😤 你：</strong> ${rebuttal}<br><br><strong>👩‍🏫 毒舌老师：</strong> ${data.comment}`;
             
             // 允许继续回嘴 (无限套娃)
             document.getElementById('ai-actions').style.display = 'flex';
@@ -3594,45 +2486,50 @@ function pokeTeacher() {
     }, 3000);
 }
 // ==================== 版本日志与使用文档 ====================
-const APP_VERSION = '8.0';
+const APP_VERSION = '7.5';
 const CHANGELOG_STORAGE_KEY = 'myscore_changelog_seen_' + APP_VERSION;
-const CHANGELOG_PLACEHOLDER = `📝 MyScore V8.0 更新日志
-发布时间：2026-03-31 21:30
-代号：Lively Archive（灵动档案计划）
+const CHANGELOG_PLACEHOLDER = `📝 MyScore V7.5 更新日志
+发布时间：2026-03-11 22:00
+代号：Polished Glass（精致玻璃计划）
 
-A. 双平台后端对齐 (Deployment & API Alignment)
-• 新增统一 AI 接口入口 /api/comment，支持同一仓库同时部署到 Netlify 与 Zeabur。
-• 保留 Netlify 原有环境变量与函数逻辑，不改 AI_API_KEY 的既有配置方式。
-• 补充 Node 服务入口、部署说明与 Zeabur 启动配置，迁移到自有服务器更顺滑。
+A. 全站 UI 设计语言重塑 (Design Language Overhaul)
+• 全面移除渐变滥用：按钮、卡片、导航、图标容器等组件由 linear-gradient 统一改为纯色，视觉更干净克制。
+• 阴影体系重构：彩色发光阴影（green glow）替换为中性灰阴影 rgba(0,0,0,0.08)，贴合 Google Material 3 规范。
+• 边框减重：全站 2px solid 粗边框统一降为 1.5px / 1px，视觉更轻盈通透。
+• Hover 动效克制化：移除所有 translateY 上浮位移效果，改为仅变化背景色/阴影深浅，交互更稳重不浮躁。
+• 配色微调：主色由高饱和 #10b981 调整为低饱和沉稳绿 #0f9d6e，更贴近 Apple/Google 设计色调。
 
-B. 视觉系统升级 (UI & UX Refresh)
-• 首页视觉语言重构：头部、卡片、背景氛围、排版比例与导航层级重新整理。
-• 学习档案区新增胶囊式摘要卡，支持按考试类型展示记录次数、最佳成绩与最近记录。
-• 页脚重做为品牌尾注区：版本、备案、开源仓库、版权信息统一整合，观感更轻快。
+B.字体与品牌升级 (Typography & Branding)
+• Logo 字体引入 Google Fonts Poppins（SemiBold 600），取代默认系统字体，品牌辨识度显著提升。
+• Logo 颜色由纯黑改为主题绿 #0f9d6e，与产品主色统一。
+• Header 背景色与 body 统一色系 rgba(248,249,250,0.9)，消除顶部与内容区的视觉割裂。
+• 版本号更新至 V7.5，footer 同步更新。
 
-C. 图形与品牌统一 (Branding & Iconography)
-• 顶部品牌图标改为更贴合“进步 / 趋势 / 成长”的几何 SVG 标记。
-• 考试类型引入统一主题色与 SVG 标识，扩展到首页、记录列表、考试选择器与自定义考试区。
-• 清理导出报告与站内局部组件中的旧 emoji 表达，减少 AI 模板感。
+C.大圆角设计体系 (Rounded Corner System)
+• 建立三档统一圆角规范：大卡片 20px / 中组件 16px / 按钮与输入框 12px。
+• Badge、FAB 等保持全圆 9999px，层次分明不混乱。
+• 移动端圆角同步优化：卡片 16px、导航按钮 10px、tutuer 面板 18px，全设备视觉一致。
+• 科目手风琴、考试类型卡片、统计卡片、聊天气泡等全部组件统一适配。
 
-D. 报告导出升级 (Report Export)
-• 成绩单预览与分享卡预览完成新版视觉统一，采用主题色与 SVG 图形替换旧样式。
-• 导出图片与文本中的版本信息统一更新到 V8.0。
-• 导出模块的信息层级、色彩关系与可读性进一步优化，更接近可直接分享的成品。
+D.📄 报告导出功能新增 (Report Export — New)
+• 新增「成绩单」图片导出：Canvas 3倍分辨率绘制，表格框线与数据严格对齐，日期列宽度独立分配。
+• 新增「分享卡片」图片导出：展示总分、各科成绩 pill、最近5次趋势折线图，一键生成社交分享图。
+• 修复趋势折线超出卡片边界的问题：折线点严格限制在背景框内边距区域。
+• 报告弹窗支持考试类型筛选与记录范围选择（最近10/30/全部）。
 
-E. 稳定性与细节修复 (Polish & Robustness)
-• 修复右侧卡片布局溢出、对齐不稳等问题。
-• 统一项目内面向用户的版本展示与说明文案，减少版本错位。
-• README 与站内版本日志同步补充，便于后续维护与交接。
+E.开源与合规 (Open Source & Compliance)
+• 页脚新增 GitHub 开源标识与仓库链接：github.com/Yuntian-Liu/MyScore。
+• 页脚版本号同步更新至 V7.5。
 
-感谢您持续使用 MyScore，V8.0 ✨
-这一版重点围绕“同仓库双平台部署 + 更完整的产品化视觉体验”展开，欢迎继续反馈使用中的细节问题。
+感谢您持续使用 MyScore，V7.5 ✨
+本次更新由 Claude Opus 4.6 协助完成。LYT审核并优化了更新内容的表达，确保信息准确清晰地传达给用户。
+我们致力于不断提升 MyScore 的用户体验和功能实用性，期待您的反馈和建议！
 Copyright © LYT, 2026 All Rights Reserved`;
 
 const GUIDE_PLACEHOLDER = `MyScore 使用指南
 ✨ 核心特性
 
-🤖 AI 智能交互 (V7.x 新增)
+🤖 AI 智能交互 (V6.x 新增)
 • 毒舌老师: 每次录入成绩，AI 都会根据你的分数走势（进步/退步）给出犀利评价。
 • 回怼模式: 觉得老师说得不对？点击 "💬 不服/回嘴" 按钮，和 AI 展开辩论！它会根据你的理由进行更有趣的反击。
 • 桌面宠物: 右下角的 Emoji 老师会根据你的最近成绩自动变脸（😎 考好了 / 😡 考砸了），点击还能“戳一戳”互动。
@@ -3757,7 +2654,8 @@ function getTutuerDefaultGreeting() {
 
 function loadTutuerHistory() {
     try {
-        const parsed = readStorageJson(TUTUER_HISTORY_KEY, []);
+        const raw = localStorage.getItem(TUTUER_HISTORY_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
         if (Array.isArray(parsed) && parsed.length) {
             tutuerMessages = parsed.filter(function (m) {
                 return m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string';
@@ -3969,11 +2867,17 @@ async function sendTutuerMessage() {
             return { role: m.role, content: m.content };
         });
 
-        const data = await postComment({
-            mode: 'companion',
-            userMessage: userText,
-            conversationHistory: history
+        const res = await fetch('/.netlify/functions/comment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                mode: 'companion',
+                userMessage: userText,
+                conversationHistory: history
+            })
         });
+
+        const data = await res.json();
         const reply = data && data.comment ? data.comment : getTutuerFallbackReply(userText);
         tutuerMessages.push({ role: 'assistant', content: reply });
     } catch (err) {
@@ -4088,23 +2992,23 @@ document.addEventListener('DOMContentLoaded', updatePetMood);
     </div>
 </div>
 
-<!-- 报告导出模态框 V8.0 -->
+<!-- 报告导出模态框 V7.5新增 -->
 <div id="report-modal" class="modal-overlay" onclick="closeReportModalOnBackdrop(event)">
     <div class="modal-content" onclick="event.stopPropagation()" style="max-width:700px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
-            <h2 style="font-size:1.75rem;font-weight:700;display:flex;align-items:center;gap:0.75rem;" class="gradient-text"><span style="display:inline-flex;align-items:center;justify-content:center;width:2.6rem;height:2.6rem;border-radius:0.95rem;background:linear-gradient(135deg,#eef1ff,#fff2ea);border:1px solid rgba(91,124,255,0.18);color:#3f5ee8;"><svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect x="7" y="5.5" width="18" height="21" rx="5" fill="white" stroke="#5b7cff" stroke-width="1.8"/><path d="M12 12h8M12 17h8M12 22h5" stroke="#3f5ee8" stroke-width="2" stroke-linecap="round"/></svg></span>导出报告</h2>
+            <h2 style="font-size:1.75rem;font-weight:700;" class="gradient-text">📄 导出报告</h2>
             <button onclick="closeReportModal()" style="background:none;border:none;font-size:1.5rem;color:#9ca3af;cursor:pointer;">×</button>
         </div>
         <div style="margin-bottom:1.5rem;">
             <label style="display:block;margin-bottom:0.5rem;font-weight:500;">选择报告类型</label>
             <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;">
                 <div id="report-type-scorecard" class="exam-card active" onclick="selectReportType('scorecard',this)">
-                    <div style="margin-bottom:0.55rem;display:inline-flex;"><svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect x="6" y="5.5" width="20" height="21" rx="5" fill="#eef1ff" stroke="#5b7cff" stroke-width="1.8"/><path d="M11 12h10M11 17h10M11 22h6" stroke="#3f5ee8" stroke-width="2" stroke-linecap="round"/></svg></div>
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">📊</div>
                     <div style="font-weight:600;">成绩单</div>
                     <div style="font-size:0.8rem;color:#6b7280;">详细数据表格</div>
                 </div>
                 <div id="report-type-sharecard" class="exam-card" onclick="selectReportType('sharecard',this)">
-                    <div style="margin-bottom:0.55rem;display:inline-flex;"><svg width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect x="5.5" y="7" width="21" height="18" rx="6" fill="#fff2ea" stroke="#ff8a63" stroke-width="1.8"/><path d="M10 21l4.5-5 4 3.5 4.5-6" stroke="#f26d44" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10" cy="21" r="1.6" fill="#f26d44"/><circle cx="18.5" cy="19.5" r="1.6" fill="#f26d44"/><circle cx="23" cy="13.5" r="1.6" fill="#f26d44"/></svg></div>
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">🎨</div>
                     <div style="font-weight:600;">分享卡片</div>
                     <div style="font-size:0.8rem;color:#6b7280;">精美图表展示</div>
                 </div>
@@ -4138,7 +3042,7 @@ document.addEventListener('DOMContentLoaded', updatePetMood);
 <div id="report-canvas-container" style="position:absolute;left:-9999px;top:-9999px;"></div>
 
 <script>
-// ==================== 报告导出功能 V8.0 ====================
+// ==================== 报告导出功能 V7.5 ====================
 let currentReportType = 'scorecard';
 
 function openReportModal() {
@@ -4157,7 +3061,7 @@ function openReportModal() {
     const usedTypes = new Set(records.map(r => r.examType));
     for (const type of usedTypes) {
         if (exams[type]) {
-            options += `<option value="${escapeAttr(type)}">${escapeHtml(exams[type].name)}</option>`;
+            options += `<option value="${type}">${exams[type].icon} ${exams[type].name}</option>`;
         }
     }
     select.innerHTML = options;
@@ -4208,15 +3112,16 @@ function renderReportPreview() {
     }
     
     const exams = allExams();
-    const previewTheme = getExamTheme(examType === 'all' ? (records[0] && records[0].examType) : examType);
     
     if (currentReportType === 'scorecard') {
-        let html = `<div style="font-family:Manrope,'Noto Sans SC',sans-serif;color:#243144;">`;
-        html += `<div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.2rem;padding:1rem 1.1rem;border-radius:20px;background:linear-gradient(135deg,${previewTheme.soft},${previewTheme.softAlt});border:1px solid ${previewTheme.accent}22;">`;
-        html += `<div style="display:flex;align-items:center;gap:0.85rem;">${getReportTypeIconMarkup('scorecard', 34)}<div><h3 style="font-size:1.18rem;font-weight:800;color:${previewTheme.strong};margin-bottom:0.18rem;">MyScore 成绩报告</h3><p style="font-size:0.82rem;color:#6d758d;">按考试类型整理近期表现与总分记录</p></div></div>`;
-        html += `<div style="text-align:right;font-size:0.8rem;color:#6d758d;"><div>生成时间</div><div style="font-weight:700;color:${previewTheme.strong};margin-top:0.12rem;">${escapeHtml(new Date().toLocaleString('zh-CN'))}</div></div>`;
+        // 成绩单样式
+        let html = `<div style="font-family:system-ui;">`;
+        html += `<div style="text-align:center;margin-bottom:1rem;padding-bottom:1rem;border-bottom:2px solid #10b981;">`;
+        html += `<h3 style="font-size:1.25rem;font-weight:700;color:#1f2937;">📊 MyScore 成绩单</h3>`;
+        html += `<p style="font-size:0.875rem;color:#6b7280;">生成时间: ${new Date().toLocaleString('zh-CN')}</p>`;
         html += `</div>`;
         
+        // 按考试类型分组
         const grouped = {};
         records.forEach(r => {
             if (!grouped[r.examType]) grouped[r.examType] = [];
@@ -4226,48 +3131,46 @@ function renderReportPreview() {
         for (const [type, recs] of Object.entries(grouped)) {
             const exam = exams[type];
             if (!exam) continue;
-            const theme = getExamTheme(type);
             
-            html += `<div style="margin-bottom:1.35rem;border:1px solid ${theme.accent}1f;border-radius:20px;padding:1rem;background:linear-gradient(180deg,#ffffff,${theme.soft});box-shadow:0 18px 44px -36px ${theme.accent}66;">`;
-            html += `<div style="display:flex;align-items:center;gap:0.85rem;margin-bottom:0.85rem;">${getExamBadgeMarkup(type, exam.name, 42)}<div><h4 style="font-weight:800;color:${theme.strong};margin-bottom:0.16rem;">${escapeHtml(exam.name)}</h4><div style="font-size:0.8rem;color:#7a8298;">${escapeHtml(exam.desc || '考试记录')}</div></div></div>`;
-            html += `<table style="width:100%;border-collapse:separate;border-spacing:0;font-size:0.84rem;overflow:hidden;border-radius:16px;">`;
-            html += `<tr style="background:${theme.softAlt};">`;
-            html += `<th style="padding:0.68rem;text-align:left;border-top:1px solid ${theme.accent}18;border-bottom:1px solid ${theme.accent}18;">日期</th>`;
+            html += `<div style="margin-bottom:1.5rem;">`;
+            html += `<h4 style="font-weight:600;color:#10b981;margin-bottom:0.5rem;">${exam.icon} ${exam.name}</h4>`;
+            html += `<table style="width:100%;border-collapse:collapse;font-size:0.85rem;">`;
+            html += `<tr style="background:#f3f4f6;">`;
+            html += `<th style="padding:0.5rem;text-align:left;border:1px solid #e5e7eb;">日期</th>`;
             
+            // 添加科目列
             const subjects = exam.subjects || [];
             subjects.forEach(s => {
                 if (type === 'cet4' || type === 'cet6') {
                     if (s.id === 'writing' || s.id === 'translation') return;
                 }
-                html += `<th style="padding:0.68rem;text-align:center;border-top:1px solid ${theme.accent}18;border-bottom:1px solid ${theme.accent}18;">${escapeHtml(s.short)}</th>`;
+                html += `<th style="padding:0.5rem;text-align:center;border:1px solid #e5e7eb;">${s.short}</th>`;
             });
             if (type === 'cet4' || type === 'cet6') {
-                html += `<th style="padding:0.68rem;text-align:center;border-top:1px solid ${theme.accent}18;border-bottom:1px solid ${theme.accent}18;">写作翻译</th>`;
+                html += `<th style="padding:0.5rem;text-align:center;border:1px solid #e5e7eb;">写作翻译</th>`;
             }
             if (exam.calcTotal) {
                 const totalLabel = type === 'ielts' ? 'Overall' : '总分';
-                html += `<th style="padding:0.68rem;text-align:center;border-top:1px solid ${theme.accent}18;border-bottom:1px solid ${theme.accent}18;">${totalLabel}</th>`;
+                html += `<th style="padding:0.5rem;text-align:center;border:1px solid #e5e7eb;">${totalLabel}</th>`;
             }
             html += `</tr>`;
             
-            recs.forEach((r, index) => {
-                const rowBg = index % 2 === 0 ? '#ffffff' : theme.soft;
-                html += `<tr style="background:${rowBg};">`;
-                html += `<td style="padding:0.62rem 0.68rem;border-bottom:1px solid ${theme.accent}14;">${escapeHtml(r.date)}</td>`;
+            recs.forEach(r => {
+                html += `<tr>`;
+                html += `<td style="padding:0.5rem;border:1px solid #e5e7eb;">${r.date}</td>`;
                 subjects.forEach(s => {
                     if (type === 'cet4' || type === 'cet6') {
                         if (s.id === 'writing' || s.id === 'translation') return;
                     }
                     const score = r.scores[s.id] || 0;
-                    html += `<td style="padding:0.62rem 0.68rem;text-align:center;border-bottom:1px solid ${theme.accent}14;">${score.toFixed(s.dec || 1)}</td>`;
+                    html += `<td style="padding:0.5rem;text-align:center;border:1px solid #e5e7eb;">${score.toFixed(s.dec || 1)}</td>`;
                 });
                 if (type === 'cet4' || type === 'cet6') {
                     const wt = (r.scores.writing || 0) + (r.scores.translation || 0);
-                    html += `<td style="padding:0.62rem 0.68rem;text-align:center;border-bottom:1px solid ${theme.accent}14;">${wt}</td>`;
+                    html += `<td style="padding:0.5rem;text-align:center;border:1px solid #e5e7eb;">${wt}</td>`;
                 }
                 if (exam.calcTotal) {
-                    const totalText = r.total === null || r.total === undefined ? '-' : r.total.toFixed(1);
-                    html += `<td style="padding:0.62rem 0.68rem;text-align:center;border-bottom:1px solid ${theme.accent}14;font-weight:800;color:${theme.strong};">${totalText}</td>`;
+                    html += `<td style="padding:0.5rem;text-align:center;border:1px solid #e5e7eb;font-weight:600;color:#10b981;">${r.total ? r.total.toFixed(1) : '-'}</td>`;
                 }
                 html += `</tr>`;
             });
@@ -4278,42 +3181,41 @@ function renderReportPreview() {
         html += `</div>`;
         container.innerHTML = html;
     } else {
+        // 分享卡片样式
         const latest = records[0];
         const exam = exams[latest.examType];
-        const theme = getExamTheme(latest.examType);
         
-        let html = `<div style="background:linear-gradient(140deg,${theme.reportGradientStart},${theme.reportGradientEnd});border-radius:24px;padding:1.6rem;color:white;text-align:center;position:relative;overflow:hidden;">`;
-        html += `<div style="position:absolute;inset:auto -40px -60px auto;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.12);"></div>`;
-        html += `<div style="position:absolute;inset:-48px auto auto -48px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,0.1);"></div>`;
-        html += `<div style="position:relative;display:flex;justify-content:center;margin-bottom:0.9rem;">${getExamBadgeMarkup(latest.examType, exam ? exam.name : '考试', 64)}</div>`;
-        html += `<div style="position:relative;font-size:1.25rem;font-weight:800;margin-bottom:0.25rem;">${escapeHtml(exam ? exam.name : '考试')}</div>`;
-        html += `<div style="position:relative;font-size:0.875rem;opacity:0.9;">${escapeHtml(latest.date)}</div>`;
+        let html = `<div style="background:var(--primary);border-radius:16px;padding:1.5rem;color:white;text-align:center;">`;
+        html += `<div style="font-size:3rem;margin-bottom:0.5rem;">${exam ? exam.icon : '📝'}</div>`;
+        html += `<div style="font-size:1.25rem;font-weight:700;margin-bottom:0.25rem;">${exam ? exam.name : '考试'}</div>`;
+        html += `<div style="font-size:0.875rem;opacity:0.9;">${latest.date}</div>`;
         
         if (latest.total !== null) {
-            html += `<div style="position:relative;font-size:3rem;font-weight:800;margin:1rem 0 0.35rem;font-style:italic;">${latest.total.toFixed(1)}</div>`;
-            html += `<div style="position:relative;font-size:0.875rem;opacity:0.8;">${latest.examType === 'ielts' ? 'Overall' : '总分'}</div>`;
+            html += `<div style="font-size:3rem;font-weight:bold;margin:1rem 0;">${latest.total.toFixed(1)}</div>`;
+            html += `<div style="font-size:0.875rem;opacity:0.8;">${latest.examType === 'ielts' ? 'Overall' : '总分'}</div>`;
         }
         html += `</div>`;
         
+        // 添加最近成绩趋势
         const recentRecords = records.slice(0, 5);
         if (recentRecords.length > 1) {
-            html += `<div style="margin-top:1rem;padding:1rem 1.1rem;border:1px solid ${theme.accent}1f;border-radius:18px;background:linear-gradient(180deg,#ffffff,${theme.soft});">`;
-            html += `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.65rem;"><div style="font-size:0.88rem;font-weight:700;color:${theme.strong};">最近 5 次趋势</div><div style="font-size:0.75rem;color:#7d8599;">${escapeHtml(exam ? exam.desc : '成绩摘要')}</div></div>`;
-            html += `<div style="display:flex;justify-content:space-between;align-items:flex-end;height:72px;gap:8px;">`;
+            html += `<div style="margin-top:1rem;padding-top:1rem;border-top:1px solid #e5e7eb;">`;
+            html += `<div style="font-size:0.875rem;color:#6b7280;margin-bottom:0.5rem;">最近5次趋势</div>`;
+            html += `<div style="display:flex;justify-content:space-between;align-items:flex-end;height:60px;gap:4px;">`;
             
             recentRecords.reverse().forEach((r, i) => {
                 const maxScore = exam.calcTotal ? (exam.maxTotal || 100) : 100;
                 const height = r.total ? (r.total / maxScore * 100) : 0;
                 const isLatest = i === recentRecords.length - 1;
                 html += `<div style="flex:1;display:flex;flex-direction:column;align-items:center;">`;
-                html += `<div style="width:100%;background:${isLatest ? theme.accent : theme.softAlt};border-radius:999px;height:${Math.max(height, 12)}%;box-shadow:${isLatest ? '0 14px 24px -18px ' + theme.accent : 'none'};"></div>`;
-                html += `<div style="font-size:0.7rem;color:#9ca3af;margin-top:4px;">${escapeHtml(r.date.slice(5))}</div>`;
+                html += `<div style="width:100%;background:${isLatest ? '#10b981' : '#e5e7eb'};border-radius:4px;height:${Math.max(height, 10)}%;"></div>`;
+                html += `<div style="font-size:0.7rem;color:#9ca3af;margin-top:4px;">${r.date.slice(5)}</div>`;
                 html += `</div>`;
             });
             html += `</div></div>`;
         }
         
-        html += `<div style="margin-top:1rem;text-align:center;font-size:0.75rem;color:#9ca3af;">Generated by MyScore V8.0</div>`;
+        html += `<div style="margin-top:1rem;text-align:center;font-size:0.75rem;color:#9ca3af;">Generated by MyScore V7.5</div>`;
         container.innerHTML = html;
     }
 }
@@ -4410,21 +3312,12 @@ function downloadScorecardImage(records) {
     for (const [type, recs] of Object.entries(grouped)) {
         const exam = exams[type];
         if (!exam) continue;
-        const theme = getExamTheme(type);
 
         // 考试类型标题
-        ctx.fillStyle = theme.soft;
-        ctx.beginPath();
-        ctx.roundRect(padL, y - 20, tableW, 36, 12);
-        ctx.fill();
-        ctx.fillStyle = theme.accent;
-        ctx.beginPath();
-        ctx.roundRect(padL + 12, y - 12, 16, 16, 5);
-        ctx.fill();
-        ctx.fillStyle = theme.strong;
+        ctx.fillStyle = '#0f9d6e';
         ctx.font = 'bold 17px system-ui';
         ctx.textAlign = 'left';
-        ctx.fillText(exam.name, padL + 38, y + 1);
+        ctx.fillText(exam.icon + ' ' + exam.name, padL, y + 4);
         y += titleH - 12;
 
         // 构建列
@@ -4450,7 +3343,7 @@ function downloadScorecardImage(records) {
         }
 
         // 表头背景
-        ctx.fillStyle = theme.softAlt;
+        ctx.fillStyle = '#f1f3f4';
         ctx.beginPath();
         ctx.roundRect(padL, y, tableW, tableHeaderH, 6);
         ctx.fill();
@@ -4508,7 +3401,7 @@ function downloadScorecardImage(records) {
             ctx.font = '12px system-ui';
             rowData.forEach((val, i) => {
                 const isTotal = exam.calcTotal && i === rowData.length - 1;
-                ctx.fillStyle = isTotal ? theme.strong : '#202124';
+                ctx.fillStyle = isTotal ? '#0f9d6e' : '#202124';
                 ctx.font = isTotal ? 'bold 13px system-ui' : '12px system-ui';
                 ctx.textAlign = i === 0 ? 'left' : 'center';
                 const tx = i === 0 ? colX(i) + 12 : colX(i) + colW(i) / 2;
@@ -4530,7 +3423,7 @@ function downloadScorecardImage(records) {
     ctx.fillStyle = '#9ca3af';
     ctx.font = '12px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText('Generated by MyScore V8.0', W / 2, totalH - 25);
+    ctx.fillText('Generated by MyScore V7.5', W / 2, totalH - 25);
 
     // 下载
     const dataURL = canvas.toDataURL('image/png');
@@ -4548,8 +3441,7 @@ function downloadShareCardDirect(records) {
     const exams = allExams();
     const latest = records[0];
     const type = latest.examType;
-    const exam = exams[type] || { name: '考试', calcTotal: true, maxTotal: 100 };
-    const theme = getExamTheme(type);
+    const exam = exams[type] || { icon: '📝', name: '考试', calcTotal: true, maxTotal: 100 };
 
     const canvas = document.createElement('canvas');
     const scale = 3;
@@ -4560,10 +3452,8 @@ function downloadShareCardDirect(records) {
     const ctx = canvas.getContext('2d');
     ctx.scale(scale, scale);
 
-    const gradient = ctx.createLinearGradient(0, 0, W, H);
-    gradient.addColorStop(0, theme.reportGradientStart);
-    gradient.addColorStop(1, theme.reportGradientEnd);
-    ctx.fillStyle = gradient;
+    // 背景 — 纯色
+    ctx.fillStyle = '#0f9d6e';
     ctx.fillRect(0, 0, W, H);
 
     // 顶部装饰圆
@@ -4581,66 +3471,10 @@ function downloadShareCardDirect(records) {
     ctx.textAlign = 'center';
     ctx.fillText(exam.name, W / 2, 52);
 
-    // 图形标记
-    ctx.fillStyle = 'rgba(255,255,255,0.18)';
-    ctx.beginPath();
-    ctx.roundRect(W / 2 - 38, 74, 76, 76, 24);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.22)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    ctx.strokeStyle = '#ffffff';
-    ctx.fillStyle = '#ffffff';
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    if (type === 'ielts') {
-        ctx.lineWidth = 4;
-        [96, 112, 128].forEach(function (y) {
-            ctx.beginPath();
-            ctx.moveTo(W / 2 - 10, y);
-            ctx.lineTo(W / 2 + 16, y);
-            ctx.stroke();
-        });
-        [96, 112, 128].forEach(function (y) {
-            ctx.beginPath();
-            ctx.roundRect(W / 2 - 22, y - 4, 8, 8, 2);
-            ctx.fill();
-        });
-    } else if (type === 'cet4') {
-        ctx.lineWidth = 4;
-        ctx.strokeRect(W / 2 - 19, 92, 38, 28);
-        ctx.beginPath();
-        ctx.moveTo(W / 2 - 19, 106);
-        ctx.lineTo(W / 2 + 19, 106);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(W / 2 - 4, 90);
-        ctx.lineTo(W / 2 - 4, 84);
-        ctx.quadraticCurveTo(W / 2 - 4, 78, W / 2 + 2, 78);
-        ctx.lineTo(W / 2 + 8, 78);
-        ctx.quadraticCurveTo(W / 2 + 14, 78, W / 2 + 14, 84);
-        ctx.lineTo(W / 2 + 14, 90);
-        ctx.stroke();
-    } else {
-        ctx.beginPath();
-        ctx.moveTo(W / 2 - 24, 124);
-        ctx.lineTo(W / 2 + 24, 124);
-        ctx.stroke();
-        ctx.fillRect(W / 2 - 22, 106, 9, 18);
-        ctx.fillRect(W / 2 - 7, 98, 9, 26);
-        ctx.fillRect(W / 2 + 8, 88, 9, 36);
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.moveTo(W / 2 - 18, 101);
-        ctx.quadraticCurveTo(W / 2 - 1, 96, W / 2 + 14, 80);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(W / 2 + 14, 80);
-        ctx.lineTo(W / 2 + 11, 82);
-        ctx.moveTo(W / 2 + 14, 80);
-        ctx.lineTo(W / 2 + 12, 76);
-        ctx.stroke();
-    }
+    // 图标
+    ctx.font = '44px system-ui';
+    ctx.fillStyle = 'white';
+    ctx.fillText(exam.icon, W / 2, 110);
 
     // 日期
     ctx.font = '13px system-ui';
@@ -4676,7 +3510,7 @@ function downloadShareCardDirect(records) {
             const pillY = py + row * (pillH + pillGap);
 
             // pill 背景
-            ctx.fillStyle = 'rgba(255,255,255,0.16)';
+            ctx.fillStyle = 'rgba(255,255,255,0.15)';
             ctx.beginPath();
             ctx.roundRect(px, pillY, pillW, pillH, pillH / 2);
             ctx.fill();
@@ -4759,7 +3593,7 @@ function downloadShareCardDirect(records) {
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
     ctx.font = '11px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText('Generated by MyScore V8.0', W / 2, H - 20);
+    ctx.fillText('Generated by MyScore V7.5', W / 2, H - 20);
 
     // 下载
     const dataURL = canvas.toDataURL('image/png');
@@ -4833,7 +3667,7 @@ async function downloadTextReport(records) {
         content += '\n───────────────────────────────────────\n\n';
     }
     
-    content += 'Powered by MyScore V8.0\n';
+    content += 'Powered by MyScore V7.5\n';
     
     // 下载文本文件
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
@@ -4849,7 +3683,92 @@ async function downloadTextReport(records) {
 }
 
 async function downloadImageCard(records) {
-    downloadShareCardDirect(records);
+    const exams = allExams();
+    const latest = records[0];
+    const exam = exams[latest.examType] || { icon: '📝', name: '考试', calcTotal: true, maxTotal: 100 };
+    
+    // 创建画布
+    const canvas = document.createElement('canvas');
+    canvas.width = 400;
+    canvas.height = 500;
+    const ctx = canvas.getContext('2d');
+    
+    // 背景
+    const gradient = ctx.createLinearGradient(0, 0, 400, 500);
+    gradient.addColorStop(0, '#10b981');
+    gradient.addColorStop(1, '#059669');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 400, 500);
+    
+    // 标题区域
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 24px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText(exam.name, 200, 60);
+    
+    // 图标
+    ctx.font = '48px system-ui';
+    ctx.fillText(exam.icon, 200, 120);
+    
+    // 日期
+    ctx.font = '14px system-ui';
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.fillText(latest.date, 200, 160);
+    
+    // 总分
+    if (latest.total !== null) {
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 72px system-ui';
+        ctx.fillText(latest.total.toFixed(1), 200, 260);
+        
+        ctx.font = '16px system-ui';
+        ctx.fillStyle = 'rgba(255,255,255,0.8)';
+        ctx.fillText(latest.examType === 'ielts' ? 'Overall' : '总分', 200, 290);
+    }
+    
+    // 最近趋势条形图
+    const recentRecords = records.slice(0, 5);
+    if (recentRecords.length > 1) {
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.fillRect(40, 340, 320, 60);
+        
+        const maxScore = exam.calcTotal ? (exam.maxTotal || 100) : 100;
+        const barWidth = (320 - 16) / recentRecords.length;
+        
+        recentRecords.reverse().forEach((r, i) => {
+            const height = r.total ? (r.total / maxScore * 50) : 0;
+            const x = 48 + i * barWidth;
+            const y = 340 + 50 - height;
+            
+            ctx.fillStyle = i === recentRecords.length - 1 ? 'white' : 'rgba(255,255,255,0.5)';
+            ctx.fillRect(x, y, barWidth - 8, height);
+        });
+        
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.font = '12px system-ui';
+        ctx.textAlign = 'center';
+        recentRecords.forEach((r, i) => {
+            ctx.fillText(r.date.slice(5), 48 + i * barWidth + (barWidth - 8) / 2, 420);
+        });
+    }
+    
+    // 页脚
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '12px system-ui';
+    ctx.fillText('Generated by MyScore V7.5', 200, 470);
+    
+    // 转换为图片并下载
+    canvas.toBlob(function(blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `MyScore_分享卡片_${new Date().toISOString().slice(0,10)}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        closeReportModal();
+        alert('分享卡片已下载！');
+    });
 }
 </script>
 

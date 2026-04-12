@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyScore V7.1 - AI 智能成绩单 | 碳碳四键的个人开发应用实践</title>
+    <title>MyScore 2.1.0 - AI 智能成绩单</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -27,13 +27,6 @@
             background: linear-gradient(135deg, #faf8f5 0%, #f3f0eb 100%);
             min-height: 100vh;
             color: var(--text-main);
-        }
-
-        .brand-meta {
-            margin-top: 0.2rem;
-            font-size: 0.72rem;
-            letter-spacing: 0.02em;
-            color: #9ca3af;
         }
 
         .hidden { display: none !important; }
@@ -241,60 +234,6 @@
             transform: translateX(4px);
         }
 
-        .record-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 1rem;
-        }
-
-        .record-main {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .record-meta {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .record-badges {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .record-side {
-            display: flex;
-            align-items: center;
-            gap: 0.85rem;
-            flex-shrink: 0;
-        }
-
-        .record-total {
-            text-align: right;
-        }
-
-        .record-delete {
-            background: none;
-            border: none;
-            color: #9ca3af;
-            cursor: pointer;
-            font-size: 1.5rem;
-            line-height: 1;
-            width: 34px;
-            height: 34px;
-            border-radius: 9999px;
-        }
-
-        .record-delete:hover {
-            color: #ef4444;
-            background: rgba(239, 68, 68, 0.08);
-        }
-
         /* 分数标签 */
         .score-badge {
             display: inline-flex;
@@ -302,56 +241,7 @@
             border-radius: 9999px;
             font-size: 0.875rem;
             font-weight: 600;
-            margin-right: 0;
-            white-space: nowrap;
-        }
-
-        .recent-score-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        .recent-score-item {
-            border-radius: 0.85rem;
-            padding: 0.8rem 1rem;
-            text-align: center;
-            min-height: 118px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .recent-score-item-label {
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .recent-score-item-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        @media (min-width: 1024px) {
-            .recent-score-grid {
-                grid-template-columns: repeat(4, minmax(0, 1fr));
-                gap: 0.9rem;
-            }
-
-            .recent-score-item {
-                min-height: 132px;
-                padding: 0.95rem 1.1rem;
-            }
-
-            .recent-score-item-label {
-                font-size: 1rem;
-            }
-
-            .recent-score-item-value {
-                font-size: 2.35rem;
-                line-height: 1.1;
-            }
+            margin-right: 0.5rem;
         }
 
         /* 模态框 */
@@ -422,553 +312,6 @@
             padding: 1rem;
             margin-top: 1rem;
         }
-        /* 版本日志与使用文档 */
-        .doc-btn {
-            background: #ecfdf5;
-            color: #047857;
-            border: 1px solid rgba(16, 185, 129, 0.25);
-        }
-
-        .doc-btn:hover {
-            background: #d1fae5;
-            color: #065f46;
-            border-color: rgba(16, 185, 129, 0.5);
-        }
-
-        .info-modal-content {
-            max-width: 680px;
-        }
-
-        .info-modal-body {
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 0.75rem;
-            padding: 1rem;
-            line-height: 1.75;
-            color: #374151;
-            white-space: pre-wrap;
-            min-height: 180px;
-        }
-
-        .info-modal-footer {
-            margin-top: 1.25rem;
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.75rem;
-            flex-wrap: wrap;
-        }
-
-        .changelog-fab {
-            position: fixed;
-            left: 1.25rem;
-            bottom: 1.25rem;
-            z-index: 950;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            border: 1px solid rgba(16, 185, 129, 0.25);
-            background: rgba(255, 255, 255, 0.96);
-            color: #047857;
-            border-radius: 9999px;
-            box-shadow: 0 8px 24px rgba(5, 150, 105, 0.18);
-            padding: 0.6rem 0.7rem;
-            cursor: pointer;
-            transition: all 0.25s ease;
-        }
-
-        .changelog-fab:hover {
-            background: #ecfdf5;
-            border-color: rgba(16, 185, 129, 0.5);
-            transform: translateY(-2px);
-        }
-
-        .changelog-fab-label {
-            max-width: 0;
-            overflow: hidden;
-            white-space: nowrap;
-            opacity: 0;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: max-width 0.25s ease, opacity 0.2s ease;
-        }
-
-        .changelog-fab:hover .changelog-fab-label,
-        .changelog-fab:focus-visible .changelog-fab-label {
-            max-width: 88px;
-            opacity: 1;
-        }
-
-        .changelog-fab:focus-visible {
-            outline: 2px solid rgba(16, 185, 129, 0.35);
-            outline-offset: 2px;
-        }
-
-        .tutuer-fab {
-            position: fixed;
-            left: 1.25rem;
-            bottom: 5.3rem;
-            z-index: 970;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            background: rgba(255, 255, 255, 0.96);
-            color: #1d4ed8;
-            border-radius: 9999px;
-            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.18);
-            padding: 0.6rem 0.7rem;
-            cursor: pointer;
-            transition: all 0.25s ease;
-        }
-
-        .tutuer-fab-dot {
-            position: absolute;
-            top: 0.18rem;
-            right: 0.18rem;
-            width: 9px;
-            height: 9px;
-            border-radius: 9999px;
-            background: #ef4444;
-            border: 2px solid #ffffff;
-            box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.25);
-        }
-
-        .tutuer-fab:hover {
-            background: #eff6ff;
-            border-color: rgba(59, 130, 246, 0.55);
-            transform: translateY(-2px);
-        }
-
-        .tutuer-fab-label {
-            max-width: 0;
-            overflow: hidden;
-            white-space: nowrap;
-            opacity: 0;
-            font-size: 0.85rem;
-            font-weight: 600;
-            transition: max-width 0.25s ease, opacity 0.2s ease;
-        }
-
-        .tutuer-fab:hover .tutuer-fab-label,
-        .tutuer-fab:focus-visible .tutuer-fab-label {
-            max-width: 92px;
-            opacity: 1;
-        }
-
-        .tutuer-panel {
-            position: fixed;
-            left: 1.25rem;
-            bottom: 1.25rem;
-            width: min(360px, calc(100vw - 1.5rem));
-            height: 470px;
-            background: #ffffff;
-            border: 1px solid #dbeafe;
-            border-radius: 1rem;
-            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.22);
-            z-index: 980;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .tutuer-panel-header {
-            background: linear-gradient(135deg, #eff6ff, #dbeafe);
-            border-bottom: 1px solid #bfdbfe;
-            padding: 0.85rem 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .tutuer-panel-controls {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        .tutuer-expand-btn {
-            display: none;
-            width: 30px;
-            height: 30px;
-            border: none;
-            border-radius: 9999px;
-            background: #ffffff;
-            color: #64748b;
-            cursor: pointer;
-            font-size: 0.95rem;
-            line-height: 1;
-        }
-
-        .tutuer-chat-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 0.9rem;
-            background: #f8fafc;
-            display: flex;
-            flex-direction: column;
-            gap: 0.6rem;
-        }
-
-        .tutuer-msg {
-            max-width: 86%;
-            border-radius: 0.85rem;
-            padding: 0.6rem 0.75rem;
-            line-height: 1.55;
-            font-size: 0.92rem;
-            white-space: pre-wrap;
-            word-break: break-word;
-        }
-
-        .tutuer-msg.assistant {
-            background: #ffffff;
-            color: #1f2937;
-            border: 1px solid #e5e7eb;
-            align-self: flex-start;
-        }
-
-        .tutuer-msg.user {
-            background: #dbeafe;
-            color: #1e3a8a;
-            border: 1px solid #bfdbfe;
-            align-self: flex-end;
-        }
-
-        .tutuer-panel-footer {
-            padding: 0.75rem;
-            border-top: 1px solid #e5e7eb;
-            background: #ffffff;
-        }
-
-        .tutuer-quick-actions {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 0.55rem;
-            flex-wrap: wrap;
-        }
-
-        .tutuer-quick-btn {
-            border: 1px solid #bfdbfe;
-            border-radius: 9999px;
-            background: #eff6ff;
-            color: #1e40af;
-            font-size: 0.78rem;
-            font-weight: 600;
-            padding: 0.33rem 0.72rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .tutuer-quick-btn:hover {
-            background: #dbeafe;
-            border-color: #93c5fd;
-        }
-
-        .tutuer-input-row {
-            display: flex;
-            gap: 0.5rem;
-            align-items: flex-end;
-        }
-
-        .tutuer-input {
-            flex: 1;
-            border: 1px solid #d1d5db;
-            border-radius: 0.75rem;
-            padding: 0.65rem 0.8rem;
-            min-height: 42px;
-            max-height: 98px;
-            resize: vertical;
-            outline: none;
-            font-size: 0.9rem;
-        }
-
-        .tutuer-input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
-        }
-
-        .site-footer {
-            text-align: center;
-            padding: 1.7rem 1rem 5.8rem;
-            color: #9ca3af;
-            font-size: 0.9rem;
-            line-height: 1.7;
-        }
-
-        .icp-link {
-            color: #6b7280;
-            text-decoration: none;
-            border-bottom: 1px dashed rgba(107, 114, 128, 0.35);
-            transition: all 0.2s ease;
-        }
-
-        .icp-link:hover {
-            color: #374151;
-            border-bottom-color: rgba(55, 65, 81, 0.55);
-        }
-
-        @media (max-width: 768px) {
-            .tutuer-fab {
-                bottom: 4.9rem;
-                left: 0.9rem;
-            }
-
-            .tutuer-panel {
-                left: 0.5rem;
-                bottom: 0.8rem;
-                width: auto;
-                height: 60vh;
-            }
-        }
-    
-        @media (max-width: 768px) {
-            header > div {
-                padding: 0.75rem !important;
-            }
-
-            header > div > div {
-                flex-direction: column !important;
-                align-items: flex-start !important;
-                gap: 0.85rem !important;
-            }
-
-            header nav {
-                width: 100%;
-                justify-content: stretch !important;
-                display: grid !important;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.55rem !important;
-            }
-
-            .nav-btn {
-                width: 100%;
-                padding: 0.62rem 0.85rem;
-                font-size: 0.85rem;
-                border-radius: 0.6rem;
-                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
-            }
-
-            main {
-                padding: 1rem 0.75rem !important;
-                padding-bottom: 8rem !important;
-            }
-
-            .card,
-            .stat-box,
-            .record-box,
-            .exam-card,
-            .modal-content {
-                border-radius: 0.85rem;
-            }
-
-            .card:hover,
-            .record-box:hover {
-                transform: none;
-            }
-
-            .btn-primary,
-            .btn-secondary {
-                width: 100%;
-                padding: 0.85rem 1rem;
-            }
-
-            #dashboard-tabs {
-                flex-wrap: nowrap !important;
-                overflow-x: auto;
-                padding-bottom: 0.6rem !important;
-                -webkit-overflow-scrolling: touch;
-            }
-
-            #dashboard-tabs .tab-btn {
-                flex: 0 0 auto;
-            }
-
-            #total-count,
-            #exam-types-count {
-                font-size: 2rem !important;
-            }
-
-            #latest-exam-date {
-                font-size: 1.2rem !important;
-                word-break: break-word;
-            }
-
-            .site-footer {
-                padding: 1.4rem 1rem 7.2rem;
-                font-size: 0.83rem;
-            }
-
-            .brand-meta {
-                font-size: 0.67rem;
-            }
-
-            #ai-actions,
-            #reply-input-area > div,
-            .info-modal-footer {
-                flex-direction: column !important;
-                align-items: stretch !important;
-            }
-
-            .changelog-fab {
-                left: 0.8rem;
-                bottom: 0.9rem;
-            }
-
-            .tutuer-fab {
-                left: 0.8rem;
-                bottom: 4.5rem;
-            }
-
-            .tutuer-panel {
-                left: 0.5rem;
-                right: 0.5rem;
-                width: auto;
-                bottom: max(0.5rem, env(safe-area-inset-bottom));
-                height: min(68dvh, 560px);
-                border-radius: 1.05rem;
-            }
-
-            .tutuer-panel.expanded-mobile {
-                top: 0.5rem;
-                bottom: 0.5rem;
-                height: auto;
-            }
-
-            .tutuer-panel.keyboard-open-mobile {
-                transition: height 0.18s ease, bottom 0.18s ease;
-            }
-
-            .tutuer-panel-footer {
-                padding: 0.65rem;
-            }
-
-            .tutuer-quick-actions {
-                margin-bottom: 0.45rem;
-                gap: 0.4rem;
-            }
-
-            .tutuer-quick-btn {
-                font-size: 0.75rem;
-                padding: 0.3rem 0.62rem;
-            }
-
-            .tutuer-input-row {
-                align-items: stretch;
-            }
-
-            .tutuer-input {
-                min-width: 0;
-                min-height: 40px;
-                max-height: 84px;
-                resize: none;
-            }
-
-            .recent-score-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.65rem;
-            }
-
-            .recent-score-item {
-                min-height: 126px;
-                padding: 0.75rem 0.6rem;
-            }
-
-            .recent-score-item-label {
-                font-size: 0.7rem;
-            }
-
-            .recent-score-item-value {
-                font-size: 2.05rem;
-                line-height: 1.15;
-            }
-
-            .record-row {
-                flex-direction: column;
-                gap: 0.7rem;
-            }
-
-            .record-badges {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.45rem;
-            }
-
-            .score-badge {
-                width: 100%;
-                justify-content: center;
-                padding: 0.48rem 0.4rem;
-                font-size: 0.9rem;
-            }
-
-            .record-side {
-                width: 100%;
-                justify-content: space-between;
-                border-top: 1px solid #f1f5f9;
-                padding-top: 0.6rem;
-            }
-
-            .record-total {
-                text-align: left;
-            }
-
-            .record-delete {
-                width: 36px;
-                height: 36px;
-                font-size: 1.4rem;
-            }
-
-            .tutuer-input-row .btn-primary {
-                width: auto;
-                flex: 0 0 auto;
-                padding: 0.65rem 0.95rem !important;
-            }
-
-            .tutuer-expand-btn {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .tutuer-fab {
-                bottom: 4.9rem;
-                left: 0.7rem;
-                padding: 0.52rem 0.58rem;
-            }
-
-            .changelog-fab {
-                bottom: 0.7rem;
-                left: 0.7rem;
-                padding: 0.52rem 0.58rem;
-            }
-
-            .tutuer-fab-label,
-            .changelog-fab-label {
-                display: none;
-            }
-
-            #desktop-pet {
-                right: 0.7rem !important;
-                bottom: 2.85rem !important;
-                transform: scale(0.68);
-                transform-origin: bottom right;
-                z-index: 940 !important;
-            }
-
-            #pet-avatar {
-                font-size: 3.6rem !important;
-            }
-
-            #pet-bubble {
-                width: 150px !important;
-                font-size: 0.74rem !important;
-                padding: 0.6rem !important;
-            }
-
-            body.tutuer-open-mobile #desktop-pet {
-                opacity: 0;
-                visibility: hidden;
-                pointer-events: none;
-            }
-        }
     </style>
 </head>
 <body>
@@ -983,17 +326,15 @@
                                 <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                             </svg>
                         </div>
-                            <div>
-                         <h1 style="font-size: 1.75rem; font-weight: bold;" class="gradient-text">MyScore</h1>
-                         <p style="font-size: 0.875rem; color: #6b7280;">V7.1 AI智能成绩单</p>
-                         <p class="brand-meta">碳碳四键的个人开发应用实践</p>
+                        <div>
+                            <h1 style="font-size: 1.75rem; font-weight: bold;" class="gradient-text">MyScore</h1>
+                            <p style="font-size: 0.875rem; color: #6b7280;">V5.3 我的成绩单</p>
                         </div>
                     </div>
-                    <nav style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: flex-end;">
+                    <nav style="display: flex; gap: 0.5rem;">
                         <button class="nav-btn active" id="nav-dashboard" onclick="showPage('dashboard')">仪表盘</button>
                         <button class="nav-btn" id="nav-entry" onclick="showPage('entry')">录入成绩</button>
                         <button class="nav-btn" id="nav-custom" onclick="showPage('custom')">自定义考试</button>
-                        <button class="nav-btn doc-btn" type="button" onclick="openInfoModal('guide')">使用文档</button>
                     </nav>
                 </div>
             </div>
@@ -1050,32 +391,19 @@
                     <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
                         <span style="font-size: 1.75rem;">⚡</span> 最近成绩
                     </h2>
-                   <div id="ai-container" style="display:none; margin-bottom: 1rem;">
-                   <div id="ai-comment-box" style="background: #ecfdf5; border: 2px dashed #10b981; border-radius: 0.75rem; padding: 1rem; color: #047857; line-height: 1.6; font-size: 0.95rem; margin-bottom: 0.5rem; position: relative;">
-                    🤖 亲爱的YTUNer请耐心等待~突突老师正在批改...
-                 </div>
-
-                 <div id="ai-actions" style="display:none; justify-content: flex-end; gap: 0.5rem;">
-                 <button onclick="showReplyInput()" style="font-size: 0.8rem; color: #059669; background: white; border: 1px solid #10b981; padding: 0.3rem 0.8rem; border-radius: 99px; cursor: pointer;">💬 不服/回嘴</button>
-                 </div>
-
-    <div id="reply-input-area" style="display:none; margin-top: 0.5rem; animation: fadeIn 0.3s ease;">
-        <div style="display: flex; gap: 0.5rem;">
-            <input type="text" id="user-rebuttal" placeholder="输入你想反驳的话..." style="flex: 1; border: 1px solid #d1fae5; border-radius: 0.5rem; padding: 0.5rem; outline: none; font-size: 0.9rem;">
-            <button onclick="sendRebuttal()" style="background: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; cursor: pointer; font-size: 0.9rem;">发送</button>
-        </div>
+                    <div id="ai-comment-box" style="display:none; margin-bottom: 1rem; background: #ecfdf5; border: 2px dashed #10b981; border-radius: 0.75rem; padding: 1rem; color: #047857; line-height: 1.6; font-size: 0.95rem;">
+        🤖 突突老师正在评阅中...
     </div>
-</div>
-<div id="recent-score-content">
-    <div class="empty-state">
-        <svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 1rem;">
-            <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-        <p style="color: #6b7280; margin-bottom: 1rem;">还没有成绩记录</p>
-        <button onclick="showPage('entry')" style="color: #10b981; font-weight: 600; background: none; border: none; cursor: pointer;">开始录入 →</button>
-    </div>
-</div>
-</div>
+                    <div id="recent-score-content">
+                        <div class="empty-state">
+                            <svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 1rem;">
+                                <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <p style="color: #6b7280; margin-bottom: 1rem;">还没有成绩记录</p>
+                            <button onclick="showPage('entry')" style="color: #10b981; font-weight: 600; background: none; border: none; cursor: pointer;">开始录入 →</button>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- 统计 Tabs -->
                 <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
@@ -1166,7 +494,7 @@
                 <div id="entry-form-container" class="card" style="padding: 2rem;">
                     <div class="empty-state">
                         <svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 1rem;">
-                            <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                         </svg>
                         <p style="color: #6b7280;">请选择上方考试类型开始录入</p>
                     </div>
@@ -1219,14 +547,10 @@
             </div>
         </div>
 
-    <footer class="site-footer">
-    <p style="margin-bottom: 0.22rem;">MyScore V7.1</p>
-    <p style="margin-bottom: 0.22rem;">碳碳四键的个人开发应用实践</p>
-    <p style="margin-bottom: 0.22rem;">
-        <a class="icp-link" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">蜀ICP备2026006689号</a>
-    </p>
-    <p style="font-size: 0.82em; opacity: 0.85;">Copyright © YTUN 2026 All Rights Reserved</p>
-    </footer>
+        <footer style="text-align: center; padding: 2rem; color: #9ca3af;">
+            <p>Copyright © LYT, 2026 All Rights Reserved</p>
+            <p style="font-size: 0.875rem; margin-top: 0.25rem;">MyScore V5.3</p>
+        </footer>
     </div>
 
     <script>
@@ -1380,7 +704,7 @@
                 writingTask1 = null;
                 writingTask2 = null;
                 renderExamSelector();
-                document.getElementById('entry-form-container').innerHTML = '<div class="empty-state"><svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom:1rem;"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg><p style="color:#6b7280;margin-bottom:1rem;">还没有成绩记录</p><button onclick="showPage(\'entry\')" style="color:#10b981;font-weight:600;background:none;border:none;cursor:pointer;">开始录入 →</button></div>';
+                document.getElementById('entry-form-container').innerHTML = '<div class="empty-state"><svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom:1rem;"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg><p style="color:#6b7280;">请选择上方考试类型开始录入</p></div>';
             }
             else if (p === 'custom') renderCustomList();
         }
@@ -1410,16 +734,16 @@
                 const isCet = last.examType === 'cet4' || last.examType === 'cet6';
 
                 let html = '<div style="margin-bottom:0.5rem;color:#6b7280;">' + last.date + ' - ' + (exam ? exam.name : '未知') + '</div>';
-                html += '<div class="recent-score-grid">';
+                html += '<div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">';
                 if (exam) {
                     // 先显示非写作翻译的科目
                     for (const s of exam.subjects) {
                         if (isCet && (s.id === 'writing' || s.id === 'translation')) continue;
 
                         const sc = last.scores[s.id] || 0;
-                        html += '<div class="recent-score-item" style="background:' + s.color + '15;border:2px solid ' + s.color + '40;">';
-                        html += '<div class="recent-score-item-label" style="color:' + s.color + ';">' + s.name + '</div>';
-                        html += '<div class="recent-score-item-value" style="color:' + s.color + ';">' + sc.toFixed(s.dec) + '</div></div>';
+                        html += '<div style="background:' + s.color + '15;border:2px solid ' + s.color + '40;padding:0.75rem 1.25rem;border-radius:0.75rem;text-align:center;min-width:80px;">';
+                        html += '<div style="font-size:0.75rem;color:' + s.color + ';font-weight:600;">' + s.name + '</div>';
+                        html += '<div style="font-size:1.5rem;font-weight:bold;color:' + s.color + ';">' + sc.toFixed(s.dec) + '</div></div>';
                     }
 
                     // CET考试：合并显示写作和翻译
@@ -1428,9 +752,9 @@
                         const translationScore = last.scores['translation'] || 0;
                         const wtTotal = writingScore + translationScore;
                         const wtColor = '#f59e0b';
-                        html += '<div class="recent-score-item" style="background:' + wtColor + '15;border:2px solid ' + wtColor + '40;">';
-                        html += '<div class="recent-score-item-label" style="color:' + wtColor + ';">写作和翻译</div>';
-                        html += '<div class="recent-score-item-value" style="color:' + wtColor + ';">' + wtTotal + '</div></div>';
+                        html += '<div style="background:' + wtColor + '15;border:2px solid ' + wtColor + '40;padding:0.75rem 1.25rem;border-radius:0.75rem;text-align:center;min-width:80px;">';
+                        html += '<div style="font-size:0.75rem;color:' + wtColor + ';font-weight:600;">写作和翻译</div>';
+                        html += '<div style="font-size:1.5rem;font-weight:bold;color:' + wtColor + ';">' + wtTotal + '</div></div>';
                     }
                 }
                 html += '</div>';
@@ -1481,11 +805,11 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
                         badges += '<span class="score-badge" style="background:' + wtColor + '15;color:' + wtColor + ';">写作和翻译: ' + wtTotal + '</span>';
                     }
 
-                    listHtml += '<div class="record-box"><div class="record-row"><div class="record-main"><div class="record-meta"><span style="font-size:1.25rem;">' + e.icon + '</span><span style="font-weight:700;">' + e.name + '</span><span style="color:#9ca3af;font-size:0.875rem;">' + r.date + '</span></div><div class="record-badges">' + badges + '</div></div><div class="record-side">';
+                    listHtml += '<div class="record-box"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;"><span style="font-size:1.25rem;">' + e.icon + '</span><span style="font-weight:700;">' + e.name + '</span><span style="color:#9ca3af;font-size:0.875rem;">' + r.date + '</span></div><div>' + badges + '</div></div><div style="display:flex;align-items:center;gap:1rem;">';
                     if (r.total !== null) {
-                        listHtml += '<div class="record-total"><div style="font-size:0.75rem;color:#9ca3af;">总分</div><div style="font-size:1.75rem;font-weight:bold;" class="gradient-text">' + r.total.toFixed(1) + '</div></div>';
+                        listHtml += '<div style="text-align:right;"><div style="font-size:0.75rem;color:#9ca3af;">总分</div><div style="font-size:1.75rem;font-weight:bold;" class="gradient-text">' + r.total.toFixed(1) + '</div></div>';
                     }
-                    listHtml += '<button class="record-delete" onclick="deleteRecord(' + r.id + ')">×</button></div></div></div>';
+                    listHtml += '<button onclick="deleteRecord(' + r.id + ')" style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:1.5rem;">×</button></div></div></div>';
                 }
                 listDiv.innerHTML = listHtml;
             }
@@ -1672,11 +996,11 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
                     badges += '<span class="score-badge" style="background:' + wtColor + '15;color:' + wtColor + ';">写作和翻译: ' + wtTotal + '</span>';
                 }
 
-                listHtml += '<div class="record-box"><div class="record-row"><div class="record-main"><div class="record-meta"><span style="font-size:1.25rem;">' + e.icon + '</span><span style="font-weight:700;">' + e.name + '</span><span style="color:#9ca3af;font-size:0.875rem;">' + r.date + '</span></div><div class="record-badges">' + badges + '</div></div><div class="record-side">';
+                listHtml += '<div class="record-box"><div style="display:flex;justify-content:space-between;align-items:center;"><div><div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem;"><span style="font-size:1.25rem;">' + e.icon + '</span><span style="font-weight:700;">' + e.name + '</span><span style="color:#9ca3af;font-size:0.875rem;">' + r.date + '</span></div><div>' + badges + '</div></div><div style="display:flex;align-items:center;gap:1rem;">';
                 if (r.total !== null) {
-                    listHtml += '<div class="record-total"><div style="font-size:0.75rem;color:#9ca3af;">总分</div><div style="font-size:1.75rem;font-weight:bold;" class="gradient-text">' + r.total.toFixed(1) + '</div></div>';
+                    listHtml += '<div style="text-align:right;"><div style="font-size:0.75rem;color:#9ca3af;">总分</div><div style="font-size:1.75rem;font-weight:bold;" class="gradient-text">' + r.total.toFixed(1) + '</div></div>';
                 }
-                listHtml += '<button class="record-delete" onclick="deleteRecord(' + r.id + ')">×</button></div></div></div>';
+                listHtml += '<button onclick="deleteRecord(' + r.id + ')" style="background:none;border:none;color:#9ca3af;cursor:pointer;font-size:1.5rem;">×</button></div></div></div>';
             }
             listDiv.innerHTML = listHtml;
         }
@@ -2183,34 +1507,17 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
             reader.readAsText(file);
             input.value = '';
         }       
-// 全局变量，用来记住上下文
-let lastExamType = '';
-let lastScore = 0;
-let lastHistory = [];
-let lastAiComment = '';
-
-// 1. 初始获取评价 (renderDashboard 调用这个)
+// AI 调用函数
 async function fetchAIComment(examType, currentScore, historyScores) {
-    // 保存上下文，一会儿吵架要用
-    lastExamType = examType;
-    lastScore = currentScore;
-    lastHistory = historyScores;
-
-    const container = document.getElementById('ai-container');
     const box = document.getElementById('ai-comment-box');
-    const actions = document.getElementById('ai-actions');
-    const replyArea = document.getElementById('reply-input-area');
+    if (!box) return;
 
-    if (!container) return;
-
-    // 重置界面状态
-    container.style.display = 'block';
-    actions.style.display = 'none'; // 先藏起按钮
-    replyArea.style.display = 'none'; // 先藏起输入框
+    // 显示加载状态
+    box.style.display = 'block';
     box.innerHTML = '🤖 毒舌老师正在推眼镜分析你的成绩...';
-    box.style.background = '#ecfdf5'; // 恢复绿色背景
 
     try {
+        // 请求刚才写的后端接口
         const res = await fetch('/.netlify/functions/comment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -2223,70 +1530,17 @@ async function fetchAIComment(examType, currentScore, historyScores) {
 
         const data = await res.json();
         
+        // 显示结果
         if (data.comment) {
-            lastAiComment = data.comment; // 记住老师骂了什么
             box.innerHTML = `<strong>👩‍🏫 毒舌老师：</strong> ${data.comment}`;
-            actions.style.display = 'flex'; // 显示"回嘴"按钮
         } else {
-            box.innerHTML = '老师去吃饭了...';
+            box.innerHTML = '老师去吃饭了，稍后再来...';
         }
+
     } catch (err) {
         console.error(err);
-        box.innerHTML = '老师断线了...';
+        box.innerHTML = '老师太累了，暂时不想说话...';
     }
-}
-
-// 2. 显示输入框
-function showReplyInput() {
-    document.getElementById('reply-input-area').style.display = 'block';
-    document.getElementById('ai-actions').style.display = 'none'; // 隐藏按钮
-    document.getElementById('user-rebuttal').focus();
-}
-
-// 3. 发送回嘴 (吵架逻辑)
-async function sendRebuttal() {
-    const input = document.getElementById('user-rebuttal');
-    const rebuttal = input.value.trim();
-    if (!rebuttal) return;
-
-    const box = document.getElementById('ai-comment-box');
-    
-    // 界面变身：变成"对战中"状态
-    box.innerHTML = `<strong>😤 你：</strong> ${rebuttal}<br><hr style="margin:8px 0; border:0; border-top:1px dashed #a7f3d0">🤖 老师正在思考怎么怼回来...`;
-    box.style.background = '#fff1f2'; // 变成淡红色，表示气氛紧张
-    box.style.color = '#be123c';
-    box.style.borderColor = '#fb7185';
-    
-    document.getElementById('reply-input-area').style.display = 'none'; // 隐藏输入框
-
-    try {
-        const res = await fetch('/.netlify/functions/comment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                examType: lastExamType, 
-                currentScore: lastScore, 
-                historyScores: lastHistory,
-                userRebuttal: rebuttal,      // 重点：把你的回嘴发过去
-                previousComment: lastAiComment // 重点：把老师刚才的话发过去
-            })
-        });
-
-        const data = await res.json();
-        
-        if (data.comment) {
-            lastAiComment = data.comment; // 更新上下文
-            // 显示这一轮的战况
-            box.innerHTML = `<strong>😤 你：</strong> ${rebuttal}<br><br><strong>👩‍🏫 毒舌老师：</strong> ${data.comment}`;
-            
-            // 允许继续回嘴 (无限套娃)
-            document.getElementById('ai-actions').style.display = 'flex';
-            input.value = ''; // 清空输入框
-        }
-    } catch (err) {
-        box.innerHTML += '<br>(老师被气得掉线了)';
-    }
-}
  // ================= 桌面宠物逻辑 =================
 
 // 1. 毒舌语录库 (本地快速响应，不用等AI)
@@ -2298,86 +1552,8 @@ const SASSY_QUOTES = [
     "再戳我，我就把你的成绩发给你爸妈。📱",
     "只有弱者才会在意别人的评价，强者都在刷题。📚",
     "哟，这不是那位总分 5.5 的选手吗？😏",
-    "这就是你对待学习的态度？再戳一下试试？👊",
-    "你知道吗？你的成绩让我怀疑你是不是在梦游考试。😴",
-    "别看了，成绩不会自己变高，快去学习！📖",
-    "你离成功只差一个字：努力。",
-    "如果拖延是比赛，你已经是冠军了。🏆",
-    "你的目标是考第一？还是考倒数第一？🤔",
-    "别再摸鱼了，鱼都嫌你烦了。🐟",
-    "你知道吗？你的成绩让我想起了我的噩梦。😱",
-    "再不努力，你的未来会比今天更糟糕。",
-    "你是来学习的，还是来打酱油的？",
-    "成绩单不会撒谎，但你会。😏",
-    "你觉得自己很努力？那成绩呢？",
-    "别再找借口了，时间不会等你。⏳",
-    "你以为考高分靠运气？不，靠实力。💪",
-    "再戳我，我就把你的成绩贴在公告栏上。📋",
-    "你知道吗？你的成绩让我怀疑你是不是在考古。🦴",
-    "努力是免费的，但你选择了昂贵的懒惰。",
-    "你知道吗？你的成绩让我想起了我小时候的玩笑。",
-    "你是来考试的，还是来交朋友的？",
-    "如果学习是游戏，你已经卡关了。",
-    "你的未来取决于你今天的努力。",
-    "别再拖延了，时间不会为你停留。",
-    "你知道吗？你的成绩让我想起了我的黑历史。",
-    "你是来挑战极限的，还是来挑战底线的？",
-    "学习是场马拉松，而你却在起点睡着了。",
-    "你知道吗？你的成绩让我怀疑你是不是在玩躲猫猫。",
-    "别再找借口了，成功只属于那些努力的人。",
-    "你觉得自己很聪明？那为什么成绩单不这么认为？",
-    "你知道吗？你的成绩让我想起了我丢失的记忆。",
-    "别再摸鱼了，鱼都开始嫌弃你了。"
-,
-    "今天点我三次了，背单词点过三次吗？😏",
-    "你和高分之间就差一个动作：开始。",
-    "我不是在骂你，我是在提前播报现实。",
-    "你这学习节奏，像开了省电模式。🔋",
-    "别把‘明天开始’当口头禅了，明天都听烦了。",
-    "你现在的分数，像是在给未来挖坑。",
-    "刷短视频的手速这么快，刷题怎么就卡了？📱",
-    "你是来拿分的，不是来和拖延症谈恋爱的。",
-    "每次点我都很积极，做题要是也这么积极就好了。",
-    "这分数不是终点，但再躺就真到终点了。🛌",
-    "你现在这状态，连错题本都替你着急。😮‍💨",
-    "你不是不会，你只是一直没认真开始。",
-    "学得慢没关系，停着不动才是问题。",
-    "今天少找一个借口，明天就多一分底气。",
-    "别再等状态了，状态是做出来的。",
-    "你可以嘴硬，但成绩单只认分数。📄",
-    "你这波操作，像是在给低分做长期投资。",
-    "知识点都在排队等你，你却在原地发呆。",
-    "我劝你现在学，不然以后只能学会后悔。",
-    "别总说差一点，你差的是那一点点坚持。",
-    "你今天复习了吗，还是又在和时间赛跑并且输了？",
-    "考试不看心情，看准备。🎯",
-    "你要么现在吃学习的苦，要么之后吃现实的苦。",
-    "这不是天赋问题，是你执行力的问题。",
-    "我都替你记住目标了，你别先忘了。",
-    "再拖下去，计划表都要长灰了。🗂️",
-    "你以为在休息，其实是在给焦虑充值。⚠️",
-    "继续点我可以，但顺手点开题库更好。",
-    "你不是差，你是还没把自己用到位。",
-    "你的潜力很大，别把它只放在想象里。",
-    "今天认真一点，明天就不用慌一点。✅",
-    "如果努力有声音，你今天有点安静。",
-    "你离进步不远，前提是别后退。",
-    "再摸鱼我就默认你在给别人让名次了。🐟",
-    "你这分数像天气预报：阴天转努力。",
-    "我没有否定你，我只是否定你的偷懒。",
-    "别再研究玄学提分了，先把题做完。📝",
-    "要不这样，点我一次就去做一道题。",
-    "你不是缺方法，你是缺持续执行。",
-    "每次说马上开始，马上都快退休了。⌛",
-    "再给自己一次认真投入的机会吧。",
-    "高分不会突然出现，只会被一点点做出来。📈",
-    "你今天的认真程度，决定明天的从容程度。",
-    "继续努力，别让我夸你的机会一直缺席。👏",
-    "别怕慢，怕的是你一直不出发。",
-    "你这次要是稳住，后面会越来越轻松。",
-    "我看好你，但你得先动起来。🚀",
-    "现在开始还不晚，继续拖才晚。",
-    "再点一次之前，先去做三道题，成交？"];
+    "这就是你对待学习的态度？再戳一下试试？👊"
+];
 
 // 2. 初始化宠物状态 (在 renderDashboard 里调用)
 function updatePetMood() {
@@ -2406,45 +1582,12 @@ function updatePetMood() {
 
 // 3. 戳一戳互动函数
 let bubbleTimer = null;
-let recentQuoteIndexes = [];
-const RECENT_QUOTES_WINDOW = 20;
-
-function getNonRepeatingQuoteIndex() {
-    if (SASSY_QUOTES.length <= 1) return 0;
-
-    const windowSize = Math.min(RECENT_QUOTES_WINDOW, SASSY_QUOTES.length - 1);
-    const recentSet = new Set(recentQuoteIndexes);
-    let pickedIndex = -1;
-
-    for (let i = 0; i < 12; i++) {
-        const idx = Math.floor(Math.random() * SASSY_QUOTES.length);
-        if (!recentSet.has(idx)) {
-            pickedIndex = idx;
-            break;
-        }
-    }
-
-    if (pickedIndex === -1) {
-        pickedIndex = 0;
-        while (recentSet.has(pickedIndex) && pickedIndex < SASSY_QUOTES.length - 1) {
-            pickedIndex++;
-        }
-    }
-
-    recentQuoteIndexes.push(pickedIndex);
-    if (recentQuoteIndexes.length > windowSize) {
-        recentQuoteIndexes.shift();
-    }
-
-    return pickedIndex;
-}
-
 function pokeTeacher() {
     const bubble = document.getElementById('pet-bubble');
     const avatar = document.getElementById('desktop-pet');
     
-    // 短期不重复：优先避开最近出现过的语录
-    const randomQuote = SASSY_QUOTES[getNonRepeatingQuoteIndex()];
+    // 随机选一句骚话
+    const randomQuote = SASSY_QUOTES[Math.floor(Math.random() * SASSY_QUOTES.length)];
     bubble.innerText = randomQuote;
 
     // 显示气泡
@@ -2464,427 +1607,13 @@ function pokeTeacher() {
         bubble.style.transform = 'translateY(0)';
     }, 3000);
 }
-// ==================== 版本日志与使用文档 ====================
-const APP_VERSION = '7.0';
-const CHANGELOG_STORAGE_KEY = 'myscore_changelog_seen_' + APP_VERSION;
-const CHANGELOG_PLACEHOLDER = `📝 MyScore V7.1 更新日志
-发布时间：2026-02-12 15:02
-代号：Mobile Harmony（移动端和谐计划）
-（一）新增
-A. 手机端体验升级
-• 全站完成移动端适配优化，页面在小屏设备上显示更稳定、布局更协调。
-• 顶部导航按钮重排为更整齐的双列布局，减少拥挤感，点击区域更友好。
-• 卡片间距、圆角、底部留白与悬浮元素位置统一优化，整体观感更轻盈。
-• 手机端桌宠尺寸与位置再优化，与左侧功能浮钮形成更协调的视觉平衡。
 
-B. 网站界面规范化
-• 新增站点副标识“碳碳四键的个人开发应用实践”。
-• 页面底部新增悬挂工信部备案信息：蜀ICP备2026006689号（含工信部备案链接）。
-
-（二）优化
-A. 最近成绩与历史记录优化
-• 最近成绩“四宫格”改版：移动端统一为整齐双列卡片，信息密度更清晰。
-• 历史记录卡片重构：分数标签、总分区域、删除按钮重新布局，解决错位与重叠问题。
-• 桌面端同步优化最近成绩卡片字号与比例，显示更大气、更易读。
-
-B. 突突er 伴学助手体验提升
-• 修复移动端输入法场景下的遮挡问题，输入时面板可稳定跟随键盘。
-• 新增“展开/还原”独立按钮，关闭按钮（×）恢复为纯关闭语义，交互更符合直觉。
-• 输入区与发送按钮布局优化，避免挤压变形，聊天输入更顺手。
-
-感谢您持续使用 MyScore，V7.1☀️ 
-开发者将继续围绕“好看、好用、稳定”打磨体验💪。`;
-
-const GUIDE_PLACEHOLDER = `MyScore 使用指南
-✨ 核心特性
-
-🤖 AI 智能交互 (V6.x 新增)
-• 毒舌老师: 每次录入成绩，AI 都会根据你的分数走势（进步/退步）给出犀利评价。
-• 回怼模式: 觉得老师说得不对？点击 "💬 不服/回嘴" 按钮，和 AI 展开辩论！它会根据你的理由进行更有趣的反击。
-• 桌面宠物: 右下角的 Emoji 老师会根据你的最近成绩自动变脸（😎 考好了 / 😡 考砸了），点击还能“戳一戳”互动。
-
-📊 支持的考试类型
-1.雅思考试 (IELTS)
-• 听力/阅读: 根据正确题数自动折算分数（0-40题 → 0-9.0分）
-• 写作 (Writing): Task 1/Task 2 分离输入，自动加权计算
-• 口语 (Speaking): 直接输入分数
-• Overall总分: 自动计算四项平均分，按雅思规则取整
-2.大学英语考试 (CET)
-• 四级/六级: 完整的成绩管理
-• 分项计分: 听力/阅读/写作/翻译 独立录入或换算
-3.自定义考试
-• 完全自由: 创建任意考试类型（如托福、GRE、期末考）
-• 四种计分: 直接输入 / 多小题计分 / 分部分计分 / 公式计算
-
-📈 数据可视化 & 管理
-• 趋势图表: Chart.js 绘制精美成绩曲线
-• 数据安全: 浏览器 LocalStorage 本地存储，隐私无忧
-• 备份恢复: 支持 JSON 格式一键导出/导入
-
-📖 详细功能说明 
-自定义考试类型使用指南
-自定义考试允许你创建任意类型的考试评分系统，比如托福、GRE、模拟测试等。
-
-STEP 1 创建新考试类型
-1. 点击顶部"自定义考试"导航
-2. 点击"+ 新建考试"按钮
-3. 填写考试名称（如：托福）和描述（可选）
-
-STEP 2 添加科目
-每个考试可以添加多个科目，每个科目需要设置：
-设置项 / 说明
-科目名称 / 如：阅读、听力、写作
-简称 / 显示在卡片上的缩写，如：阅、听、写
-颜色 / 用于区分不同科目的标识色
-计分方式 / 四种方式可选（见下文）
-
-STEP 3 计分方式详解
-✅方式一：直接输入分数
-• 适用场景：直接输入最终成绩
-• 示例：雅思口语直接输入 7.5 分
-• 配置：只需设置最小值、最大值（如 0-9）
-✅方式二：多小题计分
-• 适用场景：一个大题包含多个小题，需要分别计分后加总
-• 示例：数学解答题20分 = 第一问5分 + 第二问7分 + 第三问8分
-• 配置：
-  添加多个"小题"
-  每小题设置：名称（如：第一问）、满分值（如：5）
-  系统自动计算：各小题得分之和 = 该大题总分
-✅方式三：分部分计分
-• 适用场景：试卷分多个部分，每部分题数和分值不同
-• 示例：四六级听力
-（短对话8题×7.1分 + 长对话7题×7.1分 + 短文10题×14.2分）
-• 配置：
-  添加多个"部分"
-  每部分设置：名称（如：短对话）、每题分值（如：7.1）、最大题数（如：8）
-  系统自动计算：答对题数 × 每题分值，各部分的和即为该科目总分
-✅方式四：公式计算
-• 适用场景：原始分需要乘以系数换算
-• 示例：四六级写作原始分0-15分，报道分 = 原始分 × 7.1
-• 配置：
-  原始分最大值（如：15）
-  乘数系数（如：7.1）
-  系统自动计算：输入原始分 × 乘数 = 最终分数
-------------------------------------------------------------------------
-📄 许可证
-Copyright © LYT, 2026 All Rights Reserved
-联系方式：liuyuntian@ytun.team`;
-
-function openInfoModal(type) {
-    const modal = document.getElementById('info-modal');
-    const title = document.getElementById('info-modal-title');
-    const body = document.getElementById('info-modal-body');
-    const primary = document.getElementById('info-modal-primary');
-
-    if (!modal || !title || !body || !primary) return;
-
-    const isChangelog = type === 'changelog';
-    title.textContent = isChangelog ? ('版本日志 · V' + APP_VERSION) : '使用文档';
-    body.textContent = isChangelog ? CHANGELOG_PLACEHOLDER : GUIDE_PLACEHOLDER;
-
-    primary.style.display = isChangelog ? 'inline-flex' : 'none';
-    modal.classList.add('active');
-}
-
-function closeInfoModal() {
-    const modal = document.getElementById('info-modal');
-    if (!modal) return;
-    modal.classList.remove('active');
-}
-
-function acknowledgeChangelog() {
-    localStorage.setItem(CHANGELOG_STORAGE_KEY, '1');
-    closeInfoModal();
-}
-
-function handleInfoModalOverlayClick(event) {
-    if (event.target && event.target.id === 'info-modal') {
-        closeInfoModal();
-    }
-}
-
-function maybeShowChangelogOnFirstOpen() {
-    const hasSeen = localStorage.getItem(CHANGELOG_STORAGE_KEY) === '1';
-    if (!hasSeen) {
-        localStorage.setItem(CHANGELOG_STORAGE_KEY, '1');
-        openInfoModal('changelog');
-    }
-}
-
-// ==================== 突突er 伴学助手 ====================
-const TUTUER_HISTORY_KEY = 'myscore_tutuer_history';
-let tutuerMessages = [];
-let tutuerSending = false;
-let tutuerViewportSyncPending = false;
-
-function getTutuerDefaultGreeting() {
-    return '我是突突er，今天我会陪你一起学。你可以跟我聊情绪、计划、拖延，或者直接问学习题目。';
-}
-
-function loadTutuerHistory() {
-    try {
-        const raw = localStorage.getItem(TUTUER_HISTORY_KEY);
-        const parsed = raw ? JSON.parse(raw) : [];
-        if (Array.isArray(parsed) && parsed.length) {
-            tutuerMessages = parsed.filter(function (m) {
-                return m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string';
-            }).slice(-30);
-            return;
-        }
-    } catch (e) {}
-    tutuerMessages = [{ role: 'assistant', content: getTutuerDefaultGreeting() }];
-}
-
-function saveTutuerHistory() {
-    localStorage.setItem(TUTUER_HISTORY_KEY, JSON.stringify(tutuerMessages.slice(-30)));
-}
-
-function clearTutuerHistory() {
-    tutuerMessages = [{ role: 'assistant', content: getTutuerDefaultGreeting() }];
-    saveTutuerHistory();
-    renderTutuerMessages();
-}
-
-function renderTutuerMessages() {
-    const list = document.getElementById('tutuer-chat-list');
-    if (!list) return;
-    list.innerHTML = '';
-    for (const msg of tutuerMessages) {
-        const bubble = document.createElement('div');
-        bubble.className = 'tutuer-msg ' + msg.role;
-        bubble.textContent = msg.content;
-        list.appendChild(bubble);
-    }
-    list.scrollTop = list.scrollHeight;
-}
-
-function openTutuerPanel() {
-    const panel = document.getElementById('tutuer-panel');
-    const input = document.getElementById('tutuer-input');
-    if (!panel) return;
-    const isMobile = window.matchMedia('(max-width: 768px)').matches;
-    panel.classList.remove('hidden');
-    panel.classList.remove('expanded-mobile');
-    document.body.classList.toggle('tutuer-open-mobile', isMobile);
-    syncTutuerExpandBtn();
-    setTutuerUnread(false);
-    renderTutuerMessages();
-    scheduleTutuerViewportSync();
-    setTimeout(scheduleTutuerViewportSync, 80);
-    setTimeout(scheduleTutuerViewportSync, 220);
-    if (input && !isMobile) input.focus();
-}
-
-function closeTutuerPanel(event) {
-    if (event) event.stopPropagation();
-    const panel = document.getElementById('tutuer-panel');
-    if (!panel) return;
-    panel.classList.add('hidden');
-    panel.classList.remove('expanded-mobile');
-    panel.classList.remove('keyboard-open-mobile');
-    panel.style.removeProperty('bottom');
-    panel.style.removeProperty('height');
-    panel.style.removeProperty('top');
-    document.body.classList.remove('tutuer-open-mobile');
-    syncTutuerExpandBtn();
-}
-
-function toggleTutuerPanel() {
-    const panel = document.getElementById('tutuer-panel');
-    if (!panel) return;
-    if (panel.classList.contains('hidden')) {
-        openTutuerPanel();
-    } else {
-        closeTutuerPanel();
-    }
-}
-
-function syncTutuerExpandBtn() {
-    const panel = document.getElementById('tutuer-panel');
-    const btn = document.getElementById('tutuer-expand-btn');
-    if (!panel || !btn) return;
-    const expanded = panel.classList.contains('expanded-mobile');
-    btn.textContent = expanded ? '⤡' : '⤢';
-    btn.setAttribute('aria-label', expanded ? '还原面板' : '展开面板');
-    btn.title = expanded ? '还原' : '展开';
-}
-
-function toggleTutuerExpand(event) {
-    if (event) event.stopPropagation();
-    if (!window.matchMedia('(max-width: 768px)').matches) return;
-    const panel = document.getElementById('tutuer-panel');
-    if (!panel || panel.classList.contains('hidden')) return;
-    panel.classList.toggle('expanded-mobile');
-    syncTutuerExpandBtn();
-    scheduleTutuerViewportSync();
-}
-
-function scheduleTutuerViewportSync() {
-    if (tutuerViewportSyncPending) return;
-    tutuerViewportSyncPending = true;
-    requestAnimationFrame(function () {
-        tutuerViewportSyncPending = false;
-        syncTutuerViewportForKeyboard();
-    });
-}
-
-function syncTutuerViewportForKeyboard() {
-    if (!window.matchMedia('(max-width: 768px)').matches) return;
-    const panel = document.getElementById('tutuer-panel');
-    if (!panel || panel.classList.contains('hidden')) return;
-    const vv = window.visualViewport;
-    if (!vv) return;
-
-    const overlap = Math.max(0, window.innerHeight - (vv.height + vv.offsetTop));
-    const keyboardOpen = overlap > 120;
-
-    panel.classList.toggle('keyboard-open-mobile', keyboardOpen);
-
-    if (!keyboardOpen) {
-        panel.style.removeProperty('bottom');
-        panel.style.removeProperty('height');
-        panel.style.removeProperty('top');
-        return;
-    }
-
-    panel.style.top = 'auto';
-    panel.style.bottom = Math.round(overlap + 8) + 'px';
-
-    const expanded = panel.classList.contains('expanded-mobile');
-    const targetHeight = expanded
-        ? Math.max(260, vv.height - 16)
-        : Math.max(240, Math.min(560, vv.height * 0.72));
-    panel.style.height = Math.round(targetHeight) + 'px';
-
-    const input = document.getElementById('tutuer-input');
-    if (input && document.activeElement === input) {
-        setTimeout(function () {
-            input.scrollIntoView({ block: 'center', behavior: 'smooth' });
-        }, 60);
-    }
-}
-
-function bindTutuerViewportEvents() {
-    const input = document.getElementById('tutuer-input');
-    if (input) {
-        input.addEventListener('focus', function () {
-            scheduleTutuerViewportSync();
-            setTimeout(scheduleTutuerViewportSync, 120);
-            setTimeout(scheduleTutuerViewportSync, 260);
-        });
-        input.addEventListener('blur', function () {
-            setTimeout(scheduleTutuerViewportSync, 80);
-        });
-    }
-
-    window.addEventListener('resize', scheduleTutuerViewportSync, { passive: true });
-    window.addEventListener('orientationchange', scheduleTutuerViewportSync, { passive: true });
-    if (window.visualViewport) {
-        window.visualViewport.addEventListener('resize', scheduleTutuerViewportSync, { passive: true });
-        window.visualViewport.addEventListener('scroll', scheduleTutuerViewportSync, { passive: true });
-    }
-}
-
-function setTutuerLoading(loading) {
-    const sending = document.getElementById('tutuer-send-btn');
-    if (!sending) return;
-    tutuerSending = loading;
-    sending.disabled = loading;
-    sending.textContent = loading ? '思考中...' : '发送';
-}
-
-function setTutuerUnread(unread) {
-    const dot = document.getElementById('tutuer-fab-dot');
-    if (!dot) return;
-    dot.classList.toggle('hidden', !unread);
-}
-
-function getTutuerFallbackReply(userText) {
-    if (userText.includes('难受') || userText.includes('焦虑') || userText.includes('压力')) {
-        return '先把这件事拆成一小步：现在只做 10 分钟最简单的部分。做完再告诉我感受，我们继续。';
-    }
-    if (userText.includes('不会') || userText.includes('看不懂')) {
-        return '把题目或知识点贴给我，我会先用最简单版本讲一遍，再给你一题练习。';
-    }
-    return '我在，慢慢说。你可以告诉我你现在最卡的点，我会给你一个可执行的小计划。';
-}
-
-function askTutuerStudyPlan() {
-    const preset = '请根据我今天的状态，帮我生成一个可执行的今日学习计划（包含：1) 25分钟任务分块 2) 休息节奏 3) 今晚复盘问题）。';
-    const input = document.getElementById('tutuer-input');
-    openTutuerPanel();
-    if (input) {
-        input.value = preset;
-    }
-    sendTutuerMessage();
-}
-
-async function sendTutuerMessage() {
-    if (tutuerSending) return;
-    const input = document.getElementById('tutuer-input');
-    if (!input) return;
-    const userText = input.value.trim();
-    if (!userText) return;
-
-    tutuerMessages.push({ role: 'user', content: userText });
-    input.value = '';
-    renderTutuerMessages();
-    setTutuerLoading(true);
-
-    try {
-        const history = tutuerMessages.slice(-12).map(function (m) {
-            return { role: m.role, content: m.content };
-        });
-
-        const res = await fetch('/.netlify/functions/comment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                mode: 'companion',
-                userMessage: userText,
-                conversationHistory: history
-            })
-        });
-
-        const data = await res.json();
-        const reply = data && data.comment ? data.comment : getTutuerFallbackReply(userText);
-        tutuerMessages.push({ role: 'assistant', content: reply });
-    } catch (err) {
-        tutuerMessages.push({ role: 'assistant', content: getTutuerFallbackReply(userText) });
-    } finally {
-        setTutuerLoading(false);
-        saveTutuerHistory();
-        renderTutuerMessages();
-        const panel = document.getElementById('tutuer-panel');
-        if (panel && panel.classList.contains('hidden')) {
-            setTutuerUnread(true);
-        }
-    }
-}
-
-function handleTutuerInputKeydown(event) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault();
-        sendTutuerMessage();
-    }
-}
-
-document.addEventListener('keydown', function (event) {
-    if (event.key === 'Escape') {
-        closeInfoModal();
-        closeTutuerPanel();
-    }
-});
 // 页面加载完成后，顺便初始化一下心情
-document.addEventListener('DOMContentLoaded', updatePetMood);
+document.addEventListener('DOMContentLoaded', updatePetMood);   
+}
         // ==================== 初始化 ====================
         document.addEventListener('DOMContentLoaded', function () {
             renderDashboard();
-            maybeShowChangelogOnFirstOpen();
-            loadTutuerHistory();
-            renderTutuerMessages();
-            setTutuerUnread(false);
-            bindTutuerViewportEvents();
         });
     </script>
  <div id="desktop-pet" onclick="pokeTeacher()" style="position: fixed; bottom: 2rem; right: 2rem; z-index: 999; cursor: pointer; transition: transform 0.2s ease;">
@@ -2910,60 +1639,6 @@ document.addEventListener('DOMContentLoaded', updatePetMood);
     <div id="pet-avatar" style="font-size: 4.5rem; filter: drop-shadow(0 5px 15px rgba(16, 185, 129, 0.3)); user-select: none;">
         👨‍🏫
     </div>
-</div>
-<button class="changelog-fab" type="button" onclick="openInfoModal('changelog')" aria-label="查看版本日志">
-    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M9 12h6m-6 4h6M8 4h8a2 2 0 012 2v12a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2z"/>
-    </svg>
-    <span class="changelog-fab-label">版本日志</span>
-</button>
-<button class="tutuer-fab" type="button" onclick="toggleTutuerPanel()" aria-label="唤起突突er">
-    <span id="tutuer-fab-dot" class="tutuer-fab-dot hidden"></span>
-    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-    </svg>
-    <span class="tutuer-fab-label">唤起突突er</span>
-</button>
-<section id="tutuer-panel" class="tutuer-panel hidden" aria-label="突突er伴学助手">
-    <div class="tutuer-panel-header">
-        <div>
-            <p style="font-size:0.95rem;font-weight:700;color:#1e3a8a;">突突er伴学助手</p>
-            <p style="font-size:0.78rem;color:#475569;">聊情绪、问知识、一起定计划</p>
-        </div>
-        <div class="tutuer-panel-controls">
-            <button id="tutuer-expand-btn" class="tutuer-expand-btn" type="button" onclick="toggleTutuerExpand(event)" aria-label="展开面板">⤢</button>
-            <button type="button" onclick="closeTutuerPanel(event)" style="width:30px;height:30px;border:none;border-radius:9999px;background:#ffffff;color:#64748b;cursor:pointer;">×</button>
-        </div>
-    </div>
-    <div id="tutuer-chat-list" class="tutuer-chat-list"></div>
-    <div class="tutuer-panel-footer">
-        <div class="tutuer-quick-actions">
-            <button class="tutuer-quick-btn" type="button" onclick="askTutuerStudyPlan()">一键生成今日学习计划</button>
-            <button class="tutuer-quick-btn" type="button" onclick="clearTutuerHistory()">清空对话</button>
-        </div>
-        <div class="tutuer-input-row">
-            <textarea id="tutuer-input" class="tutuer-input" placeholder="和突突er说点什么..." onkeydown="handleTutuerInputKeydown(event)"></textarea>
-            <button id="tutuer-send-btn" class="btn-primary" type="button" onclick="sendTutuerMessage()" style="padding:0.65rem 1rem;">发送</button>
-        </div>
-    </div>
-</section>
-<div id="info-modal" class="modal-overlay" onclick="handleInfoModalOverlayClick(event)">
-    <div class="modal-content info-modal-content">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem;">
-            <h3 id="info-modal-title" style="font-size:1.25rem;font-weight:700;color:#111827;">版本日志</h3>
-            <button type="button" aria-label="关闭" onclick="closeInfoModal()" style="width:34px;height:34px;border:none;border-radius:9999px;background:#f3f4f6;color:#6b7280;cursor:pointer;font-size:1.25rem;line-height:1;">×</button>
-        </div>
-        <div id="info-modal-body" class="info-modal-body"></div>
-        <div class="info-modal-footer">
-            <button id="info-modal-primary" class="btn-primary" type="button" onclick="acknowledgeChangelog()">我知道了</button>
-            <button class="btn-secondary" type="button" onclick="closeInfoModal()">关闭</button>
-        </div>
-    </div>
-</div>
+</div>   
 </body>
 </html>
-
-
-
-
-
