@@ -2024,3 +2024,303 @@
                 pointer-events: none;
             }
         }
+
+/* ==================== Login / Register Modal ==================== */
+.login-modal-content {
+    max-width: 420px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(31, 106, 82, 0.06);
+}
+.login-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+.login-modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+.login-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #9ca3af;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+}
+.login-modal-close:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+.login-steps-wrapper {
+    position: relative;
+    overflow: hidden;
+}
+.login-step {
+    display: none;
+    animation: loginStepIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.login-step.active {
+    display: block;
+}
+@keyframes loginStepIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+.login-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #374151;
+}
+.login-input {
+    width: 100%;
+    box-sizing: border-box;
+}
+.login-code-input {
+    letter-spacing: 0.5em;
+    text-align: center;
+    font-size: 1.2rem;
+}
+.login-code-sent {
+    color: #6b7280;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+.login-step-desc {
+    font-size: 0.95rem;
+    color: #374151;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+.login-checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    font-size: 0.82rem;
+    color: #6b7280;
+    cursor: pointer;
+    line-height: 1.5;
+}
+.login-checkbox-row input[type="checkbox"] {
+    margin-top: 2px;
+    accent-color: #1f6a52;
+    flex-shrink: 0;
+}
+.agreement-link {
+    color: #1f6a52;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+}
+.agreement-link:hover {
+    color: #174f3d;
+}
+.login-divider {
+    display: flex;
+    align-items: center;
+    margin: 1rem 0;
+    color: #d1d5db;
+    font-size: 0.85rem;
+}
+.login-divider::before,
+.login-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #e5e7eb;
+}
+.login-divider span {
+    padding: 0 0.75rem;
+    color: #9ca3af;
+}
+.login-hint {
+    color: #9ca3af;
+    font-size: 0.8rem;
+    margin-top: 1rem;
+    text-align: center;
+    line-height: 1.5;
+}
+.login-error {
+    display: none;
+    color: #ef4444;
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+}
+
+/* ==================== Avatar Grid ==================== */
+.avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+}
+.avatar-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.75rem 0.5rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #fff;
+}
+.avatar-option:hover {
+    border-color: #1f6a52;
+    transform: scale(1.04);
+}
+.avatar-option.selected {
+    border-color: #1f6a52;
+    background: rgba(31, 106, 82, 0.06);
+    box-shadow: 0 0 0 3px rgba(31, 106, 82, 0.12);
+    transform: scale(1.06);
+}
+.avatar-option img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+}
+.avatar-option span {
+    font-size: 0.72rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+.avatar-option.selected span {
+    color: #1f6a52;
+    font-weight: 700;
+}
+
+/* ==================== Nav User Area ==================== */
+.nav-user-area {
+    position: relative;
+}
+.nav-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid rgba(31, 106, 82, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+    vertical-align: middle;
+}
+.nav-avatar:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(31, 106, 82, 0.2);
+}
+
+/* ==================== Profile Card ==================== */
+.profile-card {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 280px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 1rem;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+    padding: 1.25rem;
+    z-index: 1000;
+    animation: profileCardIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.profile-card.hidden {
+    display: none;
+}
+@keyframes profileCardIn {
+    from { opacity: 0; transform: translateY(-8px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.profile-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+.profile-card-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.profile-card-info {
+    min-width: 0;
+}
+.profile-card-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #111827;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.profile-card-uid {
+    font-size: 0.8rem;
+    color: #9ca3af;
+    margin-top: 0.15rem;
+}
+.profile-card-bio {
+    font-size: 0.85rem;
+    color: #6b7280;
+    line-height: 1.5;
+    padding: 0.6rem 0.75rem;
+    background: #f9fafb;
+    border-radius: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+.profile-card-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+.profile-card-btn {
+    flex: 1;
+    padding: 0.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: #fff;
+    color: #374151;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.profile-card-btn:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+.profile-card-btn-logout {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.2);
+}
+.profile-card-btn-logout:hover {
+    background: #fef2f2;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* ==================== Admin Badge ==================== */
+.admin-badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 0.1rem 0.5rem;
+    border-radius: 99px;
+    background: linear-gradient(135deg, #f6d365, #fda085);
+    color: #7c3a0a;
+    letter-spacing: 0.03em;
+    vertical-align: middle;
+    line-height: 1.6;
+    box-shadow: 0 1px 4px rgba(253, 160, 133, 0.3);
+}

@@ -6,6 +6,45 @@ The format is based on [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [4.0.0-beta] - 2026-04-13
+
+**代号：Account System（账号系统）**
+
+### Added
+- 邮箱验证码注册与登录系统（Resend API 发送验证码）
+- 密码登录（scrypt 哈希加密，crypto.randomInt 验证码）
+- 用户资料系统：头像（DiceBear 8 款）、昵称、个性签名
+- UID 自增系统（从 1100000 起），首用户自动成为管理员
+- 管理员金色渐变胶囊标签
+- 云端数据同步：登录后成绩、目标、AI 风格等自动上传/拉取
+- 跨设备数据合并（按 ID 去重，本地 + 云端双写）
+- 用户协议与隐私政策（弹窗展示，发送验证码前必须勾选）
+- 多步骤登录弹窗（毛玻璃 + 滑动动画）
+- 头像选择网格（渐变边框 + 缩放动画）
+- 悬浮资料卡片（头像、昵称、UID、签名、管理员标签）
+- 编辑资料弹窗（随时修改头像、昵称、签名）
+- 后端输入校验（avatar_seed 白名单、昵称/签名长度限制）
+- JWT 令牌认证（手写 HMAC-SHA256，零依赖）
+
+### Changed
+- 后端新增 5 个 API 路由：register / login-code / login-password / profile GET / profile PUT
+- `lib/db.js` 重写为 JSON 文件存储（用户表 + 验证码表 + 数据目录）
+- `lib/auth.js` 重写为完整认证模块（邮件发送 + 密码哈希 + JWT）
+- `server.js` 新增路由分发（auth + sync + comment）
+- `app.js` 新增约 350 行前端认证模块
+- `style.css` 新增约 200 行登录/资料卡/头像/管理员标签样式
+- `index.html` 新增多步骤登录弹窗、悬浮卡片、编辑资料弹窗、协议弹窗
+- `package.json` 版本号升至 4.0.0-beta，零新增依赖
+- `.gitignore` 新增 `data/` 排除数据库文件
+
+### Security
+- 密码 scrypt 单向哈希 + timingSafeEqual 比对
+- avatar_seed 白名单校验（防 XSS）
+- 验证码使用 crypto.randomInt（非 Math.random）
+- nickname/bio 长度限制（20/60 字符）
+
+---
+
 ## [3.1.1] - 2026-04-12
 
 **代号：SemVer Normalization（版本号规范化）**

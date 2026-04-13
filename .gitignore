@@ -9,3 +9,4 @@ Thumbs.db
 dist/
 .cache/
 .netlify/
+data/

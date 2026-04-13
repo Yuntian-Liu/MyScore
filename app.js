@@ -1,8 +1,492 @@
         // ==================== 数据存储 ====================
         const STORAGE = {
             RECORDS: 'myscore_v51_records',  // 保持与V5.2兼容
-            CUSTOM: 'myscore_v51_custom'
+            CUSTOM: 'myscore_v51_custom',
+            AUTH: 'myscore_auth'
         };
+
+        // ==================== 云端登录与同步 ====================
+        let currentUser = null;
+        let syncTimer = null;
+        let selectedAvatarSeed = 'adventurer';
+        let loginEmailCache = '';
+
+        const AVATAR_OPTIONS = [
+            { seed: 'adventurer', label: '冒险家' },
+            { seed: 'lorelei', label: '精灵' },
+            { seed: 'notionists', label: '手绘' },
+            { seed: 'bottts', label: '机器人' },
+            { seed: 'fun-emoji', label: '表情' },
+            { seed: 'avataaars', label: '插画' },
+            { seed: 'pixel-art', label: '像素' },
+            { seed: 'thumbs', label: '拇指' }
+        ];
+
+        function getAvatarUrl(seed, size) {
+            return 'https://api.dicebear.com/9.x/' + (seed || 'adventurer') + '/svg?size=' + (size || 64);
+        }
+
+        function isLoggedIn() { return currentUser !== null; }
+
+        function showLoginError(msg) {
+            var el = document.getElementById('login-error');
+            if (el) { el.textContent = msg; el.style.display = msg ? 'block' : 'none'; }
+        }
+
+        function updateSendCodeBtn() {
+            var btn = document.getElementById('btn-send-code');
+            var checkbox = document.getElementById('login-agree');
+            if (btn && checkbox) {
+                btn.disabled = !checkbox.checked;
+                btn.style.opacity = checkbox.checked ? '1' : '0.5';
+            }
+        }
+
+        function goToStep(stepId) {
+            showLoginError('');
+            document.querySelectorAll('.login-step').forEach(function(el) {
+                el.classList.remove('active');
+            });
+            var target = document.getElementById(stepId);
+            if (target) target.classList.add('active');
+
+            if (stepId === 'step-password') {
+                var email = document.getElementById('login-email').value.trim();
+                document.getElementById('login-email-display-pw').textContent = email;
+            }
+            if (stepId === 'step-avatar') {
+                renderAvatarGrid('avatar-grid', selectedAvatarSeed, function(seed) {
+                    selectedAvatarSeed = seed;
+                });
+            }
+        }
+
+        function renderAvatarGrid(containerId, currentSeed, onSelect) {
+            var container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = '';
+            AVATAR_OPTIONS.forEach(function(opt) {
+                var div = document.createElement('div');
+                div.className = 'avatar-option' + (opt.seed === currentSeed ? ' selected' : '');
+                div.innerHTML = '<img src="' + getAvatarUrl(opt.seed, 64) + '" alt="' + opt.label + '"><span>' + opt.label + '</span>';
+                div.onclick = function() {
+                    container.querySelectorAll('.avatar-option').forEach(function(el) { el.classList.remove('selected'); });
+                    div.classList.add('selected');
+                    if (onSelect) onSelect(opt.seed);
+                };
+                container.appendChild(div);
+            });
+        }
+
+        function openLoginModal() {
+            var modal = document.getElementById('login-modal');
+            if (!modal) return;
+            document.getElementById('login-email').value = '';
+            document.getElementById('login-code').value = '';
+            document.getElementById('login-password').value = '';
+            document.getElementById('login-agree').checked = false;
+            document.getElementById('reg-nickname').value = '';
+            document.getElementById('reg-bio').value = '';
+            document.getElementById('reg-password').value = '';
+            document.getElementById('reg-password2').value = '';
+            selectedAvatarSeed = 'adventurer';
+            updateSendCodeBtn();
+            showLoginError('');
+            goToStep('step-email');
+            modal.classList.add('active');
+        }
+
+        function closeLoginModal() {
+            var modal = document.getElementById('login-modal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        async function requestLoginCode() {
+            var email = document.getElementById('login-email').value.trim();
+            if (!email || !email.includes('@')) {
+                showLoginError('请输入有效的邮箱地址');
+                return;
+            }
+            var btn = document.getElementById('btn-send-code');
+            btn.disabled = true;
+            btn.textContent = '发送中...';
+            try {
+                var res = await fetch('/api/auth/send-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+                var data = await res.json();
+                if (!res.ok) { showLoginError(data.error || '发送失败'); return; }
+                loginEmailCache = email;
+                document.getElementById('login-email-display').textContent = email;
+                goToStep('step-code');
+            } catch (e) {
+                showLoginError('网络错误，请检查连接');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '发送验证码';
+                updateSendCodeBtn();
+            }
+        }
+
+        async function submitVerifyCode() {
+            var email = loginEmailCache;
+            var code = document.getElementById('login-code').value.trim();
+            if (!code || code.length !== 6) {
+                showLoginError('请输入6位验证码');
+                return;
+            }
+            var btn = document.getElementById('btn-verify');
+            btn.disabled = true;
+            btn.textContent = '验证中...';
+            try {
+                var res = await fetch('/api/auth/login-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, code: code })
+                });
+                var data = await res.json();
+                if (!res.ok) { showLoginError(data.error || '验证失败'); return; }
+                if (data.isNewUser) {
+                    document.getElementById('login-modal-title').textContent = '创建账号';
+                    goToStep('step-avatar');
+                    return;
+                }
+                onLoginSuccess(data.token, data.user);
+            } catch (e) {
+                showLoginError('网络错误，请检查连接');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '验证';
+            }
+        }
+
+        async function submitPasswordLogin() {
+            var email = document.getElementById('login-email').value.trim();
+            var password = document.getElementById('login-password').value;
+            if (!password) { showLoginError('请输入密码'); return; }
+            var btn = document.getElementById('btn-login-pw');
+            btn.disabled = true;
+            btn.textContent = '登录中...';
+            try {
+                var res = await fetch('/api/auth/login-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+                var data = await res.json();
+                if (!res.ok) { showLoginError(data.error || '登录失败'); return; }
+                onLoginSuccess(data.token, data.user);
+            } catch (e) {
+                showLoginError('网络错误，请检查连接');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '登录';
+            }
+        }
+
+        async function submitRegister() {
+            var nickname = document.getElementById('reg-nickname').value.trim();
+            var bio = document.getElementById('reg-bio').value.trim();
+            var password = document.getElementById('reg-password').value;
+            var password2 = document.getElementById('reg-password2').value;
+
+            if (!nickname) { showLoginError('请输入昵称'); return; }
+            if (!password || password.length < 6) { showLoginError('密码至少6位'); return; }
+            if (password !== password2) { showLoginError('两次密码不一致'); return; }
+
+            var btn = document.getElementById('btn-register');
+            btn.disabled = true;
+            btn.textContent = '注册中...';
+            try {
+                var res = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: loginEmailCache,
+                        code: document.getElementById('login-code').value.trim(),
+                        nickname: nickname,
+                        avatarSeed: selectedAvatarSeed,
+                        bio: bio,
+                        password: password
+                    })
+                });
+                var data = await res.json();
+                if (!res.ok) { showLoginError(data.error || '注册失败'); return; }
+                onLoginSuccess(data.token, data.user);
+            } catch (e) {
+                showLoginError('网络错误，请检查连接');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '完成注册';
+            }
+        }
+
+        function onLoginSuccess(token, user) {
+            currentUser = {
+                userId: user.id,
+                uid: user.uid,
+                email: user.email,
+                nickname: user.nickname,
+                avatarSeed: user.avatar_seed,
+                bio: user.bio,
+                isAdmin: user.is_admin,
+                token: token
+            };
+            localStorage.setItem(STORAGE.AUTH, JSON.stringify(currentUser));
+            closeLoginModal();
+            updateLoginButton();
+            pullFromCloud();
+        }
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem(STORAGE.AUTH);
+            updateLoginButton();
+            var card = document.getElementById('profile-card');
+            if (card) card.classList.add('hidden');
+        }
+
+        async function restoreSession() {
+            try {
+                var saved = JSON.parse(localStorage.getItem(STORAGE.AUTH));
+                if (saved && saved.token) {
+                    currentUser = saved;
+                    // Fetch latest profile from server
+                    try {
+                        var res = await fetch('/api/auth/profile', {
+                            headers: { 'Authorization': 'Bearer ' + saved.token }
+                        });
+                        if (res.ok) {
+                            var data = await res.json();
+                            if (data.profile) {
+                                currentUser.nickname = data.profile.nickname;
+                                currentUser.avatarSeed = data.profile.avatar_seed;
+                                currentUser.bio = data.profile.bio;
+                                currentUser.isAdmin = data.profile.is_admin;
+                                currentUser.uid = data.profile.uid;
+                                localStorage.setItem(STORAGE.AUTH, JSON.stringify(currentUser));
+                            }
+                        } else if (res.status === 401) {
+                            logout();
+                            return;
+                        }
+                    } catch {}
+                    updateLoginButton();
+                    pullFromCloud();
+                }
+            } catch {}
+        }
+
+        function updateLoginButton() {
+            var area = document.getElementById('nav-user-area');
+            if (!area) return;
+            if (isLoggedIn()) {
+                area.innerHTML =
+                    '<img class="nav-avatar" id="nav-avatar-img" src="' + getAvatarUrl(currentUser.avatarSeed, 32) + '" alt="avatar" onclick="openLoginModal()" onmouseenter="showProfileCard()" onmouseleave="scheduleHideProfileCard()">' +
+                    '<div class="profile-card hidden" id="profile-card" onmouseenter="cancelHideProfileCard()" onmouseleave="hideProfileCard()">' +
+                        '<div class="profile-card-header">' +
+                            '<img class="profile-card-avatar" id="profile-card-avatar" src="' + getAvatarUrl(currentUser.avatarSeed, 64) + '" alt="">' +
+                            '<div class="profile-card-info">' +
+                                '<div class="profile-card-name">' +
+                                    '<span id="profile-card-nickname">' + escapeHtml(currentUser.nickname || '') + '</span>' +
+                                    (currentUser.isAdmin ? '<span class="admin-badge">管理员</span>' : '') +
+                                '</div>' +
+                                '<div class="profile-card-uid">UID: ' + currentUser.uid + '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="profile-card-bio">' + escapeHtml(currentUser.bio || '这个人很懒，什么都没写') + '</div>' +
+                        '<div class="profile-card-actions">' +
+                            '<button class="profile-card-btn" onclick="openEditProfileModal()">编辑资料</button>' +
+                            '<button class="profile-card-btn profile-card-btn-logout" onclick="logout()">退出登录</button>' +
+                        '</div>' +
+                    '</div>';
+            } else {
+                area.innerHTML =
+                    '<button class="nav-btn login-btn" id="nav-login" type="button" onclick="openLoginModal()">' +
+                        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' +
+                        '<span>登录</span>' +
+                    '</button>';
+            }
+        }
+
+        var profileCardTimer = null;
+        function showProfileCard() {
+            clearTimeout(profileCardTimer);
+            var card = document.getElementById('profile-card');
+            if (card) card.classList.remove('hidden');
+        }
+        function hideProfileCard() {
+            var card = document.getElementById('profile-card');
+            if (card) card.classList.add('hidden');
+        }
+        function scheduleHideProfileCard() {
+            profileCardTimer = setTimeout(hideProfileCard, 200);
+        }
+        function cancelHideProfileCard() {
+            clearTimeout(profileCardTimer);
+            showProfileCard();
+        }
+
+        function openEditProfileModal() {
+            hideProfileCard();
+            var modal = document.getElementById('edit-profile-modal');
+            if (!modal) return;
+            document.getElementById('edit-nickname').value = currentUser.nickname || '';
+            document.getElementById('edit-bio').value = currentUser.bio || '';
+            renderAvatarGrid('edit-avatar-grid', currentUser.avatarSeed, function(seed) {
+                currentUser._pendingAvatarSeed = seed;
+            });
+            currentUser._pendingAvatarSeed = currentUser.avatarSeed;
+            var errEl = document.getElementById('edit-profile-error');
+            if (errEl) { errEl.textContent = ''; errEl.style.display = 'none'; }
+            modal.classList.add('active');
+        }
+
+        function closeEditProfileModal() {
+            var modal = document.getElementById('edit-profile-modal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        async function saveProfile() {
+            var nickname = document.getElementById('edit-nickname').value.trim();
+            var bio = document.getElementById('edit-bio').value.trim();
+            if (!nickname) {
+                var errEl = document.getElementById('edit-profile-error');
+                if (errEl) { errEl.textContent = '昵称不能为空'; errEl.style.display = 'block'; }
+                return;
+            }
+            try {
+                var res = await fetch('/api/auth/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + currentUser.token
+                    },
+                    body: JSON.stringify({
+                        nickname: nickname,
+                        avatar_seed: currentUser._pendingAvatarSeed || currentUser.avatarSeed,
+                        bio: bio
+                    })
+                });
+                if (!res.ok) {
+                    var data = await res.json();
+                    var errEl = document.getElementById('edit-profile-error');
+                    if (errEl) { errEl.textContent = data.error || '保存失败'; errEl.style.display = 'block'; }
+                    return;
+                }
+                var data = await res.json();
+                currentUser.nickname = data.profile.nickname;
+                currentUser.avatarSeed = data.profile.avatar_seed;
+                currentUser.bio = data.profile.bio;
+                localStorage.setItem(STORAGE.AUTH, JSON.stringify(currentUser));
+                updateLoginButton();
+                closeEditProfileModal();
+            } catch (e) {
+                var errEl = document.getElementById('edit-profile-error');
+                if (errEl) { errEl.textContent = '网络错误'; errEl.style.display = 'block'; }
+            }
+        }
+
+        function openAgreementModal(type) {
+            var modal = document.getElementById('agreement-modal');
+            if (!modal) return;
+            var title = document.getElementById('agreement-modal-title');
+            var body = document.getElementById('agreement-modal-body');
+            title.textContent = type === 'privacy' ? '隐私政策' : '用户协议';
+            body.innerHTML = type === 'privacy' ? PRIVACY_POLICY_HTML : USER_AGREEMENT_HTML;
+            modal.classList.add('active');
+        }
+
+        function closeAgreementModal() {
+            var modal = document.getElementById('agreement-modal');
+            if (modal) modal.classList.remove('active');
+        }
+
+        var USER_AGREEMENT_HTML = '<h3>一、服务描述</h3><p>MyScore（以下简称"本服务"）是一款成绩记录与管理工具，提供成绩录入、趋势分析、AI 评价反馈及云端数据同步等功能。本服务由碳碳四键（以下简称"我们"）开发并运营。</p><h3>二、用户账号</h3><p>1. 您需要通过邮箱验证码注册账号以使用云端同步功能。未登录状态下，数据仅保存在浏览器本地存储中。</p><p>2. 您应妥善保管账号信息和密码，因账号信息泄露导致的损失由您自行承担。</p><p>3. 您不得将账号转让、出借给他人使用。</p><h3>三、用户行为规范</h3><p>1. 您承诺不利用本服务从事任何违反法律法规的活动。</p><p>2. 您不得通过技术手段干扰本服务的正常运行。</p><p>3. 您不得批量注册账号或恶意占用系统资源。</p><h3>四、知识产权</h3><p>本服务的所有内容（包括但不限于界面设计、代码、文案、图标）均受知识产权法保护。未经我们书面许可，您不得复制、修改或分发相关内容。</p><h3>五、免责声明</h3><p>1. 本服务按"现状"提供，我们不对其适用性、可靠性作任何明示或暗示的保证。</p><p>2. 因不可抗力、系统故障等原因导致的数据丢失，我们不承担责任，但我们会尽合理努力保障数据安全。</p><p>3. AI 评价内容仅供参考，不构成任何学术建议或评价标准。</p><h3>六、协议变更</h3><p>我们有权在必要时修改本协议条款。变更后的协议将在本页面更新，继续使用本服务即视为同意变更后的条款。</p><h3>七、适用法律</h3><p>本协议适用中华人民共和国法律。如发生争议，双方应友好协商解决。</p>';
+
+        var PRIVACY_POLICY_HTML = '<h3>一、信息收集</h3><p>我们收集以下信息以提供服务：</p><p>1. <strong>账号信息</strong>：邮箱地址、昵称、头像选择。</p><p>2. <strong>成绩数据</strong>：您录入的考试成绩、自定义考试类型、目标分数。</p><p>3. <strong>使用记录</strong>：AI 评价对话历史（最近 30 条）。</p><p>我们不会收集您的真实姓名、身份证号、手机号等敏感信息。</p><h3>二、信息使用</h3><p>您的信息仅用于以下目的：</p><p>1. 提供云端数据同步服务，使您可以在不同设备上访问成绩数据。</p><p>2. 生成 AI 学习评价与陪学反馈。</p><p>3. 改善产品体验和服务质量。</p><p>我们不会将您的数据出售或分享给第三方。</p><h3>三、信息存储</h3><p>1. 未登录状态下，所有数据存储在您的浏览器本地（localStorage）。</p><p>2. 登录后，数据同步至我们的服务器并加密存储。</p><p>3. 服务器部署在中国境内。</p><h3>四、信息保护</h3><p>1. 密码采用单向哈希加密存储，我们无法查看您的明文密码。</p><p>2. 身份认证采用 JWT 令牌机制，有效期为 30 天。</p><p>3. 所有 API 通信采用 HTTPS 加密传输。</p><h3>五、用户权利</h3><p>1. 您可以随时通过"导出数据"功能下载您的全部数据。</p><p>2. 您可以随时退出登录并清除本地数据。</p><p>3. 如需删除云端数据，请通过 GitHub 仓库 Issues 联系我们。</p><h3>六、本地存储</h3><p>本服务使用浏览器 localStorage 存储数据，不使用第三方 Cookie。localStorage 数据仅存在于您的设备上，我们无法远程访问。</p><h3>七、政策更新</h3><p>本隐私政策可能在必要时更新。重大变更将通过站内通知告知您。继续使用本服务即视为同意更新后的政策。</p><p style="margin-top:1rem;color:#9ca3af;">最后更新：2026 年 4 月</p>';
+
+        // ==================== Cloud Sync (unchanged) ====================
+
+        function scheduleCloudSync() {
+            if (!isLoggedIn()) return;
+            clearTimeout(syncTimer);
+            syncTimer = setTimeout(pushToCloud, 500);
+        }
+
+        async function pushToCloud() {
+            if (!isLoggedIn()) return;
+            try {
+                await fetch('/api/sync', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + currentUser.token
+                    },
+                    body: JSON.stringify(gatherAllLocalStorage())
+                });
+            } catch (e) {
+                console.warn('Cloud sync failed:', e);
+            }
+        }
+
+        async function pullFromCloud() {
+            if (!isLoggedIn()) return;
+            try {
+                var res = await fetch('/api/sync', {
+                    headers: { 'Authorization': 'Bearer ' + currentUser.token }
+                });
+                if (res.status === 401) { logout(); return; }
+                if (!res.ok) return;
+                var result = await res.json();
+                if (result.data) mergeCloudData(result.data);
+            } catch (e) {
+                console.warn('Cloud pull failed:', e);
+            }
+        }
+
+        function gatherAllLocalStorage() {
+            return {
+                records: readStorageJson(STORAGE.RECORDS, []),
+                custom: readStorageJson(STORAGE.CUSTOM, {}),
+                goals: readStorageJson('myscore_goals', {}),
+                ai_style: localStorage.getItem('myscore_ai_style') || 'storm',
+                tutuer_history: readStorageJson('myscore_tutuer_history', [])
+            };
+        }
+
+        function mergeCloudData(cloudData) {
+            if (cloudData.records && Array.isArray(cloudData.records) && cloudData.records.length > 0) {
+                var localRecords = getRecords();
+                var merged = cloudData.records.slice();
+                var cloudIds = new Set(merged.map(function(r) { return r.id; }));
+                localRecords.forEach(function(r) {
+                    if (!cloudIds.has(r.id)) merged.push(r);
+                });
+                merged.sort(function(a, b) { return b.id - a.id; });
+                saveRecords(merged);
+            }
+            if (cloudData.custom && typeof cloudData.custom === 'object') {
+                var localCustom = getCustom();
+                var mergedCustom = Object.assign({}, cloudData.custom, localCustom);
+                saveCustom(mergedCustom);
+            }
+            if (cloudData.goals && typeof cloudData.goals === 'object') {
+                try {
+                    var localGoals = JSON.parse(localStorage.getItem('myscore_goals') || '{}');
+                    var mergedGoals = Object.assign({}, cloudData.goals, localGoals);
+                    localStorage.setItem('myscore_goals', JSON.stringify(mergedGoals));
+                } catch {}
+            }
+            if (cloudData.ai_style) {
+                localStorage.setItem('myscore_ai_style', cloudData.ai_style);
+                currentAiStyle = cloudData.ai_style;
+            }
+            renderDashboard();
+        }
+
         const COMMENT_API_ENDPOINT = (() => {
             const meta = document.querySelector('meta[name="myscore-comment-endpoint"]');
             return meta && meta.content ? meta.content.trim() : '/api/comment';
@@ -22,6 +506,7 @@
             var prevStyle = currentAiStyle;
             currentAiStyle = styleKey;
             localStorage.setItem('myscore_ai_style', styleKey);
+            scheduleCloudSync();
             // 更新按钮高亮
             document.querySelectorAll('#ai-style-bar button').forEach(function(btn) {
                 btn.style.background = 'rgba(255,251,245,0.95)';
@@ -268,6 +753,7 @@
 
         function saveRecords(r) {
             localStorage.setItem(STORAGE.RECORDS, JSON.stringify(r));
+            scheduleCloudSync();
         }
 
         function getCustom() {
@@ -277,6 +763,7 @@
 
         function saveCustom(c) {
             localStorage.setItem(STORAGE.CUSTOM, JSON.stringify(c));
+            scheduleCloudSync();
         }
 
         function allExams() {
@@ -742,6 +1229,7 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
         function clearAllRecords() {
             if (!confirm('确定清空所有记录？此操作不可恢复！')) return;
             localStorage.removeItem(STORAGE.RECORDS);
+            scheduleCloudSync();
             renderDashboard();
         }
 
@@ -1187,7 +1675,7 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
                 alert('暂无数据可导出！');
                 return;
             }
-            const data = { version: '3.1.1', date: new Date().toISOString(), records, custom };
+            const data = { version: '4.0.0-beta', date: new Date().toISOString(), records, custom };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -1331,6 +1819,7 @@ function saveGoal(examType, target) {
         var goals = JSON.parse(localStorage.getItem('myscore_goals') || '{}');
         goals[examType] = target;
         localStorage.setItem('myscore_goals', JSON.stringify(goals));
+        scheduleCloudSync();
     } catch {}
 }
 
@@ -1588,13 +2077,44 @@ function pokeTeacher() {
     }, 3000);
 }
 // ==================== 版本日志与使用文档 ====================
-const APP_VERSION = '3.1.1';
+const APP_VERSION = '4.0.0-beta';
 const CHANGELOG_STORAGE_KEY = 'myscore_changelog_seen_' + APP_VERSION;
-const CHANGELOG_PLACEHOLDER = `📝 MyScore V3.1.1 更新日志
-发布时间：2026-04-12
-代号：SemVer Normalization（版本号规范化）
+const CHANGELOG_PLACEHOLDER = `📝 MyScore V4.0.0-beta 更新日志
+发布时间：2026-04-13
+代号：Account System（账号系统）
 
-	A. 版本号规范化 (Version Number Normalization)
+	A. 用户注册与登录 (User Registration & Login)
+	• 邮箱验证码登录：输入邮箱 → 接收 6 位验证码 → 验证身份。
+	• 密码登录：已注册用户可直接输入密码快速登录。
+	• 注册流程（新用户）：验证码 → 选择头像 → 填写昵称与个性签名 → 设置密码 → 自动生成 UID。
+	• 用户协议与隐私政策：发送验证码前需勾选同意。
+
+	B. 用户资料系统 (User Profile)
+	• 头像选择：8 款 DiceBear 开源头像，风格多样（冒险家、精灵、手绘、像素等）。
+	• 昵称与个性签名：注册时填写，登录后可随时编辑。
+	• UID 系统：从 1100000 起自增，首个注册用户自动成为管理员。
+	• 管理员标识：管理员昵称旁显示金色渐变"管理员"胶囊标签。
+
+	C. 云端数据同步 (Cloud Data Sync)
+	• 登录后自动同步：成绩、自定义考试、目标、AI 风格等数据实时上传云端。
+	• 跨设备访问：换手机或换电脑登录同一账号，数据自动拉取合并。
+	• 本地优先：未登录时所有数据照常保存在浏览器 localStorage，不影响使用。
+
+	D. UI 新组件 (New UI Components)
+	• 多步骤登录弹窗：毛玻璃效果、步骤间丝滑滑动过渡动画。
+	• 头像选择网格：点击选中有渐变边框 + 缩放动画。
+	• 悬浮资料卡片：鼠标移到右上角头像弹出，显示头像、昵称、UID、签名。
+	• 编辑资料弹窗：随时修改头像、昵称、个性签名。
+	• 用户协议/隐私政策弹窗：完整法律文本，支持滚动阅读。
+
+	E. 安全特性 (Security)
+	• 密码使用 scrypt 单向哈希加密存储，服务器无法查看明文。
+	• JWT 令牌认证，30 天有效期。
+	• 验证码使用 crypto.randomInt 生成（密码学安全）。
+	• 后端输入校验：头像、昵称、签名均有类型和长度验证。
+
+	感谢您持续使用 MyScore，V4.0.0-beta ✨
+	Copyright © LYT, 2026 All Rights Reserved`;
 	• 将项目历史版本号统一为语义化版本号（SemVer: MAJOR.MINOR.PATCH）。
 	• 重新划分三大阶段：1.x（纯成绩管理）→ 2.x（AI 赋能）→ 3.x（双平台工程化）。
 	• 重命名 Versions_history 文件夹中所有历史版本文件为三段式编号。
@@ -1794,6 +2314,7 @@ function closeInfoModal() {
 
 function acknowledgeChangelog() {
     localStorage.setItem(CHANGELOG_STORAGE_KEY, '1');
+    scheduleCloudSync();
     closeInfoModal();
 }
 
@@ -1836,6 +2357,7 @@ function loadTutuerHistory() {
 
 function saveTutuerHistory() {
     localStorage.setItem(TUTUER_HISTORY_KEY, JSON.stringify(tutuerMessages.slice(-30)));
+    scheduleCloudSync();
 }
 
 function clearTutuerHistory() {
@@ -2072,6 +2594,7 @@ document.addEventListener('keydown', function (event) {
 document.addEventListener('DOMContentLoaded', updatePetMood);
         // ==================== 初始化 ====================
         document.addEventListener('DOMContentLoaded', function () {
+            restoreSession();
             renderDashboard();
             maybeShowChangelogOnFirstOpen();
             loadTutuerHistory();
@@ -2285,7 +2808,7 @@ function renderReportPreview() {
             html += `</div></div>`;
         }
         
-        html += `<div style="margin-top:1rem;text-align:center;font-size:0.75rem;color:#9ca3af;">Generated by MyScore V3.1.1</div>`;
+        html += `<div style="margin-top:1rem;text-align:center;font-size:0.75rem;color:#9ca3af;">Generated by MyScore V4.0.0-beta</div>`;
         container.innerHTML = html;
     }
 }
@@ -2502,7 +3025,7 @@ function downloadScorecardImage(records) {
     ctx.fillStyle = '#9ca3af';
     ctx.font = '12px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText('Generated by MyScore V3.1.1', W / 2, totalH - 25);
+    ctx.fillText('Generated by MyScore V4.0.0-beta', W / 2, totalH - 25);
 
     // 下载
     const dataURL = canvas.toDataURL('image/png');
@@ -2711,7 +3234,7 @@ function downloadShareCardDirect(records) {
     ctx.fillStyle = '#98a0b4';
     ctx.font = '11px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText('Generated by MyScore V3.1.1', W / 2, H - 16);
+    ctx.fillText('Generated by MyScore V4.0.0-beta', W / 2, H - 16);
 
     // 下载
     const dataURL = canvas.toDataURL('image/png');
@@ -2785,7 +3308,7 @@ async function downloadTextReport(records) {
         content += '\n───────────────────────────────────────\n\n';
     }
     
-    content += 'Powered by MyScore V3.1.1\n';
+    content += 'Powered by MyScore V4.0.0-beta\n';
     
     // 下载文本文件
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });

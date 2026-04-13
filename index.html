@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="myscore-comment-endpoint" content="/api/comment">
-    <title>MyScore V3.1.1 - AI 智能成绩单 | 碳碳四键的个人开发应用实践</title>
+    <title>MyScore V4.0.0-beta - AI 智能成绩单 | 碳碳四键的个人开发应用实践</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -43,6 +43,29 @@
                         <button class="nav-btn" id="nav-entry" onclick="showPage('entry')">录入成绩</button>
                         <button class="nav-btn" id="nav-custom" onclick="showPage('custom')">自定义考试</button>
                         <button class="nav-btn doc-btn" type="button" onclick="openInfoModal('guide')">使用文档</button>
+                        <div class="nav-user-area" id="nav-user-area">
+                            <button class="nav-btn login-btn" id="nav-login" type="button" onclick="openLoginModal()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                <span>登录</span>
+                            </button>
+                            <div class="profile-card hidden" id="profile-card">
+                                <div class="profile-card-header">
+                                    <img class="profile-card-avatar" id="profile-card-avatar" src="" alt="">
+                                    <div class="profile-card-info">
+                                        <div class="profile-card-name">
+                                            <span id="profile-card-nickname"></span>
+                                            <span class="admin-badge hidden" id="profile-card-admin">管理员</span>
+                                        </div>
+                                        <div class="profile-card-uid" id="profile-card-uid"></div>
+                                    </div>
+                                </div>
+                                <div class="profile-card-bio" id="profile-card-bio"></div>
+                                <div class="profile-card-actions">
+                                    <button class="profile-card-btn" onclick="openEditProfileModal()">编辑资料</button>
+                                    <button class="profile-card-btn profile-card-btn-logout" onclick="logout()">退出登录</button>
+                                </div>
+                            </div>
+                        </div>
                     </nav>
                 </div>
             </div>
@@ -292,6 +315,109 @@
             </div>
         </div>
 
+        <!-- 登录/注册模态框 -->
+        <div id="login-modal" class="modal-overlay" onclick="closeModalOnBackdrop(event)">
+            <div class="modal-content login-modal-content" onclick="event.stopPropagation()">
+                <div class="login-modal-header">
+                    <h2 class="gradient-text login-modal-title" id="login-modal-title">登录 MyScore</h2>
+                    <button onclick="closeLoginModal()" class="login-modal-close">&times;</button>
+                </div>
+
+                <div class="login-steps-wrapper">
+                    <!-- Step 0: 邮箱输入 -->
+                    <div class="login-step active" id="step-email">
+                        <label class="login-label">邮箱地址</label>
+                        <input type="email" id="login-email" class="input login-input" placeholder="your@email.com">
+                        <label class="login-checkbox-row">
+                            <input type="checkbox" id="login-agree" onchange="updateSendCodeBtn()">
+                            <span>我已阅读并同意<a href="javascript:void(0)" onclick="openAgreementModal('agreement')" class="agreement-link">《用户协议》</a>和<a href="javascript:void(0)" onclick="openAgreementModal('privacy')" class="agreement-link">《隐私政策》</a></span>
+                        </label>
+                        <button class="btn-primary" onclick="requestLoginCode()" id="btn-send-code" disabled style="width:100%;margin-top:0.5rem;opacity:0.5;">发送验证码</button>
+                        <div class="login-divider"><span>或</span></div>
+                        <button class="btn-secondary" onclick="goToStep('step-password')" style="width:100%;">密码登录</button>
+                        <p class="login-hint">我们将向此邮箱发送验证码。若该邮箱尚未注册，验证通过后将自动为您创建账号。</p>
+                    </div>
+
+                    <!-- Step 1a: 验证码 -->
+                    <div class="login-step" id="step-code">
+                        <p class="login-code-sent">验证码已发送至 <strong id="login-email-display"></strong></p>
+                        <label class="login-label">验证码</label>
+                        <input type="text" id="login-code" class="input login-input login-code-input" maxlength="6" placeholder="6位验证码">
+                        <button class="btn-primary" onclick="submitVerifyCode()" id="btn-verify" style="width:100%;margin-top:1rem;">验证</button>
+                        <button class="btn-secondary" onclick="goToStep('step-email')" style="width:100%;margin-top:0.5rem;">重新输入邮箱</button>
+                    </div>
+
+                    <!-- Step 1b: 密码登录 -->
+                    <div class="login-step" id="step-password">
+                        <p class="login-code-sent">账号 <strong id="login-email-display-pw"></strong></p>
+                        <label class="login-label">密码</label>
+                        <input type="password" id="login-password" class="input login-input" placeholder="输入密码">
+                        <button class="btn-primary" onclick="submitPasswordLogin()" id="btn-login-pw" style="width:100%;margin-top:1rem;">登录</button>
+                        <button class="btn-secondary" onclick="goToStep('step-email')" style="width:100%;margin-top:0.5rem;">验证码登录</button>
+                    </div>
+
+                    <!-- Step 2a: 选择头像 -->
+                    <div class="login-step" id="step-avatar">
+                        <p class="login-step-desc">选择一个头像</p>
+                        <div class="avatar-grid" id="avatar-grid"></div>
+                        <button class="btn-primary" onclick="goToStep('step-info')" id="btn-next-info" style="width:100%;margin-top:1rem;">下一步</button>
+                        <button class="btn-secondary" onclick="goToStep('step-email')" style="width:100%;margin-top:0.5rem;">返回</button>
+                    </div>
+
+                    <!-- Step 2b: 昵称 + 签名 -->
+                    <div class="login-step" id="step-info">
+                        <label class="login-label">昵称 <span style="color:#ef4444;">*</span></label>
+                        <input type="text" id="reg-nickname" class="input login-input" placeholder="给自己起个名字" maxlength="20">
+                        <label class="login-label" style="margin-top:1rem;">个性签名 <span style="color:#9ca3af;font-weight:400;">(选填)</span></label>
+                        <input type="text" id="reg-bio" class="input login-input" placeholder="一句话介绍自己" maxlength="60">
+                        <button class="btn-primary" onclick="goToStep('step-setpwd')" style="width:100%;margin-top:1rem;">下一步</button>
+                        <button class="btn-secondary" onclick="goToStep('step-avatar')" style="width:100%;margin-top:0.5rem;">返回</button>
+                    </div>
+
+                    <!-- Step 2c: 设置密码 -->
+                    <div class="login-step" id="step-setpwd">
+                        <label class="login-label">设置密码 <span style="color:#9ca3af;font-weight:400;">(至少6位)</span></label>
+                        <input type="password" id="reg-password" class="input login-input" placeholder="输入密码">
+                        <label class="login-label" style="margin-top:1rem;">确认密码</label>
+                        <input type="password" id="reg-password2" class="input login-input" placeholder="再次输入密码">
+                        <button class="btn-primary" onclick="submitRegister()" id="btn-register" style="width:100%;margin-top:1rem;">完成注册</button>
+                        <button class="btn-secondary" onclick="goToStep('step-info')" style="width:100%;margin-top:0.5rem;">返回</button>
+                    </div>
+                </div>
+
+                <p id="login-error" class="login-error"></p>
+            </div>
+        </div>
+
+        <!-- 编辑资料模态框 -->
+        <div id="edit-profile-modal" class="modal-overlay" onclick="closeModalOnBackdrop(event)">
+            <div class="modal-content" onclick="event.stopPropagation()" style="max-width:420px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                    <h2 style="font-size:1.5rem;font-weight:700;" class="gradient-text">编辑资料</h2>
+                    <button onclick="closeEditProfileModal()" style="background:none;border:none;font-size:1.5rem;color:#9ca3af;cursor:pointer;">&times;</button>
+                </div>
+                <label class="login-label">头像</label>
+                <div class="avatar-grid" id="edit-avatar-grid"></div>
+                <label class="login-label" style="margin-top:1rem;">昵称</label>
+                <input type="text" id="edit-nickname" class="input login-input" placeholder="昵称" maxlength="20">
+                <label class="login-label" style="margin-top:1rem;">个性签名</label>
+                <input type="text" id="edit-bio" class="input login-input" placeholder="一句话介绍自己" maxlength="60">
+                <button class="btn-primary" onclick="saveProfile()" style="width:100%;margin-top:1.5rem;">保存</button>
+                <p id="edit-profile-error" class="login-error"></p>
+            </div>
+        </div>
+
+        <!-- 用户协议/隐私政策模态框 -->
+        <div id="agreement-modal" class="modal-overlay" onclick="closeModalOnBackdrop(event)">
+            <div class="modal-content" onclick="event.stopPropagation()" style="max-width:600px;max-height:80vh;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+                    <h2 style="font-size:1.25rem;font-weight:700;color:#111827;" id="agreement-modal-title">用户协议</h2>
+                    <button onclick="closeAgreementModal()" style="background:none;border:none;font-size:1.5rem;color:#9ca3af;cursor:pointer;">&times;</button>
+                </div>
+                <div id="agreement-modal-body" style="max-height:60vh;overflow-y:auto;font-size:0.9rem;color:#374151;line-height:1.8;"></div>
+            </div>
+        </div>
+
     <footer class="site-footer">
         <div class="footer-shell">
             <div class="footer-top">
@@ -307,7 +433,7 @@
                         </svg>
                     </span>
                     <div>
-                        <div class="footer-title">MyScore V3.1.1</div>
+                        <div class="footer-title">MyScore V4.0.0-beta</div>
                         <div class="footer-desc">碳碳四键的个人开发实践项目 · 把成绩记录、趋势和陪学反馈收进一个更顺手的仪表盘。</div>
                     </div>
                 </div>
@@ -324,7 +450,7 @@
                         <span class="footer-pill-icon" style="background:#fff0e8;color:#e26d4a;">
                             <svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3.2v13.6M3.2 10h13.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                         </span>
-                        <span><strong>版本</strong> V3.1.1</span>
+                        <span><strong>版本</strong> V4.0.0-beta</span>
                     </span>
 
                     <a class="footer-link-pill" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">

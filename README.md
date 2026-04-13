@@ -1,9 +1,9 @@
 ﻿<div align="center">
 
-# MyScore - AI 智能成绩管理系统 · V3.1.1
+# MyScore - AI 智能成绩管理系统 · V4.0.0-beta
 
 <p>
-    <img src="https://img.shields.io/badge/v3.1.1-SemVer_Normalization-ff8a63?style=flat-square&logo=rocket&logoColor=white" alt="Version">
+    <img src="https://img.shields.io/badge/v4.0.0--beta-Account_System-ff8a63?style=flat-square&logo=rocket&logoColor=white" alt="Version">
     <img src="https://img.shields.io/badge/Model-DeepSeek-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
     <img src="https://img.shields.io/badge/Deploy-Netlify_%2B_Zeabur-5468ff?style=flat-square&logo=vercel&logoColor=white" alt="Deploy">
     <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=flat-square" alt="License">
@@ -13,11 +13,20 @@
 
 </div>
 
-一个功能完善且具备 **AI 交互能力** 的考试成绩管理系统。当前为 **V3.1.1**，已统一为语义化版本号（SemVer），新增 AI 评价风格切换、目标追踪功能，并修复了密钥安全问题。
+一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V4.0.0-beta**，新增用户注册登录、云端数据同步、用户资料系统，实现跨设备数据访问。
 
 ## 🔔 最新版本速览
 
-### V3.1.1 (Current)
+### V4.0.0-beta (Current)
+- ✅ **账号系统**：邮箱验证码注册/登录 + 密码登录，支持用户资料管理。
+- ✅ **云端数据同步**：登录后成绩数据自动上传云端，换设备登录数据不丢失。
+- ✅ **用户资料**：头像（DiceBear）、昵称、个性签名、UID 系统。
+- ✅ **管理员系统**：首个注册用户自动成为管理员，显示金色胶囊标签。
+- ✅ **UI 升级**：多步骤登录弹窗、悬浮资料卡片、头像选择网格、编辑资料弹窗。
+- ✅ **用户协议与隐私政策**：完整的法律文本弹窗。
+- ✅ **零新增依赖**：JWT 手写实现，密码用 Node.js 内置 crypto，JSON 文件存储。
+
+### V3.1.1
 - ✅ **版本号规范化**：将历史版本号统一为语义化版本号（SemVer: MAJOR.MINOR.PATCH），创建 CHANGELOG.md。
 
 ### V3.1.0
@@ -79,6 +88,15 @@
 
 ## ✨ 核心特性
 
+### 👤 用户系统 (4.0.0-beta 新增)
+- **邮箱验证码登录**: 输入邮箱 → 接收 6 位验证码 → 验证身份。
+- **密码登录**: 已注册用户可直接输入密码快速登录。
+- **注册流程**: 验证码 → 选择头像 → 填写昵称与签名 → 设置密码 → 生成 UID。
+- **云端同步**: 登录后数据自动同步至云端，换设备登录数据不丢失。
+- **用户资料**: DiceBear 头像、昵称、个性签名，随时可编辑。
+- **管理员系统**: 首用户自动成为管理员，昵称旁显示金色胶囊标签。
+- **悬浮资料卡**: 鼠标移到右上角头像弹出完整资料信息。
+
 ### 🤖 AI 智能交互 (2.x 新增)
 - **毒舌老师**: 每次录入成绩，AI 都会根据你的分数走势（进步/退步）给出犀利评价。
 - **回怼模式**: 觉得老师说得不对？点击 **"💬 不服/回嘴"** 按钮，和 AI 展开辩论！它会根据你的理由进行更有趣的反击。
@@ -110,7 +128,8 @@
 ### 📊 数据可视化 & 管理 (3.0.0 持续升级)
 - **趋势图表**: Chart.js 绘制精美成绩曲线
 - **报告导出**: 支持生成成绩单卡片/详细报告/学习总结，预览与导出图均已升级为 V8.0 新视觉
-- **数据安全**: 浏览器 LocalStorage 本地存储，隐私无忧
+- **云端同步**: 登录后自动同步，跨设备访问（4.0.0 新增）
+- **数据安全**: 浏览器 LocalStorage 本地存储 + 服务端加密同步
 - **备份恢复**: 支持 JSON 格式一键导出/导入
 
 ---
@@ -129,11 +148,15 @@
 4. 仓库已内置 `netlify.toml`，会将 `/api/comment` 自动转发到 Netlify Function。
 5. 等待部署完成，访问你的 Netlify 域名即可。
 
-### 2. 部署到 Zeabur
+### 2. 部署到 Zeabur（完整功能）
 1. 直接使用同一个 GitHub 仓库创建项目。
-2. 在 Zeabur 环境变量中同样配置 `AI_API_KEY`。
+2. 在 Zeabur 环境变量中配置：
+    - `AI_API_KEY` — DeepSeek API Key（AI 评价功能）
+    - `JWT_SECRET` — 随机长字符串（令牌加密，**必须设置**）
+    - `RESEND_API_KEY` — Resend API Key（发送验证码邮件）
+    - `RESEND_FROM` — 发件人地址，如 `MyScore <noreply@yourdomain.com>`
 3. 仓库已包含 `server.js`、`package.json` 与 `zbpack.json`，默认启动命令为 `npm start`。
-4. Zeabur 将直接提供 `/api/comment` 接口，无需额外改前端代码。
+4. Zeabur 将提供完整功能：AI 评价 + 用户系统 + 云端同步。
 
 ### 3. 日常使用
 1. **录入成绩**: 选择考试类型 -> 填写日期 -> 录入分数 -> 保存。
@@ -156,7 +179,9 @@ MyScore/
 ├── DEPLOYMENT.md           # 双平台部署说明
 ├── start-local.bat         # 本地开发启动脚本（不提交到 git）
 ├── lib/
-│   └── aiComment.js        # 共享 AI 逻辑 (CORS + prompt + API 调用)
+│   ├── aiComment.js        # 共享 AI 逻辑 (CORS + prompt + API 调用)
+│   ├── auth.js             # 认证逻辑（验证码、密码、JWT）
+│   └── db.js               # JSON 文件数据库
 ├── netlify/
 │   └── functions/
 │       └── comment.js      # Netlify Serverless 函数
@@ -165,7 +190,15 @@ MyScore/
 
 ## 🎯 版本历史
 
-### V3.1.1 (当前版本)
+### V4.0.0-beta (当前版本)
+- ✅ 用户注册/登录系统（邮箱验证码 + 密码）。
+- ✅ 云端数据同步（跨设备访问）。
+- ✅ 用户资料（头像、昵称、签名、UID）。
+- ✅ 管理员系统（金色胶囊标签）。
+- ✅ 用户协议与隐私政策。
+- ✅ 零新增 npm 依赖。
+
+### V3.1.1
 - ✅ 版本号规范化：将历史版本号统一为语义化版本号（SemVer），创建 CHANGELOG.md。
 
 ### V3.1.0
@@ -227,10 +260,13 @@ MyScore/
 
 ## 📝 注意事项
 
-- **API Key 安全**: 请务必在 Netlify 环境变量中配置 Key，不要直接写在代码里。
-- **双平台隔离原则**: Netlify 与 Zeabur 的环境变量互不影响，真正决定调用哪边的是前端请求的接口地址。
-- **统一接口入口**: 当前前端默认请求 `/api/comment`，Netlify 通过 rewrite 映射，Zeabur 由 Node 服务直接提供。
-- **数据兼容性**: 2.x 数据与 1.x 格式完全兼容，直接导入旧版备份即可。
+- **JWT_SECRET 必须设置**: 不设置将使用公开默认值，任何人可伪造令牌冒充管理员。
+- **账号系统仅 Zeabur**: Netlify 版本仅支持 AI 评价，不支持登录和云同步。
+- **API Key 安全**: 请务必在环境变量中配置 Key，不要直接写在代码里。
+- **双平台隔离原则**: Netlify 与 Zeabur 的环境变量互不影响。
+- **数据兼容性**: 4.0 与 3.x 数据格式完全兼容，旧数据登录后自动同步到云端。
+- **本地优先**: 不登录也能正常使用，数据保存在 localStorage。
+- **零依赖**: 整个项目不需要 npm install，所有功能使用 Node.js 内置模块实现。
 - **备案信息**: 若迁移至自有服务器并面向中国大陆访问，请按监管要求在页脚悬挂备案号并链接工信部备案系统。
 
 ## 📄 许可证
