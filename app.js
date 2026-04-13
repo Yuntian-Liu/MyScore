@@ -2114,7 +2114,7 @@ const CHANGELOG_PLACEHOLDER = `📝 MyScore V4.0.0-beta 更新日志
 	• 后端输入校验：头像、昵称、签名均有类型和长度验证。
 
 	感谢您持续使用 MyScore，V4.0.0-beta ✨
-	Copyright © LYT, 2026 All Rights Reserved`;
+	Copyright © LYT, 2026 All Rights Reserved
 	• 将项目历史版本号统一为语义化版本号（SemVer: MAJOR.MINOR.PATCH）。
 	• 重新划分三大阶段：1.x（纯成绩管理）→ 2.x（AI 赋能）→ 3.x（双平台工程化）。
 	• 重命名 Versions_history 文件夹中所有历史版本文件为三段式编号。
