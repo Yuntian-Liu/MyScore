@@ -2175,95 +2175,267 @@ const CHANGELOG_PLACEHOLDER = `
   </div>
 </div>`;
 
-const GUIDE_PLACEHOLDER = `MyScore 使用指南
-✨ 核心特性
+const GUIDE_PLACEHOLDER = `
+<div class=”guide-entry”>
 
-🤖 AI 智能交互 (2.x 新增)
-• 毒舌老师: 每次录入成绩，AI 都会根据你的分数走势（进步/退步）给出犀利评价。
-• 回怼模式: 觉得老师说得不对？点击 "💬 不服/回嘴" 按钮，和 AI 展开辩论！它会根据你的理由进行更有趣的反击。
-• 桌面宠物: 右下角的 Emoji 老师会根据你的最近成绩自动变脸（😎 考好了 / 😡 考砸了），点击还能“戳一戳”互动。
+  <!-- 快速上手 -->
+  <div class=”guide-section” style=”animation-delay:0s;”>
+    <div class=”guide-section-title”>
+      <span class=”guide-icon” style=”background:linear-gradient(135deg,#10b981,#3b82f6);”>🚀</span>
+      快速上手
+    </div>
+    <ol class=”guide-steps”>
+      <li>录入成绩：选择考试类型 → 填写日期 → 输入分数 → 保存</li>
+      <li>AI 评价：保存后，毒舌老师会自动评价你的成绩走势</li>
+      <li>不服回嘴：点击「💬 不服/回嘴」按钮，和 AI 辩论</li>
+      <li>伴学助手：左下角按钮唤起突突er，陪聊、答疑、做计划</li>
+      <li>注册账号：点击右上角登录，邮箱验证码即可注册</li>
+    </ol>
+  </div>
 
-📊 支持的考试类型
-1.雅思考试 (IELTS)
-• 听力/阅读: 根据正确题数自动折算分数（0-40题 → 0-9.0分）
-• 写作 (Writing): Task 1/Task 2 分离输入，自动加权计算
-• 口语 (Speaking): 直接输入分数
-• Overall总分: 自动计算四项平均分，按雅思规则取整
-2.大学英语考试 (CET)
-• 四级/六级: 完整的成绩管理
-• 分项计分: 听力/阅读/写作/翻译 独立录入或换算
-3.自定义考试
-• 完全自由: 创建任意考试类型（如托福、GRE、期末考）
-• 四种计分: 直接输入 / 多小题计分 / 分部分计分 / 公式计算
+  <!-- AI 功能 -->
+  <div class=”guide-section” style=”animation-delay:0.05s;”>
+    <div class=”guide-section-title”>
+      <span class=”guide-icon” style=”background:linear-gradient(135deg,#f59e0b,#ef4444);”>🤖</span>
+      AI 智能交互
+    </div>
+    <div class=”guide-cards”>
+      <div class=”guide-card”>
+        <div class=”guide-card-icon”>⛈️</div>
+        <div class=”guide-card-title”>毒舌老师</div>
+        <div class=”guide-card-desc”>每次录入成绩，根据分数走势给出犀利评价</div>
+      </div>
+      <div class=”guide-card”>
+        <div class=”guide-card-icon”>💬</div>
+        <div class=”guide-card-title”>回怼模式</div>
+        <div class=”guide-card-desc”>觉得说得不对？点击回嘴按钮，AI 会据理反击</div>
+      </div>
+      <div class=”guide-card”>
+        <div class=”guide-card-icon”>🐾</div>
+        <div class=”guide-card-title”>桌面宠物</div>
+        <div class=”guide-card-desc”>右下角 Emoji 老师随成绩变脸，点击可互动</div>
+      </div>
+      <div class=”guide-card”>
+        <div class=”guide-card-icon”>🐱</div>
+        <div class=”guide-card-title”>突突er 伴学</div>
+        <div class=”guide-card-desc”>倾听、安抚、答疑，温柔回应你的学习困惑</div>
+      </div>
+    </div>
+    <p class=”guide-hint”>四种评价风格可一键切换：风暴 · 暖阳 · 冷锋 · 阵雨</p>
+  </div>
 
-📈 数据可视化 & 管理
-• 趋势图表: Chart.js 绘制精美成绩曲线
-• 数据安全: 浏览器 LocalStorage 本地存储，隐私无忧
-• 备份恢复: 支持 JSON 格式一键导出/导入
+  <!-- 考试类型 -->
+  <div class=”guide-section” style=”animation-delay:0.1s;”>
+    <div class=”guide-section-title”>
+      <span class=”guide-icon” style=”background:linear-gradient(135deg,#3b82f6,#8b5cf6);”>📊</span>
+      支持的考试类型
+    </div>
+    <div class=”guide-exam-list”>
+      <div class=”guide-exam-item”>
+        <span class=”guide-exam-icon”>📋</span>
+        <div><strong>雅思 IELTS</strong><br>听力 / 阅读 / 写作（Task1+2）/ 口语，自动折算总分</div>
+      </div>
+      <div class=”guide-exam-item”>
+        <span class=”guide-exam-icon”>📚</span>
+        <div><strong>四级 CET-4</strong><br>听力（三部分加权）/ 阅读（三部分加权）/ 写作 / 翻译</div>
+      </div>
+      <div class=”guide-exam-item”>
+        <span class=”guide-exam-icon”>🎓</span>
+        <div><strong>六级 CET-6</strong><br>结构与四级相同，题型与分值自动适配</div>
+      </div>
+      <div class=”guide-exam-item”>
+        <span class=”guide-exam-icon”>✨</span>
+        <div><strong>自定义考试</strong><br>创建任意考试，支持四种计分方式（详见下方）</div>
+      </div>
+    </div>
+  </div>
 
-📖 详细功能说明 
-自定义考试类型使用指南
-自定义考试允许你创建任意类型的考试评分系统，比如托福、GRE、模拟测试等。
+  <!-- 自定义考试 -->
+  <div class=”guide-section” style=”animation-delay:0.15s;”>
+    <div class=”guide-section-title”>
+      <span class=”guide-icon” style=”background:linear-gradient(135deg,#8b5cf6,#ec4899);”>✨</span>
+      自定义考试创建指南
+    </div>
+    <div class=”guide-steps-list”>
+      <div class=”guide-step”>
+        <div class=”guide-step-num”>1</div>
+        <div>
+          <strong>创建考试</strong>：点击顶部「自定义考试」→ 点击「+ 新建考试」→ 填写名称和描述
+        </div>
+      </div>
+      <div class=”guide-step”>
+        <div class=”guide-step-num”>2</div>
+        <div>
+          <strong>添加科目</strong>：每个科目设置名称、简称、颜色，以及计分方式
+        </div>
+      </div>
+      <div class=”guide-step”>
+        <div class=”guide-step-num”>3</div>
+        <div>
+          <strong>选择计分方式</strong>：从下方四种方式中选择一种
+        </div>
+      </div>
+    </div>
+    <div class=”guide-sub-title”>四种计分方式</div>
+    <div class=”guide-methods”>
+      <div class=”guide-method”>
+        <span class=”guide-method-badge”>A</span>
+        <strong>直接输入</strong> — 直接填入最终成绩（如口语 7.5 分）
+      </div>
+      <div class=”guide-method”>
+        <span class=”guide-method-badge”>B</span>
+        <strong>多小题计分</strong> — 分别填写各小题得分，自动求和
+      </div>
+      <div class=”guide-method”>
+        <span class=”guide-method-badge”>C</span>
+        <strong>分部分计分</strong> — 各部分题数 × 每题分值，自动汇总
+      </div>
+      <div class=”guide-method”>
+        <span class=”guide-method-badge”>D</span>
+        <strong>公式计算</strong> — 原始分 × 系数 = 最终分数（如写作 × 7.1）
+      </div>
+    </div>
+  </div>
 
-STEP 1 创建新考试类型
-1. 点击顶部"自定义考试"导航
-2. 点击"+ 新建考试"按钮
-3. 填写考试名称（如：托福）和描述（可选）
+  <!-- 数据与安全 -->
+  <div class=”guide-section” style=”animation-delay:0.2s;”>
+    <div class=”guide-section-title”>
+      <span class=”guide-icon” style=”background:linear-gradient(135deg,#10b981,#059669);”>🔒</span>
+      数据与安全
+    </div>
+    <ul class=”guide-list”>
+      <li>未登录时，数据保存在浏览器本地（localStorage）</li>
+      <li>登录后，数据自动同步到云端，换设备不丢失</li>
+      <li>支持 JSON 格式一键导出 / 导入备份</li>
+      <li>密码加密存储，JWT 令牌认证，HTTPS 传输</li>
+    </ul>
+  </div>
 
-STEP 2 添加科目
-每个考试可以添加多个科目，每个科目需要设置：
-设置项 / 说明
-科目名称 / 如：阅读、听力、写作
-简称 / 显示在卡片上的缩写，如：阅、听、写
-颜色 / 用于区分不同科目的标识色
-计分方式 / 四种方式可选（见下文）
+</div>`;
 
-STEP 3 计分方式详解
-✅方式一：直接输入分数
-• 适用场景：直接输入最终成绩
-• 示例：雅思口语直接输入 7.5 分
-• 配置：只需设置最小值、最大值（如 0-9）
-✅方式二：多小题计分
-• 适用场景：一个大题包含多个小题，需要分别计分后加总
-• 示例：数学解答题20分 = 第一问5分 + 第二问7分 + 第三问8分
-• 配置：
-  添加多个"小题"
-  每小题设置：名称（如：第一问）、满分值（如：5）
-  系统自动计算：各小题得分之和 = 该大题总分
-✅方式三：分部分计分
-• 适用场景：试卷分多个部分，每部分题数和分值不同
-• 示例：四六级听力
-（短对话8题×7.1分 + 长对话7题×7.1分 + 短文10题×14.2分）
-• 配置：
-  添加多个"部分"
-  每部分设置：名称（如：短对话）、每题分值（如：7.1）、最大题数（如：8）
-  系统自动计算：答对题数 × 每题分值，各部分的和即为该科目总分
-✅方式四：公式计算
-• 适用场景：原始分需要乘以系数换算
-• 示例：四六级写作原始分0-15分，报道分 = 原始分 × 7.1
-• 配置：
-  原始分最大值（如：15）
-  乘数系数（如：7.1）
-  系统自动计算：输入原始分 × 乘数 = 最终分数
-------------------------------------------------------------------------
-📄 许可证
-Copyright © LYT, 2026 All Rights Reserved
-联系方式：liuyuntian@ytun.team`;
+const GUIDE_SECTIONS = [
+  { id: 'guide-quick', label: '快速上手', content: `
+    <div class="guide-section" id="guide-quick">
+      <div class="guide-section-title">
+        <span class="guide-icon" style="background:linear-gradient(135deg,#10b981,#3b82f6);">🚀</span>
+        快速上手
+      </div>
+      <div class="guide-quick">
+        <div class="guide-quick-item"><span class="guide-num">1</span>选择考试类型 → 录入成绩 → 保存</div>
+        <div class="guide-quick-item"><span class="guide-num">2</span>保存后 AI 老师自动评价，觉得不对就点击「回嘴」</div>
+        <div class="guide-quick-item"><span class="guide-num">3</span>点击左下角按钮可唤起突突er伴学助手</div>
+        <div class="guide-quick-item"><span class="guide-num">4</span>注册账号后数据自动同步云端，换设备不丢失</div>
+      </div>
+    </div>
+    <div class="guide-section">
+      <div class="guide-section-title">
+        <span class="guide-icon" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">🤖</span>
+        AI 智能交互
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card"><div class="guide-card-icon">⛈️</div><div class="guide-card-title">毒舌老师</div><div class="guide-card-desc">根据分数走势犀利评价，进步酸溜溜地夸，退步刻薄嘲讽</div></div>
+        <div class="guide-card"><div class="guide-card-icon">💬</div><div class="guide-card-title">回怼模式</div><div class="guide-card-desc">觉得老师说得不对？点击回嘴，和 AI 展开辩论</div></div>
+        <div class="guide-card"><div class="guide-card-icon">🐾</div><div class="guide-card-title">桌面宠物</div><div class="guide-card-desc">右下角 Emoji 老师随成绩变脸，可点击互动</div></div>
+        <div class="guide-card"><div class="guide-card-icon">🐱</div><div class="guide-card-title">突突er 伴学</div><div class="guide-card-desc">倾听、安抚、答疑、做计划，温柔回应你的学习困惑</div></div>
+      </div>
+      <p class="guide-hint">四种评价风格可一键切换：风暴 · 暖阳 · 冷锋 · 阵雨</p>
+    </div>`
+  },
+  { id: 'guide-exams', label: '考试类型', content: `
+    <div class="guide-section" id="guide-exams">
+      <div class="guide-section-title">
+        <span class="guide-icon" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);">📊</span>
+        内置考试
+      </div>
+      <div class="guide-exam-list">
+        <div class="guide-exam-item"><span class="guide-exam-icon">📋</span><div><strong>雅思 IELTS</strong><br>听力 / 阅读 / 写作（Task1+Task2）/ 口语，总分自动按雅思规则取整</div></div>
+        <div class="guide-exam-item"><span class="guide-exam-icon">📚</span><div><strong>四级 CET-4</strong><br>听力（短对话/长对话/短文加权）/ 阅读（三部分加权）/ 写作 / 翻译</div></div>
+        <div class="guide-exam-item"><span class="guide-exam-icon">🎓</span><div><strong>六级 CET-6</strong><br>结构与四级相同，分值与题型自动适配</div></div>
+      </div>
+    </div>
+    <div class="guide-section">
+      <div class="guide-section-title">
+        <span class="guide-icon" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);">✨</span>
+        自定义考试
+      </div>
+      <p class="guide-desc">你可以创建任意类型的考试评分系统，如托福、GRE、期末考等。每个考试支持添加多个科目，每个科目有四种计分方式可选：</p>
+      <div class="guide-methods">
+        <div class="guide-method"><span class="guide-method-badge">A</span><strong>直接输入</strong> — 直接填入最终成绩（如口语 7.5 分）</div>
+        <div class="guide-method"><span class="guide-method-badge">B</span><strong>多小题计分</strong> — 分别填写各小题得分，自动求和</div>
+        <div class="guide-method"><span class="guide-method-badge">C</span><strong>分部分计分</strong> — 各部分题数 × 每题分值，自动汇总</div>
+        <div class="guide-method"><span class="guide-method-badge">D</span><strong>公式计算</strong> — 原始分 × 系数 = 最终分数（如写作 × 7.1）</div>
+      </div>
+      <div class="guide-steps-list">
+        <div class="guide-step"><div class="guide-step-num">1</div><div><strong>创建考试</strong>：点击顶部「自定义考试」→「+ 新建考试」→ 填写名称</div></div>
+        <div class="guide-step"><div class="guide-step-num">2</div><div><strong>添加科目</strong>：设置名称、简称、颜色，选择计分方式</div></div>
+        <div class="guide-step"><div class="guide-step-num">3</div><div><strong>录入成绩</strong>：选择考试 → 按科目输入分数 → 保存</div></div>
+      </div>
+    </div>`
+  },
+  { id: 'guide-data', label: '数据与安全', content: `
+    <div class="guide-section" id="guide-data">
+      <div class="guide-section-title">
+        <span class="guide-icon" style="background:linear-gradient(135deg,#10b981,#059669);">🔒</span>
+        数据安全
+      </div>
+      <ul class="guide-list">
+        <li><strong>本地优先</strong>：未登录时数据仅保存在浏览器 localStorage</li>
+        <li><strong>云端同步</strong>：登录后数据自动上传，换设备登录自动拉取</li>
+        <li><strong>密码加密</strong>：scrypt 单向哈希，服务器无法查看明文密码</li>
+        <li><strong>传输加密</strong>：所有 API 通信走 HTTPS</li>
+      </ul>
+    </div>
+    <div class="guide-section">
+      <div class="guide-section-title">
+        <span class="guide-icon" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">📁</span>
+        备份与恢复
+      </div>
+      <ul class="guide-list">
+        <li><strong>导出</strong>：点击「导出数据」下载 JSON 备份文件</li>
+        <li><strong>导入</strong>：点击「导入数据」选择备份文件，自动合并去重</li>
+        <li><strong>合并逻辑</strong>：导入不会覆盖现有记录，只补充缺失的</li>
+      </ul>
+    </div>`
+  }
+];
 
 function openInfoModal(type) {
     const modal = document.getElementById('info-modal');
     const title = document.getElementById('info-modal-title');
     const body = document.getElementById('info-modal-body');
     const primary = document.getElementById('info-modal-primary');
+    const sidebar = document.getElementById('guide-sidebar');
 
     if (!modal || !title || !body || !primary) return;
 
     const isChangelog = type === 'changelog';
-    title.textContent = isChangelog ? ('版本日志 · V' + APP_VERSION) : '使用文档';
-    body.innerHTML = isChangelog ? CHANGELOG_PLACEHOLDER : GUIDE_PLACEHOLDER;
+    title.textContent = isChangelog ? ('版本日志 · V' + APP_VERSION) : 'MyScore 使用指南';
 
-    primary.style.display = isChangelog ? 'inline-flex' : 'none';
+    if (isChangelog) {
+        body.innerHTML = CHANGELOG_PLACEHOLDER;
+        sidebar.style.display = 'none';
+        primary.style.display = 'inline-flex';
+    } else {
+        sidebar.innerHTML = GUIDE_SECTIONS.map(function(s, i) {
+            return '<button class="guide-nav-btn' + (i === 0 ? ' active' : '') + '" onclick="switchGuideSection(' + i + ')">' + s.label + '</button>';
+        }).join('');
+        sidebar.style.display = 'flex';
+        body.innerHTML = GUIDE_SECTIONS[0].content;
+        primary.style.display = 'none';
+    }
+
     modal.classList.add('active');
+}
+
+function switchGuideSection(index) {
+    var body = document.getElementById('info-modal-body');
+    var sidebar = document.getElementById('guide-sidebar');
+    if (!body || !sidebar) return;
+    body.innerHTML = GUIDE_SECTIONS[index].content;
+    sidebar.querySelectorAll('.guide-nav-btn').forEach(function(btn, i) {
+        btn.classList.toggle('active', i === index);
+    });
+    body.scrollTop = 0;
 }
 
 function closeInfoModal() {

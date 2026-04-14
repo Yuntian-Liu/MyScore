@@ -640,11 +640,14 @@
 </section>
 <div id="info-modal" class="modal-overlay" onclick="handleInfoModalOverlayClick(event)">
     <div class="modal-content info-modal-content">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:0.75rem;">
             <h3 id="info-modal-title" style="font-size:1.25rem;font-weight:700;color:#111827;">版本日志</h3>
             <button type="button" aria-label="关闭" onclick="closeInfoModal()" style="width:34px;height:34px;border:none;border-radius:9999px;background:#f3f4f6;color:#6b7280;cursor:pointer;font-size:1.25rem;line-height:1;">×</button>
         </div>
-        <div id="info-modal-body" class="info-modal-body"></div>
+        <div class="info-modal-layout">
+            <nav id="guide-sidebar" class="guide-sidebar" style="display:none;"></nav>
+            <div id="info-modal-body" class="info-modal-body"></div>
+        </div>
         <div class="info-modal-footer">
             <button id="info-modal-primary" class="btn-primary" type="button" onclick="acknowledgeChangelog()">我知道了</button>
             <button class="btn-secondary" type="button" onclick="closeInfoModal()">关闭</button>
