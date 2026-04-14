@@ -323,11 +323,14 @@
                     <button onclick="closeLoginModal()" class="login-modal-close">&times;</button>
                 </div>
 
+                <p id="login-error" class="login-error"></p>
+
                 <div class="login-steps-wrapper">
-                    <!-- Step 0: 邮箱输入 -->
+                    <!-- Step 0: 邮箱/UID 输入 -->
                     <div class="login-step active" id="step-email">
-                        <label class="login-label">邮箱地址</label>
-                        <input type="email" id="login-email" class="input login-input" placeholder="your@email.com">
+                        <label class="login-label">邮箱或 UID</label>
+                        <input type="text" id="login-account" class="input login-input" placeholder="your@email.com 或 UID">
+                        <div id="turnstile-container" class="turnstile-container"></div>
                         <label class="login-checkbox-row">
                             <input type="checkbox" id="login-agree" onchange="updateSendCodeBtn()">
                             <span>我已阅读并同意<a href="javascript:void(0)" onclick="openAgreementModal('agreement')" class="agreement-link">《用户协议》</a>和<a href="javascript:void(0)" onclick="openAgreementModal('privacy')" class="agreement-link">《隐私政策》</a></span>
@@ -335,7 +338,7 @@
                         <button class="btn-primary" onclick="requestLoginCode()" id="btn-send-code" disabled style="width:100%;margin-top:0.5rem;opacity:0.5;">发送验证码</button>
                         <div class="login-divider"><span>或</span></div>
                         <button class="btn-secondary" onclick="goToStep('step-password')" style="width:100%;">密码登录</button>
-                        <p class="login-hint">我们将向此邮箱发送验证码。若该邮箱尚未注册，验证通过后将自动为您创建账号。</p>
+                        <p class="login-hint">我们将向此邮箱发送验证码。若输入 UID，验证码将发送至关联邮箱。若邮箱尚未注册，验证通过后将自动为您创建账号。</p>
                     </div>
 
                     <!-- Step 1a: 验证码 -->
@@ -344,13 +347,14 @@
                         <label class="login-label">验证码</label>
                         <input type="text" id="login-code" class="input login-input login-code-input" maxlength="6" placeholder="6位验证码">
                         <button class="btn-primary" onclick="submitVerifyCode()" id="btn-verify" style="width:100%;margin-top:1rem;">验证</button>
-                        <button class="btn-secondary" onclick="goToStep('step-email')" style="width:100%;margin-top:0.5rem;">重新输入邮箱</button>
+                        <button class="btn-secondary" onclick="goToStep('step-email')" style="width:100%;margin-top:0.5rem;">重新输入</button>
                     </div>
 
                     <!-- Step 1b: 密码登录 -->
                     <div class="login-step" id="step-password">
-                        <p class="login-code-sent">账号 <strong id="login-email-display-pw"></strong></p>
-                        <label class="login-label">密码</label>
+                        <label class="login-label">账号</label>
+                        <input type="text" id="login-pw-account" class="input login-input" placeholder="邮箱或 UID">
+                        <label class="login-label" style="margin-top:1rem;">密码</label>
                         <input type="password" id="login-password" class="input login-input" placeholder="输入密码">
                         <button class="btn-primary" onclick="submitPasswordLogin()" id="btn-login-pw" style="width:100%;margin-top:1rem;">登录</button>
                         <button class="btn-secondary" onclick="goToStep('step-email')" style="width:100%;margin-top:0.5rem;">验证码登录</button>
@@ -384,8 +388,6 @@
                         <button class="btn-secondary" onclick="goToStep('step-info')" style="width:100%;margin-top:0.5rem;">返回</button>
                     </div>
                 </div>
-
-                <p id="login-error" class="login-error"></p>
             </div>
         </div>
 

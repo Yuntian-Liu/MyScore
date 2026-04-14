@@ -1,9 +1,9 @@
 import { createReadStream, existsSync } from "node:fs";
 import { stat } from "node:fs/promises";
 import { createServer } from "node:http";
-import { extname, join, normalize, resolve } from "node:path";
+import { extname, join, normalize, resolve, sep } from "node:path";
 import { CORS_HEADERS, requestAiComment } from "./lib/aiComment.js";
-import { initDb, saveUserData, getUserData, findUser, updateUserProfile } from "./lib/db.js";
+import { initDb, saveUserData, getUserData, findUser, findUserByUid, updateUserProfile, maskEmail } from "./lib/db.js";
 import { sendVerificationCode, registerWithEmail, loginWithPassword, loginWithCode, verifyToken } from "./lib/auth.js";
 
 const PORT = Number(process.env.PORT || 3000);
@@ -11,6 +11,59 @@ const HOST = process.env.HOST || "0.0.0.0";
 const ROOT_DIR = process.cwd();
 
 initDb();
+
+// ==================== Rate Limiter ====================
+
+const RATE_LIMITS = {
+  "/api/auth/send-code": { max: 3, windowMs: 60_000 },
+  "/api/auth/login-password": { max: 10, windowMs: 60_000 },
+  "/api/auth/login-code": { max: 10, windowMs: 60_000 },
+  "/api/comment": { max: 20, windowMs: 60_000 },
+};
+
+const rateStore = new Map();
+
+function checkRateLimit(path, ip) {
+  const limit = RATE_LIMITS[path];
+  if (!limit) return true;
+  const key = `${ip}:${path}`;
+  const now = Date.now();
+  const entry = rateStore.get(key);
+  if (!entry || now - entry.start > limit.windowMs) {
+    rateStore.set(key, { start: now, count: 1 });
+    return true;
+  }
+  entry.count++;
+  return entry.count <= limit.max;
+}
+
+// Cleanup expired entries every 2 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateStore) {
+    const limit = RATE_LIMITS[key.split(":").slice(1).join(":")];
+    if (limit && now - entry.start > limit.windowMs) rateStore.delete(key);
+  }
+}, 120_000);
+
+// ==================== Turnstile Verification ====================
+
+const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY;
+
+async function verifyTurnstile(token) {
+  if (!TURNSTILE_SECRET || !token) return !TURNSTILE_SECRET; // Skip if not configured
+  try {
+    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret: TURNSTILE_SECRET, response: token }),
+    });
+    const data = await res.json();
+    return data.success === true;
+  } catch {
+    return false;
+  }
+}
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -79,7 +132,7 @@ async function handleCommentApi(req, res) {
     sendJson(
       res,
       error.statusCode || 500,
-      { error: error.message || "Internal Server Error" },
+      { error: "Internal Server Error" },
       CORS_HEADERS
     );
   }
@@ -95,7 +148,8 @@ function resolveRequestPath(urlPath) {
   const normalizedPath = normalize(relativePath);
   const absolutePath = resolve(ROOT_DIR, normalizedPath);
 
-  if (!absolutePath.startsWith(resolve(ROOT_DIR))) {
+  const rootDir = resolve(ROOT_DIR) + sep;
+  if (!absolutePath.startsWith(rootDir) && absolutePath !== resolve(ROOT_DIR)) {
     return null;
   }
 
@@ -147,23 +201,63 @@ async function handleAuthRequest(req, res, path) {
 
   try {
     if (path === "/api/auth/send-code" && req.method === "POST") {
-      const { email } = await readJsonBody(req);
-      if (!email || !email.includes("@")) {
-        sendJson(res, 400, { error: "请输入有效的邮箱地址" }, CORS_HEADERS);
+      const { account, turnstileToken } = await readJsonBody(req);
+
+      // Turnstile verification
+      if (!(await verifyTurnstile(turnstileToken))) {
+        sendJson(res, 400, { error: "人机验证失败，请重试" }, CORS_HEADERS);
         return;
       }
-      await sendVerificationCode(email);
-      sendJson(res, 200, { ok: true }, CORS_HEADERS);
+
+      if (!account) {
+        sendJson(res, 400, { error: "请输入邮箱或 UID" }, CORS_HEADERS);
+        return;
+      }
+
+      // Determine if input is UID (pure digits) or email
+      let targetEmail;
+      const isUid = /^\d+$/.test(account.trim());
+
+      if (isUid) {
+        const user = findUserByUid(account.trim());
+        if (!user) {
+          sendJson(res, 400, { error: "该 UID 未注册" }, CORS_HEADERS);
+          return;
+        }
+        targetEmail = user.email;
+      } else if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(account)) {
+        targetEmail = account;
+      } else {
+        sendJson(res, 400, { error: "请输入有效的邮箱地址或 UID" }, CORS_HEADERS);
+        return;
+      }
+
+      await sendVerificationCode(targetEmail);
+      sendJson(res, 200, { ok: true, maskedEmail: maskEmail(targetEmail) }, CORS_HEADERS);
       return;
     }
 
     if (path === "/api/auth/login-code" && req.method === "POST") {
-      const { email, code } = await readJsonBody(req);
-      if (!email || !code) {
-        sendJson(res, 400, { error: "请输入邮箱和验证码" }, CORS_HEADERS);
+      const { account, code } = await readJsonBody(req);
+      if (!account || !code) {
+        sendJson(res, 400, { error: "请输入账号和验证码" }, CORS_HEADERS);
         return;
       }
-      const result = loginWithCode(email, code);
+
+      // Resolve UID to email
+      let loginEmail;
+      if (/^\d+$/.test(account.trim())) {
+        const user = findUserByUid(account.trim());
+        if (!user) {
+          sendJson(res, 400, { error: "该 UID 未注册" }, CORS_HEADERS);
+          return;
+        }
+        loginEmail = user.email;
+      } else {
+        loginEmail = account;
+      }
+
+      const result = loginWithCode(loginEmail, code);
       if (result.error) {
         sendJson(res, 401, { error: result.error }, CORS_HEADERS);
         return;
@@ -193,12 +287,26 @@ async function handleAuthRequest(req, res, path) {
     }
 
     if (path === "/api/auth/login-password" && req.method === "POST") {
-      const { email, password } = await readJsonBody(req);
-      if (!email || !password) {
-        sendJson(res, 400, { error: "请输入邮箱和密码" }, CORS_HEADERS);
+      const { account, password } = await readJsonBody(req);
+      if (!account || !password) {
+        sendJson(res, 400, { error: "请输入账号和密码" }, CORS_HEADERS);
         return;
       }
-      const result = loginWithPassword(email, password);
+
+      // Resolve UID to email
+      let loginEmail;
+      if (/^\d+$/.test(account.trim())) {
+        const user = findUserByUid(account.trim());
+        if (!user) {
+          sendJson(res, 401, { error: "账号或密码错误" }, CORS_HEADERS);
+          return;
+        }
+        loginEmail = user.email;
+      } else {
+        loginEmail = account;
+      }
+
+      const result = loginWithPassword(loginEmail, password);
       if (result.error) {
         sendJson(res, 401, { error: result.error }, CORS_HEADERS);
         return;
@@ -268,7 +376,8 @@ async function handleAuthRequest(req, res, path) {
 
     sendJson(res, 404, { error: "Not Found" }, CORS_HEADERS);
   } catch (error) {
-    sendJson(res, 500, { error: error.message || "Internal Server Error" }, CORS_HEADERS);
+    console.error("Server error:", error);
+    sendJson(res, 500, { error: "Internal Server Error" }, CORS_HEADERS);
   }
 }
 
@@ -307,13 +416,21 @@ async function handleSyncRequest(req, res) {
 
     sendJson(res, 405, { error: "Method Not Allowed" }, CORS_HEADERS);
   } catch (error) {
-    sendJson(res, 500, { error: error.message || "Internal Server Error" }, CORS_HEADERS);
+    console.error("Server error:", error);
+    sendJson(res, 500, { error: "Internal Server Error" }, CORS_HEADERS);
   }
 }
 
 const server = createServer(async (req, res) => {
   const url = req.url || "/";
   const path = url.split("?")[0];
+
+  // Rate limiting for sensitive endpoints
+  const ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket.remoteAddress || "unknown";
+  if (!checkRateLimit(path, ip)) {
+    sendJson(res, 429, { error: "请求过于频繁，请稍后再试" }, CORS_HEADERS);
+    return;
+  }
 
   if (path.startsWith("/api/comment")) {
     await handleCommentApi(req, res);

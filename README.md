@@ -1,9 +1,9 @@
 ﻿<div align="center">
 
-# MyScore - AI 智能成绩管理系统 · V4.0.0-beta
+# MyScore - AI 智能成绩管理系统 · V4.0.1-beta
 
 <p>
-    <img src="https://img.shields.io/badge/v4.0.0--beta-Account_System-ff8a63?style=flat-square&logo=rocket&logoColor=white" alt="Version">
+    <img src="https://img.shields.io/badge/v4.0.1--beta-Security_Hardening-ff8a63?style=flat-square&logo=rocket&logoColor=white" alt="Version">
     <img src="https://img.shields.io/badge/Model-DeepSeek-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
     <img src="https://img.shields.io/badge/Deploy-Netlify_%2B_Zeabur-5468ff?style=flat-square&logo=vercel&logoColor=white" alt="Deploy">
     <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=flat-square" alt="License">
@@ -13,11 +13,20 @@
 
 </div>
 
-一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V4.0.0-beta**，新增用户注册登录、云端数据同步、用户资料系统，实现跨设备数据访问。
+一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V4.0.1-beta**，在 4.0.0 基础上进行安全加固与登录体验优化。
 
 ## 🔔 最新版本速览
 
-### V4.0.0-beta (Current)
+### V4.0.1-beta (Current)
+- ✅ **安全加固**：JWT_SECRET 强制配置、路径遍历修复、验证码暴力破解防护、IP 限流。
+- ✅ **错误信息脱敏**：500 错误不再暴露内部实现细节。
+- ✅ **Prompt 注入防护**：AI 评价输入长度限制。
+- ✅ **Cloudflare Turnstile**：可选人机验证，防止验证码接口被滥用。
+- ✅ **UID 登录**：验证码登录和密码登录均支持邮箱或 UID。
+- ✅ **密码登录独立化**：密码登录步骤拥有独立的账号输入框。
+- ✅ **验证码错误提示优化**：错误信息移至弹窗顶部，始终可见。
+
+### V4.0.0-beta
 - ✅ **账号系统**：邮箱验证码注册/登录 + 密码登录，支持用户资料管理。
 - ✅ **云端数据同步**：登录后成绩数据自动上传云端，换设备登录数据不丢失。
 - ✅ **用户资料**：头像（DiceBear）、昵称、个性签名、UID 系统。
@@ -88,13 +97,15 @@
 
 ## ✨ 核心特性
 
-### 👤 用户系统 (4.0.0-beta 新增)
+### 👤 用户系统 (4.0.0-beta 新增, 4.0.1-beta 加固)
 - **邮箱验证码登录**: 输入邮箱 → 接收 6 位验证码 → 验证身份。
 - **密码登录**: 已注册用户可直接输入密码快速登录。
+- **UID 登录**: 验证码和密码登录均支持邮箱或 UID 输入 (4.0.1 新增)。
 - **注册流程**: 验证码 → 选择头像 → 填写昵称与签名 → 设置密码 → 生成 UID。
 - **云端同步**: 登录后数据自动同步至云端，换设备登录数据不丢失。
 - **用户资料**: DiceBear 头像、昵称、个性签名，随时可编辑。
 - **管理员系统**: 首用户自动成为管理员，昵称旁显示金色胶囊标签。
+- **安全防护**: JWT 强制配置、IP 限流、人机验证 (Turnstile, 可选) (4.0.1 新增)。
 - **悬浮资料卡**: 鼠标移到右上角头像弹出完整资料信息。
 
 ### 🤖 AI 智能交互 (2.x 新增)
@@ -155,6 +166,8 @@
     - `JWT_SECRET` — 随机长字符串（令牌加密，**必须设置**）
     - `RESEND_API_KEY` — Resend API Key（发送验证码邮件）
     - `RESEND_FROM` — 发件人地址，如 `MyScore <noreply@yourdomain.com>`
+    - （可选）`TURNSTILE_SECRET_KEY` — Cloudflare Turnstile 密钥（防机器人刷验证码）
+    - （可选）`DATA_DIR` — 数据存储路径（配合 Zeabur 持久卷使用，默认 `./data`）
 3. 仓库已包含 `server.js`、`package.json` 与 `zbpack.json`，默认启动命令为 `npm start`。
 4. Zeabur 将提供完整功能：AI 评价 + 用户系统 + 云端同步。
 
@@ -190,7 +203,17 @@ MyScore/
 
 ## 🎯 版本历史
 
-### V4.0.0-beta (当前版本)
+### V4.0.1-beta (当前版本)
+- ✅ **安全加固**：JWT_SECRET 强制配置（未设置则拒绝启动）、路径遍历修复、验证码暴力破解防护。
+- ✅ **IP 限流**：send-code 3次/分、login 10次/分、comment 20次/分。
+- ✅ **错误信息脱敏**：500 错误不再暴露 error.message 内部细节。
+- ✅ **AI Prompt 防护**：用户输入长度服务端截断，防止注入。
+- ✅ **Cloudflare Turnstile**：可选人机验证，防止验证码接口被机器人滥用。
+- ✅ **UID 登录**：验证码登录和密码登录均支持邮箱或 UID 输入。
+- ✅ **密码登录独立化**：密码登录步骤拥有独立的账号输入框，无需先填邮箱再切换。
+- ✅ **验证码错误提示优化**：错误信息移至弹窗顶部，始终可见。
+
+### V4.0.0-beta
 - ✅ 用户注册/登录系统（邮箱验证码 + 密码）。
 - ✅ 云端数据同步（跨设备访问）。
 - ✅ 用户资料（头像、昵称、签名、UID）。
@@ -260,13 +283,14 @@ MyScore/
 
 ## 📝 注意事项
 
-- **JWT_SECRET 必须设置**: 不设置将使用公开默认值，任何人可伪造令牌冒充管理员。
+- **JWT_SECRET 必须设置**: 4.0.1 起未设置将拒绝启动，使用 `openssl rand -hex 32` 生成。
 - **账号系统仅 Zeabur**: Netlify 版本仅支持 AI 评价，不支持登录和云同步。
 - **API Key 安全**: 请务必在环境变量中配置 Key，不要直接写在代码里。
 - **双平台隔离原则**: Netlify 与 Zeabur 的环境变量互不影响。
-- **数据兼容性**: 4.0 与 3.x 数据格式完全兼容，旧数据登录后自动同步到云端。
+- **数据兼容性**: 4.0.1 与 4.0.0 数据格式完全兼容，现有用户数据不受影响。
 - **本地优先**: 不登录也能正常使用，数据保存在 localStorage。
 - **零依赖**: 整个项目不需要 npm install，所有功能使用 Node.js 内置模块实现。
+- **Cloudflare Turnstile (可选)**: 在 Cloudflare Dashboard 创建 Turnstile Site 后，设置 `TURNSTILE_SECRET_KEY` 并在 `app.js` 填入 Site Key 即可启用。
 - **备案信息**: 若迁移至自有服务器并面向中国大陆访问，请按监管要求在页脚悬挂备案号并链接工信部备案系统。
 
 ## 📄 许可证

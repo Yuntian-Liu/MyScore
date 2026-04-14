@@ -10,6 +10,7 @@
         let syncTimer = null;
         let selectedAvatarSeed = 'adventurer';
         let loginEmailCache = '';
+        var TURNSTILE_SITE_KEY = '';  // Cloudflare Turnstile Site Key (leave empty to disable)
 
         const AVATAR_OPTIONS = [
             { seed: 'adventurer', label: '冒险家' },
@@ -50,10 +51,6 @@
             var target = document.getElementById(stepId);
             if (target) target.classList.add('active');
 
-            if (stepId === 'step-password') {
-                var email = document.getElementById('login-email').value.trim();
-                document.getElementById('login-email-display-pw').textContent = email;
-            }
             if (stepId === 'step-avatar') {
                 renderAvatarGrid('avatar-grid', selectedAvatarSeed, function(seed) {
                     selectedAvatarSeed = seed;
@@ -81,7 +78,10 @@
         function openLoginModal() {
             var modal = document.getElementById('login-modal');
             if (!modal) return;
-            document.getElementById('login-email').value = '';
+            var accountEl = document.getElementById('login-account');
+            if (accountEl) accountEl.value = '';
+            var pwAccountEl = document.getElementById('login-pw-account');
+            if (pwAccountEl) pwAccountEl.value = '';
             document.getElementById('login-code').value = '';
             document.getElementById('login-password').value = '';
             document.getElementById('login-agree').checked = false;
@@ -90,8 +90,10 @@
             document.getElementById('reg-password').value = '';
             document.getElementById('reg-password2').value = '';
             selectedAvatarSeed = 'adventurer';
+            loginEmailCache = '';
             updateSendCodeBtn();
             showLoginError('');
+            initTurnstile();
             goToStep('step-email');
             modal.classList.add('active');
         }
@@ -101,25 +103,55 @@
             if (modal) modal.classList.remove('active');
         }
 
+        function initTurnstile() {
+            var container = document.getElementById('turnstile-container');
+            if (!container) return;
+            container.innerHTML = '';
+            if (!TURNSTILE_SITE_KEY) return;
+            var script = document.createElement('script');
+            script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+            script.async = true;
+            script.defer = true;
+            document.head.appendChild(script);
+            var widget = document.createElement('div');
+            widget.className = 'cf-turnstile';
+            widget.setAttribute('data-sitekey', TURNSTILE_SITE_KEY);
+            widget.setAttribute('data-theme', 'light');
+            container.appendChild(widget);
+        }
+
+        function getTurnstileToken() {
+            if (!TURNSTILE_SITE_KEY || typeof turnstile === 'undefined') return null;
+            try { return turnstile.getResponse(); } catch (e) { return null; }
+        }
+
         async function requestLoginCode() {
-            var email = document.getElementById('login-email').value.trim();
-            if (!email || !email.includes('@')) {
-                showLoginError('请输入有效的邮箱地址');
+            var account = document.getElementById('login-account').value.trim();
+            if (!account) {
+                showLoginError('请输入邮箱或 UID');
+                return;
+            }
+            var isUid = /^\d+$/.test(account);
+            if (!isUid && !account.includes('@')) {
+                showLoginError('请输入有效的邮箱地址或 UID');
                 return;
             }
             var btn = document.getElementById('btn-send-code');
             btn.disabled = true;
             btn.textContent = '发送中...';
             try {
+                var body = { account: account };
+                var token = getTurnstileToken();
+                if (token) body.turnstileToken = token;
                 var res = await fetch('/api/auth/send-code', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email })
+                    body: JSON.stringify(body)
                 });
                 var data = await res.json();
                 if (!res.ok) { showLoginError(data.error || '发送失败'); return; }
-                loginEmailCache = email;
-                document.getElementById('login-email-display').textContent = email;
+                loginEmailCache = account;
+                document.getElementById('login-email-display').textContent = data.maskedEmail || account;
                 goToStep('step-code');
             } catch (e) {
                 showLoginError('网络错误，请检查连接');
@@ -144,7 +176,7 @@
                 var res = await fetch('/api/auth/login-code', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email, code: code })
+                    body: JSON.stringify({ account: email, code: code })
                 });
                 var data = await res.json();
                 if (!res.ok) { showLoginError(data.error || '验证失败'); return; }
@@ -163,8 +195,9 @@
         }
 
         async function submitPasswordLogin() {
-            var email = document.getElementById('login-email').value.trim();
+            var account = document.getElementById('login-pw-account').value.trim();
             var password = document.getElementById('login-password').value;
+            if (!account) { showLoginError('请输入邮箱或 UID'); return; }
             if (!password) { showLoginError('请输入密码'); return; }
             var btn = document.getElementById('btn-login-pw');
             btn.disabled = true;
@@ -173,7 +206,7 @@
                 var res = await fetch('/api/auth/login-password', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: email, password: password })
+                    body: JSON.stringify({ account: account, password: password })
                 });
                 var data = await res.json();
                 if (!res.ok) { showLoginError(data.error || '登录失败'); return; }
