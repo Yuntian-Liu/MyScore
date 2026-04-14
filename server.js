@@ -350,7 +350,7 @@ async function handleAuthRequest(req, res, path) {
         updates.nickname = body.nickname.trim();
       }
       if (body.avatar_seed !== undefined) {
-        const validSeeds = ['adventurer', 'lorelei', 'notionists', 'croodles', 'micah', 'bottts', 'fun-emoji', 'avataaars', 'pixel-art', 'thumbs'];
+        const validSeeds = ['adventurer', 'lorelei', 'notionists', 'croodles', 'big-smile', 'personas', 'micah', 'bottts', 'fun-emoji', 'avataaars', 'pixel-art', 'thumbs'];
         if (!validSeeds.includes(body.avatar_seed)) {
           sendJson(res, 400, { error: "无效的头像选择" }, CORS_HEADERS);
           return;

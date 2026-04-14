@@ -17,6 +17,8 @@
             { seed: 'lorelei', label: '精灵' },
             { seed: 'notionists', label: '手绘' },
             { seed: 'croodles', label: '涂鸦' },
+            { seed: 'big-smile', label: '大笑' },
+            { seed: 'personas', label: '个性' },
             { seed: 'micah', label: '扁平' },
             { seed: 'bottts', label: '机器人' },
             { seed: 'fun-emoji', label: '表情' },
