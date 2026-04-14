@@ -272,12 +272,12 @@ async function handleAuthRequest(req, res, path) {
 
     if (path === "/api/auth/register" && req.method === "POST") {
       const body = await readJsonBody(req);
-      const { email, code, nickname, avatarSeed, bio, password } = body;
+      const { email, code, nickname, avatarSeed, bio, password, inviteCode } = body;
       if (!email || !code || !nickname || !password) {
         sendJson(res, 400, { error: "缺少必填字段" }, CORS_HEADERS);
         return;
       }
-      const result = registerWithEmail(email, code, nickname, avatarSeed || 'default', bio || '', password);
+      const result = registerWithEmail(email, code, nickname, avatarSeed || 'default', bio || '', password, inviteCode || '');
       if (result.error) {
         sendJson(res, 400, { error: result.error }, CORS_HEADERS);
         return;
@@ -350,7 +350,7 @@ async function handleAuthRequest(req, res, path) {
         updates.nickname = body.nickname.trim();
       }
       if (body.avatar_seed !== undefined) {
-        const validSeeds = ['adventurer', 'lorelei', 'notionists', 'bottts', 'fun-emoji', 'avataaars', 'pixel-art', 'thumbs'];
+        const validSeeds = ['adventurer', 'lorelei', 'notionists', 'croodles', 'micah', 'bottts', 'fun-emoji', 'avataaars', 'pixel-art', 'thumbs'];
         if (!validSeeds.includes(body.avatar_seed)) {
           sendJson(res, 400, { error: "无效的头像选择" }, CORS_HEADERS);
           return;

@@ -360,6 +360,19 @@
                         <button class="btn-secondary" onclick="goToStep('step-email')" style="width:100%;margin-top:0.5rem;">验证码登录</button>
                     </div>
 
+                    <!-- Step 2: 内测邀请码 -->
+                    <div class="login-step" id="step-invite">
+                        <div class="invite-header">
+                            <div class="invite-icon">✦</div>
+                            <h3 class="invite-title">内测体验官</h3>
+                            <p class="invite-desc">输入邀请码，成为 MyScore 早期体验者<br>获得专属「内测」标识</p>
+                        </div>
+                        <label class="login-label">邀请码 <span style="color:#9ca3af;font-weight:400;">(选填)</span></label>
+                        <input type="text" id="reg-invite-code" class="input login-input" placeholder="有邀请码？粘贴在这里" style="text-align:center;letter-spacing:0.15em;">
+                        <button class="btn-primary" onclick="goToStep('step-avatar')" style="width:100%;margin-top:1rem;">下一步</button>
+                        <p class="invite-skip">没有邀请码？直接点击下一步继续注册</p>
+                    </div>
+
                     <!-- Step 2a: 选择头像 -->
                     <div class="login-step" id="step-avatar">
                         <p class="login-step-desc">选择一个头像</p>

@@ -1,9 +1,9 @@
 ﻿<div align="center">
 
-# MyScore - AI 智能成绩管理系统 · V4.0.1-beta
+# MyScore - AI 智能成绩管理系统 · V4.0.2-beta
 
 <p>
-    <img src="https://img.shields.io/badge/v4.0.1--beta-Security_Hardening-ff8a63?style=flat-square&logo=rocket&logoColor=white" alt="Version">
+    <img src="https://img.shields.io/badge/v4.0.2--beta-Beta_Polish-ff8a63?style=flat-square&logo=rocket&logoColor=white" alt="Version">
     <img src="https://img.shields.io/badge/Model-DeepSeek-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
     <img src="https://img.shields.io/badge/Deploy-Netlify_%2B_Zeabur-5468ff?style=flat-square&logo=vercel&logoColor=white" alt="Deploy">
     <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=flat-square" alt="License">
@@ -13,11 +13,17 @@
 
 </div>
 
-一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V4.0.1-beta**，在 4.0.0 基础上进行安全加固与登录体验优化。
+一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V4.0.2-beta**，在安全加固基础上新增内测邀请码、更多头像与版本日志优化。
 
 ## 🔔 最新版本速览
 
-### V4.0.1-beta (Current)
+### V4.0.2-beta (Current)
+- ✅ **内测邀请码**：注册时可输入邀请码，获得「内测」专属标识。
+- ✅ **新增头像**：「涂鸦」「扁平」两款风格，共 10 种可选。
+- ✅ **隐私政策/用户协议增补**：服务器位置说明、第三方服务、数据删除流程、未成年人保护。
+- ✅ **版本日志重做**：HTML 结构化排版、Beta 免责声明、板块淡入动画。
+
+### V4.0.1-beta
 - ✅ **安全加固**：JWT_SECRET 强制配置、路径遍历修复、验证码暴力破解防护、IP 限流。
 - ✅ **错误信息脱敏**：500 错误不再暴露内部实现细节。
 - ✅ **Prompt 注入防护**：AI 评价输入长度限制。
@@ -166,8 +172,11 @@
     - `JWT_SECRET` — 随机长字符串（令牌加密，**必须设置**）
     - `RESEND_API_KEY` — Resend API Key（发送验证码邮件）
     - `RESEND_FROM` — 发件人地址，如 `MyScore <noreply@yourdomain.com>`
-    - （可选）`TURNSTILE_SECRET_KEY` — Cloudflare Turnstile 密钥（防机器人刷验证码）
+    - （可选）`INVITE_CODES` — 内测邀请码列表，逗号分隔（如 `BETA2026,TEST123`）
+    - （可选）`TURNSTILE_SECRET_KEY` — Cloudflare Turnstile Secret Key（防机器人刷验证码）
     - （可选）`DATA_DIR` — 数据存储路径（配合 Zeabur 持久卷使用，默认 `./data`）
+
+> **Cloudflare Turnstile 配置说明**：在 [Cloudflare Dashboard](https://dash.cloudflare.com/) → Turnstile → 创建 Site 后会得到 Site Key 和 Secret Key。Site Key 需填入 `app.js` 顶部的 `TURNSTILE_SITE_KEY` 变量，Secret Key 填入 Zeabur 环境变量 `TURNSTILE_SECRET_KEY`。两者配对使用，缺一则验证不生效。
 3. 仓库已包含 `server.js`、`package.json` 与 `zbpack.json`，默认启动命令为 `npm start`。
 4. Zeabur 将提供完整功能：AI 评价 + 用户系统 + 云端同步。
 
@@ -290,7 +299,8 @@ MyScore/
 - **数据兼容性**: 4.0.1 与 4.0.0 数据格式完全兼容，现有用户数据不受影响。
 - **本地优先**: 不登录也能正常使用，数据保存在 localStorage。
 - **零依赖**: 整个项目不需要 npm install，所有功能使用 Node.js 内置模块实现。
-- **Cloudflare Turnstile (可选)**: 在 Cloudflare Dashboard 创建 Turnstile Site 后，设置 `TURNSTILE_SECRET_KEY` 并在 `app.js` 填入 Site Key 即可启用。
+- **内测邀请码 (可选)**: 在 Zeabur 环境变量中设置 `INVITE_CODES`（逗号分隔），注册时输入有效邀请码可获得「内测」标识。不设置则邀请码功能禁用。
+- **Cloudflare Turnstile (可选)**: Site Key 填入 `app.js`，Secret Key 填入 Zeabur 环境变量 `TURNSTILE_SECRET_KEY`，两者缺一则验证不生效。
 - **备案信息**: 若迁移至自有服务器并面向中国大陆访问，请按监管要求在页脚悬挂备案号并链接工信部备案系统。
 
 ## 📄 许可证

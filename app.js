@@ -10,12 +10,14 @@
         let syncTimer = null;
         let selectedAvatarSeed = 'adventurer';
         let loginEmailCache = '';
-        var TURNSTILE_SITE_KEY = '';  // Cloudflare Turnstile Site Key (leave empty to disable)
+        var TURNSTILE_SITE_KEY = '0x4AAAAAAC9X9WOjivjdJMJl';  // Cloudflare Turnstile Site Key (leave empty to disable)
 
         const AVATAR_OPTIONS = [
             { seed: 'adventurer', label: '冒险家' },
             { seed: 'lorelei', label: '精灵' },
             { seed: 'notionists', label: '手绘' },
+            { seed: 'croodles', label: '涂鸦' },
+            { seed: 'micah', label: '扁平' },
             { seed: 'bottts', label: '机器人' },
             { seed: 'fun-emoji', label: '表情' },
             { seed: 'avataaars', label: '插画' },
@@ -89,6 +91,7 @@
             document.getElementById('reg-bio').value = '';
             document.getElementById('reg-password').value = '';
             document.getElementById('reg-password2').value = '';
+            document.getElementById('reg-invite-code').value = '';
             selectedAvatarSeed = 'adventurer';
             loginEmailCache = '';
             updateSendCodeBtn();
@@ -182,7 +185,7 @@
                 if (!res.ok) { showLoginError(data.error || '验证失败'); return; }
                 if (data.isNewUser) {
                     document.getElementById('login-modal-title').textContent = '创建账号';
-                    goToStep('step-avatar');
+                    goToStep('step-invite');
                     return;
                 }
                 onLoginSuccess(data.token, data.user);
@@ -242,7 +245,8 @@
                         nickname: nickname,
                         avatarSeed: selectedAvatarSeed,
                         bio: bio,
-                        password: password
+                        password: password,
+                        inviteCode: document.getElementById('reg-invite-code').value.trim()
                     })
                 });
                 var data = await res.json();
@@ -265,6 +269,7 @@
                 avatarSeed: user.avatar_seed,
                 bio: user.bio,
                 isAdmin: user.is_admin,
+                isBeta: user.is_beta,
                 token: token
             };
             localStorage.setItem(STORAGE.AUTH, JSON.stringify(currentUser));
@@ -298,6 +303,7 @@
                                 currentUser.avatarSeed = data.profile.avatar_seed;
                                 currentUser.bio = data.profile.bio;
                                 currentUser.isAdmin = data.profile.is_admin;
+                                currentUser.isBeta = data.profile.is_beta;
                                 currentUser.uid = data.profile.uid;
                                 localStorage.setItem(STORAGE.AUTH, JSON.stringify(currentUser));
                             }
@@ -325,6 +331,7 @@
                                 '<div class="profile-card-name">' +
                                     '<span id="profile-card-nickname">' + escapeHtml(currentUser.nickname || '') + '</span>' +
                                     (currentUser.isAdmin ? '<span class="admin-badge">管理员</span>' : '') +
+                                    (currentUser.isBeta ? '<span class="beta-badge">内测</span>' : '') +
                                 '</div>' +
                                 '<div class="profile-card-uid">UID: ' + currentUser.uid + '</div>' +
                             '</div>' +
@@ -437,9 +444,9 @@
             if (modal) modal.classList.remove('active');
         }
 
-        var USER_AGREEMENT_HTML = '<h3>一、服务描述</h3><p>MyScore（以下简称"本服务"）是一款成绩记录与管理工具，提供成绩录入、趋势分析、AI 评价反馈及云端数据同步等功能。本服务由碳碳四键（以下简称"我们"）开发并运营。</p><h3>二、用户账号</h3><p>1. 您需要通过邮箱验证码注册账号以使用云端同步功能。未登录状态下，数据仅保存在浏览器本地存储中。</p><p>2. 您应妥善保管账号信息和密码，因账号信息泄露导致的损失由您自行承担。</p><p>3. 您不得将账号转让、出借给他人使用。</p><h3>三、用户行为规范</h3><p>1. 您承诺不利用本服务从事任何违反法律法规的活动。</p><p>2. 您不得通过技术手段干扰本服务的正常运行。</p><p>3. 您不得批量注册账号或恶意占用系统资源。</p><h3>四、知识产权</h3><p>本服务的所有内容（包括但不限于界面设计、代码、文案、图标）均受知识产权法保护。未经我们书面许可，您不得复制、修改或分发相关内容。</p><h3>五、免责声明</h3><p>1. 本服务按"现状"提供，我们不对其适用性、可靠性作任何明示或暗示的保证。</p><p>2. 因不可抗力、系统故障等原因导致的数据丢失，我们不承担责任，但我们会尽合理努力保障数据安全。</p><p>3. AI 评价内容仅供参考，不构成任何学术建议或评价标准。</p><h3>六、协议变更</h3><p>我们有权在必要时修改本协议条款。变更后的协议将在本页面更新，继续使用本服务即视为同意变更后的条款。</p><h3>七、适用法律</h3><p>本协议适用中华人民共和国法律。如发生争议，双方应友好协商解决。</p>';
+        var USER_AGREEMENT_HTML = '<h3>一、服务描述</h3><p>MyScore（以下简称"本服务"）是一款成绩记录与管理工具，提供成绩录入、趋势分析、AI 评价反馈及云端数据同步等功能。本服务由碳碳四键（以下简称"我们"）开发并运营。</p><p>本服务目前处于内测阶段，功能和界面可能随时调整。我们保留随时修改、暂停或终止服务的权利。</p><h3>二、用户账号</h3><p>1. 您需要通过邮箱验证码注册账号以使用云端同步功能。未登录状态下，数据仅保存在浏览器本地存储中。</p><p>2. 您应妥善保管账号信息和密码，因账号信息泄露导致的损失由您自行承担。</p><p>3. 您不得将账号转让、出借给他人使用。违反此规定产生的一切后果由您自行承担。</p><p>4. 您承诺注册信息真实有效，如发现虚假信息，我们有权暂停或终止您的账号。</p><h3>三、用户行为规范</h3><p>1. 您承诺不利用本服务从事任何违反法律法规的活动。</p><p>2. 您不得通过技术手段干扰本服务的正常运行，包括但不限于攻击、爬虫、注入等行为。</p><p>3. 您不得批量注册账号或恶意占用系统资源（如高频发送验证码请求）。</p><p>4. 您在使用 AI 功能时，不得输入违反法律法规或公序良俗的内容。我们保留在发现违规内容时中断服务并封禁账号的权利。</p><h3>四、知识产权</h3><p>本服务的所有内容（包括但不限于界面设计、代码、文案、图标）均受知识产权法保护。未经我们书面许可，您不得复制、修改或分发相关内容。</p><p>您在本服务中录入的成绩数据，知识产权归您所有。</p><h3>五、AI 功能说明</h3><p>1. 本服务提供 AI 评价反馈和伴学助手功能，由第三方 AI 大模型（DeepSeek）驱动。</p><p>2. AI 生成的内容仅供参考，不构成任何学术建议、医学建议或专业意见。您应自行判断 AI 建议的合理性。</p><p>3. AI 模型可能产生不准确、不适当或过时的内容，我们不对 AI 生成内容的准确性、完整性承担保证责任。</p><p>4. AI 功能依赖第三方服务商的可用性，如服务商故障可能导致 AI 功能暂时不可用。</p><h3>六、服务可用性</h3><p>1. 我们将尽合理努力保障服务的持续可用，但不保证服务不出现中断、延迟或错误。</p><p>2. 因服务器维护、网络故障、第三方服务商故障等不可控因素导致的服务中断，我们不承担责任，但会尽快恢复。</p><p>3. 因不可抗力（如自然灾害、政策变化）导致的服务终止或数据丢失，我们不承担责任。</p><h3>七、免责声明</h3><p>1. 本服务按"现状"提供，我们不对其适用性、可靠性、及时性作任何明示或暗示的保证。</p><p>2. 因系统故障、自然灾害等原因导致的数据丢失，我们不承担责任，但会尽合理努力保障数据安全。</p><p>3. 您通过本服务获取的任何信息或 AI 建议，均需自行判断其适用性，我们不对由此产生的任何损失承担责任。</p><h3>八、协议变更</h3><p>我们有权在必要时修改本协议条款。变更后的协议将在本页面更新。继续使用本服务即视为同意变更后的条款。如您不同意变更内容，应立即停止使用本服务。</p><h3>九、适用法律</h3><p>本协议适用中华人民共和国法律。如发生争议，双方应友好协商解决；协商不成的，任一方有权向本服务运营主体所在地有管辖权的法院提起诉讼。</p>';
 
-        var PRIVACY_POLICY_HTML = '<h3>一、信息收集</h3><p>我们收集以下信息以提供服务：</p><p>1. <strong>账号信息</strong>：邮箱地址、昵称、头像选择。</p><p>2. <strong>成绩数据</strong>：您录入的考试成绩、自定义考试类型、目标分数。</p><p>3. <strong>使用记录</strong>：AI 评价对话历史（最近 30 条）。</p><p>我们不会收集您的真实姓名、身份证号、手机号等敏感信息。</p><h3>二、信息使用</h3><p>您的信息仅用于以下目的：</p><p>1. 提供云端数据同步服务，使您可以在不同设备上访问成绩数据。</p><p>2. 生成 AI 学习评价与陪学反馈。</p><p>3. 改善产品体验和服务质量。</p><p>我们不会将您的数据出售或分享给第三方。</p><h3>三、信息存储</h3><p>1. 未登录状态下，所有数据存储在您的浏览器本地（localStorage）。</p><p>2. 登录后，数据同步至我们的服务器并加密存储。</p><p>3. 服务器部署在中国境内。</p><h3>四、信息保护</h3><p>1. 密码采用单向哈希加密存储，我们无法查看您的明文密码。</p><p>2. 身份认证采用 JWT 令牌机制，有效期为 30 天。</p><p>3. 所有 API 通信采用 HTTPS 加密传输。</p><h3>五、用户权利</h3><p>1. 您可以随时通过"导出数据"功能下载您的全部数据。</p><p>2. 您可以随时退出登录并清除本地数据。</p><p>3. 如需删除云端数据，请通过 GitHub 仓库 Issues 联系我们。</p><h3>六、本地存储</h3><p>本服务使用浏览器 localStorage 存储数据，不使用第三方 Cookie。localStorage 数据仅存在于您的设备上，我们无法远程访问。</p><h3>七、政策更新</h3><p>本隐私政策可能在必要时更新。重大变更将通过站内通知告知您。继续使用本服务即视为同意更新后的政策。</p><p style="margin-top:1rem;color:#9ca3af;">最后更新：2026 年 4 月</p>';
+        var PRIVACY_POLICY_HTML = '<h3>一、信息收集</h3><p>我们收集以下信息以提供服务：</p><p>1. <strong>账号信息</strong>：邮箱地址、昵称、头像选择。</p><p>2. <strong>成绩数据</strong>：您录入的考试成绩、自定义考试类型、目标分数。</p><p>3. <strong>使用记录</strong>：AI 评价对话历史（最近 30 条）。</p><p>我们不会收集您的真实姓名、身份证号、手机号等敏感信息。</p><h3>二、信息使用</h3><p>您的信息仅用于以下目的：</p><p>1. 提供云端数据同步服务，使您可以在不同设备上访问成绩数据。</p><p>2. 生成 AI 学习评价与陪学反馈。</p><p>3. 改善产品体验和服务质量。</p><p>我们不会将您的数据出售或分享给第三方。我们不会使用您的数据训练 AI 模型。</p><h3>三、信息存储</h3><p>1. 未登录状态下，所有数据存储在您的浏览器本地（localStorage）。</p><p>2. 登录后，数据同步至我们的服务器并加密存储。服务器部署在境外，由开发者自行运维管理。</p><p>3. 由于本服务包含 AI 对话功能，服务器部署于境外以确保 AI 服务的可用性和稳定性。所有数据由开发者直接管理，不经过任何第三方服务，数据安全可控。</p><h3>四、信息保护</h3><p>1. 密码采用单向哈希加密存储，我们无法查看您的明文密码。</p><p>2. 身份认证采用 JWT 令牌机制，有效期为 30 天。</p><p>3. 所有 API 通信采用 HTTPS 加密传输。</p><p>4. 数据存储使用持久卷，服务器重启或更新不会导致数据丢失。</p><h3>五、用户权利</h3><p>1. 您可以随时通过"导出数据"功能下载您的全部数据。</p><p>2. 您可以随时退出登录并清除本地数据。</p><p>3. 如需删除云端数据，请通过服务内的联系渠道联系我们，我们将在合理时间内处理。</p><p>4. 您有权拒绝我们收集非必要信息，但可能影响部分功能的使用。</p><h3>六、Cookie 与本地存储</h3><p>本服务使用浏览器 localStorage 存储数据，不使用第三方 Cookie，不加载任何第三方追踪脚本。localStorage 数据仅存在于您的设备上，我们无法远程访问。</p><h3>七、第三方服务</h3><p>本服务使用以下第三方服务：</p><p>1. <strong>DeepSeek API</strong>：用于生成 AI 学习评价。评价内容会发送至 DeepSeek 服务器处理，但我们不会将您的个人信息（如邮箱、昵称）一并发送。</p><p>2. <strong>Resend</strong>：用于发送注册验证码邮件。Resend 仅处理邮箱地址，不获取其他数据。</p><p>3. <strong>DiceBear</strong>：用于生成头像。头像由随机种子生成，不关联您的个人信息。</p><p>上述服务均有其自身的隐私政策，建议您查阅相关条款。</p><h3>八、数据保留与删除</h3><p>1. 您的账号数据会在服务运营期间持续保留。</p><p>2. 如果您希望删除账号及所有数据，请联系我们，我们将在核实身份后 7 个工作日内完成删除。</p><p>3. 服务停止运营时，我们会提前 30 天通知用户，并提供数据导出和删除的渠道。</p><h3>九、未成年人保护</h3><p>本服务主要面向学生群体。未满 14 周岁的用户在注册前应取得监护人的同意。我们不会针对性地收集未成年人的额外信息。</p><h3>十、政策更新</h3><p>本隐私政策可能在必要时更新。重大变更将通过站内通知告知您。继续使用本服务即视为同意更新后的政策。</p><p style="margin-top:1rem;color:#9ca3af;">最后更新：2026 年 4 月</p>';
 
         // ==================== Cloud Sync (unchanged) ====================
 
@@ -2110,143 +2117,61 @@ function pokeTeacher() {
     }, 3000);
 }
 // ==================== 版本日志与使用文档 ====================
-const APP_VERSION = '4.0.0-beta';
+const APP_VERSION = '4.0.2-beta';
 const CHANGELOG_STORAGE_KEY = 'myscore_changelog_seen_' + APP_VERSION;
-const CHANGELOG_PLACEHOLDER = `📝 MyScore V4.0.0-beta 更新日志
-发布时间：2026-04-13
-代号：Account System（账号系统）
-
-	A. 用户注册与登录 (User Registration & Login)
-	• 邮箱验证码登录：输入邮箱 → 接收 6 位验证码 → 验证身份。
-	• 密码登录：已注册用户可直接输入密码快速登录。
-	• 注册流程（新用户）：验证码 → 选择头像 → 填写昵称与个性签名 → 设置密码 → 自动生成 UID。
-	• 用户协议与隐私政策：发送验证码前需勾选同意。
-
-	B. 用户资料系统 (User Profile)
-	• 头像选择：8 款 DiceBear 开源头像，风格多样（冒险家、精灵、手绘、像素等）。
-	• 昵称与个性签名：注册时填写，登录后可随时编辑。
-	• UID 系统：从 1100000 起自增，首个注册用户自动成为管理员。
-	• 管理员标识：管理员昵称旁显示金色渐变"管理员"胶囊标签。
-
-	C. 云端数据同步 (Cloud Data Sync)
-	• 登录后自动同步：成绩、自定义考试、目标、AI 风格等数据实时上传云端。
-	• 跨设备访问：换手机或换电脑登录同一账号，数据自动拉取合并。
-	• 本地优先：未登录时所有数据照常保存在浏览器 localStorage，不影响使用。
-
-	D. UI 新组件 (New UI Components)
-	• 多步骤登录弹窗：毛玻璃效果、步骤间丝滑滑动过渡动画。
-	• 头像选择网格：点击选中有渐变边框 + 缩放动画。
-	• 悬浮资料卡片：鼠标移到右上角头像弹出，显示头像、昵称、UID、签名。
-	• 编辑资料弹窗：随时修改头像、昵称、个性签名。
-	• 用户协议/隐私政策弹窗：完整法律文本，支持滚动阅读。
-
-	E. 安全特性 (Security)
-	• 密码使用 scrypt 单向哈希加密存储，服务器无法查看明文。
-	• JWT 令牌认证，30 天有效期。
-	• 验证码使用 crypto.randomInt 生成（密码学安全）。
-	• 后端输入校验：头像、昵称、签名均有类型和长度验证。
-
-	感谢您持续使用 MyScore，V4.0.0-beta ✨
-	Copyright © LYT, 2026 All Rights Reserved
-	• 将项目历史版本号统一为语义化版本号（SemVer: MAJOR.MINOR.PATCH）。
-	• 重新划分三大阶段：1.x（纯成绩管理）→ 2.x（AI 赋能）→ 3.x（双平台工程化）。
-	• 重命名 Versions_history 文件夹中所有历史版本文件为三段式编号。
-	• 创建独立 CHANGELOG.md 文件，记录完整版本变更历史。
-
-	感谢您持续使用 MyScore，V3.1.1 ✨
-	Copyright © LYT, 2026 All Rights Reserved
-
-	---
-
-	📝 MyScore V3.1.0 更新日志
-	发布时间：2026-04-06
-	代号：Personality Upgrade（个性升级计划）
-
-	A. AI 评价风格系统 (AI Style System)
-A. AI 评价风格系统 (AI Style System)
-• 新增四种评价风格：风暴（犀利刻薄）、暖阳（温暖鼓励）、冷锋（理性分析）、阵雨（先损后帮）。
-• 风格切换按钮显示在 AI 评价区域上方，点击即刻切换并重新获取评价。
-• 每种风格拥有独立的 system prompt、temperature 与 max_tokens 配置。
-• 风格选择自动保存到 localStorage，下次打开页面保持上次选择。
-
-B. 目标追踪功能 (Goal Tracking)
-• 仪表盘新增"设置目标"入口，可为每种考试类型设定目标分数。
-• 显示当前分数与目标的百分比进度条，颜色随完成度变化。
-• 目标数据保存在 localStorage，支持随时修改。
-
-C. 安全修复 (Security Fix)
-• 移除 start-local.bat 中硬编码的 API Key，防止密钥泄露。
-• 将 start-local.bat 加入 .gitignore，避免再次误提交敏感信息。
-• AI 默认模型确认为 deepseek-chat（稳定可用）。
-
-感谢您持续使用 MyScore，V3.1.1 ✨
-这一版为 AI 评价增加了个性化选择，同时修复了密钥安全问题。
-Copyright © LYT, 2026 All Rights Reserved
-
----
-
-📝 MyScore V3.0.1 更新日志
-发布时间：2026-04-04
-代号：Code Cleanup（代码瘦身计划）
-
-A. 前端工程化拆分 (Frontend Modularization)
-• 将 index.html 中的 CSS（约 2000 行）提取到独立 style.css 文件。
-• 将两个内联 script 块（约 2500 行）合并为独立 app.js 文件。
-• index.html 从 5170 行精简到约 560 行，仅保留纯 HTML 结构。
-
-B. 后端去重 (Backend Deduplication)
-• 提取 server.js 与 netlify/functions/comment.js 的重复 AI 逻辑到共享模块 lib/aiComment.js。
-• server.js 从 276 行精简到 155 行，comment.js 从 147 行精简到 34 行。
-• 两个平台的 AI 提示词、模型调用逻辑统一维护，避免改漏。
-
-C. 安全与配置 (Security & Configuration)
-• 新增 .gitignore，防止误提交 node_modules、.env 等敏感文件。
-• CORS 支持 ALLOWED_ORIGIN 环境变量配置，不设置时默认 *（向后兼容）。
-• 新增 start-local.bat 本地启动脚本，方便本地开发调试。
-
-D. 修复与优化 (Fixes & Polish)
-• 修复导出备份文件版本号仍显示 5.2 的问题，统一更新为 3.0.0。
-• 默认 AI 模型更新为 deepseek-chat。
-• DEPLOYMENT.md 补充 ALLOWED_ORIGIN 环境变量说明。
-
-感谢您持续使用 MyScore，V3.0.1 ✨
-这一版聚焦代码质量与可维护性，功能体验无变化，为后续新功能开发打好基础。
-Copyright © LYT, 2026 All Rights Reserved
-
----
-
-📝 MyScore V3.0.0 更新日志
-发布时间：2026-03-31 21:30
-代号：Lively Archive（灵动档案计划）
-
-A. 双平台后端对齐 (Deployment & API Alignment)
-• 新增统一 AI 接口入口 /api/comment，支持同一仓库同时部署到 Netlify 与 Zeabur。
-• 保留 Netlify 原有环境变量与函数逻辑，不改 AI_API_KEY 的既有配置方式。
-• 补充 Node 服务入口、部署说明与 Zeabur 启动配置，迁移到自有服务器更顺滑。
-
-B. 视觉系统升级 (UI & UX Refresh)
-• 首页视觉语言重构：头部、卡片、背景氛围、排版比例与导航层级重新整理。
-• 学习档案区新增胶囊式摘要卡，支持按考试类型展示记录次数、最佳成绩与最近记录。
-• 页脚重做为品牌尾注区：版本、备案、开源仓库、版权信息统一整合，观感更轻快。
-
-C. 图形与品牌统一 (Branding & Iconography)
-• 顶部品牌图标改为更贴合”进步 / 趋势 / 成长”的几何 SVG 标记。
-• 考试类型引入统一主题色与 SVG 标识，扩展到首页、记录列表、考试选择器与自定义考试区。
-• 清理导出报告与站内局部组件中的旧 emoji 表达，减少 AI 模板感。
-
-D. 报告导出升级 (Report Export)
-• 成绩单预览与分享卡预览完成新版视觉统一，采用主题色与 SVG 图形替换旧样式。
-• 导出图片与文本中的版本信息统一更新到 V3.0.0。
-• 导出模块的信息层级、色彩关系与可读性进一步优化，更接近可直接分享的成品。
-
-E. 稳定性与细节修复 (Polish & Robustness)
-• 修复右侧卡片布局溢出、对齐不稳等问题。
-• 统一项目内面向用户的版本展示与说明文案，减少版本错位。
-• README 与站内版本日志同步补充，便于后续维护与交接。
-
-感谢您持续使用 MyScore，V3.0.0 ✨
-这一版重点围绕”同仓库双平台部署 + 更完整的产品化视觉体验”展开，欢迎继续反馈使用中的细节问题。
-Copyright © LYT, 2026 All Rights Reserved`;
+const CHANGELOG_PLACEHOLDER = `
+<div class="changelog-beta-banner">
+  <span class="changelog-beta-badge">BETA</span>
+  <p>当前版本为<strong>内测版本</strong>，功能和体验仍在打磨中。如遇到闪退、数据异常或界面错位，请谅解——这些问题正在被优先修复中。欢迎通过任何渠道向我们反馈，你的意见将直接影响下一版的走向。</p>
+</div>
+<div class="changelog-entry">
+  <div class="changelog-header">
+    <span class="changelog-version">V4.0.2-beta</span>
+    <span class="changelog-date">2026-04-14</span>
+  </div>
+  <div class="changelog-codename">Security Hardening · 安全加固</div>
+  <div class="changelog-section">
+    <div class="changelog-section-title">
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#ef4444,#f97316);">⚠</span>
+      安全升级
+    </div>
+    <ul class="changelog-list">
+      <li>修复 <strong>JWT_SECRET</strong> 硬编码漏洞——未配置时服务将拒绝启动</li>
+      <li>修复路径遍历漏洞，新增验证码暴力破解防护（5 次错误自动锁定）</li>
+      <li>新增 IP 请求限流，防止接口被高频调用</li>
+      <li>新增 <strong>Cloudflare Turnstile</strong> 人机验证（可选），防止验证码接口被机器人滥用</li>
+    </ul>
+  </div>
+  <div class="changelog-section">
+    <div class="changelog-section-title">
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#10b981,#3b82f6);">✦</span>
+      内测邀请码
+    </div>
+    <ul class="changelog-list">
+      <li>注册时可输入邀请码，激活后获得「内测」专属标识</li>
+    </ul>
+  </div>
+  <div class="changelog-section">
+    <div class="changelog-section-title">
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#8b5cf6,#3b82f6);">⬆</span>
+      登录体验优化
+    </div>
+    <ul class="changelog-list">
+      <li>验证码登录和密码登录均支持<strong>邮箱或 UID</strong> 输入</li>
+      <li>密码登录新增独立账号输入框，无需先填邮箱再切换</li>
+      <li>验证码错误提示移至弹窗顶部，始终可见</li>
+    </ul>
+  </div>
+  <div class="changelog-section">
+    <div class="changelog-section-title">
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">+</span>
+      新增头像
+    </div>
+    <ul class="changelog-list">
+      <li>新增「涂鸦」和「扁平」两款头像风格，共 10 种可选</li>
+    </ul>
+  </div>
+</div>`;
 
 const GUIDE_PLACEHOLDER = `MyScore 使用指南
 ✨ 核心特性
@@ -2333,7 +2258,7 @@ function openInfoModal(type) {
 
     const isChangelog = type === 'changelog';
     title.textContent = isChangelog ? ('版本日志 · V' + APP_VERSION) : '使用文档';
-    body.textContent = isChangelog ? CHANGELOG_PLACEHOLDER : GUIDE_PLACEHOLDER;
+    body.innerHTML = isChangelog ? CHANGELOG_PLACEHOLDER : GUIDE_PLACEHOLDER;
 
     primary.style.display = isChangelog ? 'inline-flex' : 'none';
     modal.classList.add('active');
