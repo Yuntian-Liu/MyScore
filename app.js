@@ -2,7 +2,9 @@
         const STORAGE = {
             RECORDS: 'myscore_v51_records',  // 保持与V5.2兼容
             CUSTOM: 'myscore_v51_custom',
-            AUTH: 'myscore_auth'
+            AUTH: 'myscore_auth',
+            USER_MODE: 'myscore_user_mode',       // 'local' | 'loggedin'
+            LOCAL_AI_USAGE: 'myscore_local_ai_usage'  // { date, count }
         };
 
         // ==================== 云端登录与同步 ====================
@@ -32,6 +34,39 @@
         }
 
         function isLoggedIn() { return currentUser !== null; }
+
+        // ==================== 用户模式管理 ====================
+
+        const LOCAL_AI_DAILY_LIMIT = 5;
+
+        function getUserMode() {
+            if (isLoggedIn()) return 'loggedin';
+            return localStorage.getItem(STORAGE.USER_MODE) || '';
+        }
+
+        function setUserMode(mode) {
+            localStorage.setItem(STORAGE.USER_MODE, mode);
+        }
+
+        function getLocalAiUsage() {
+            var today = new Date().toISOString().slice(0, 10);
+            try {
+                var data = JSON.parse(localStorage.getItem(STORAGE.LOCAL_AI_USAGE));
+                if (data && data.date === today) return data;
+            } catch {}
+            return { date: today, count: 0 };
+        }
+
+        function incrementLocalAiUsage() {
+            var usage = getLocalAiUsage();
+            usage.count++;
+            localStorage.setItem(STORAGE.LOCAL_AI_USAGE, JSON.stringify(usage));
+            return usage.count;
+        }
+
+        function isLocalAiLimitReached() {
+            return getLocalAiUsage().count >= LOCAL_AI_DAILY_LIMIT;
+        }
 
         function showLoginError(msg) {
             var el = document.getElementById('login-error');
@@ -322,6 +357,8 @@
         }
 
         function onLoginSuccess(token, user) {
+            var hadLocalRecords = getRecords().length > 0;
+
             currentUser = {
                 userId: user.id,
                 uid: user.uid,
@@ -334,17 +371,62 @@
                 token: token
             };
             localStorage.setItem(STORAGE.AUTH, JSON.stringify(currentUser));
+            setUserMode('loggedin');
             closeLoginModal();
             updateLoginButton();
-            pullFromCloud();
+
+            // 先拉取云端数据（mergeCloudData 会合并本地+云端），再推送合并结果
+            pullFromCloud().then(function() {
+                if (hadLocalRecords) {
+                    pushToCloud();
+                    renderDashboard();
+                }
+            });
         }
 
         function logout() {
-            currentUser = null;
+            var overlay = document.getElementById('logout-confirm-modal');
+            if (overlay) overlay.classList.add('active');
+        }
+
+        function cancelLogout() {
+            var overlay = document.getElementById('logout-confirm-modal');
+            if (overlay) overlay.classList.remove('active');
+        }
+
+        function forceLogout() {
             localStorage.removeItem(STORAGE.AUTH);
+            localStorage.removeItem(STORAGE.USER_MODE);
+            currentUser = null;
             updateLoginButton();
             var card = document.getElementById('profile-card');
             if (card) card.classList.add('hidden');
+        }
+
+        function confirmLogout() {
+            var overlay = document.getElementById('logout-confirm-modal');
+            if (overlay) overlay.classList.remove('active');
+
+            // 清除成绩和 AI 相关数据，保留偏好设置
+            localStorage.removeItem(STORAGE.RECORDS);
+            localStorage.removeItem(STORAGE.CUSTOM);
+            localStorage.removeItem(STORAGE.AUTH);
+            localStorage.removeItem(STORAGE.USER_MODE);
+            localStorage.removeItem(STORAGE.LOCAL_AI_USAGE);
+            localStorage.removeItem('myscore_goals');
+            localStorage.removeItem('myscore_ai_style');
+            localStorage.removeItem('myscore_tutuer_history');
+
+            currentUser = null;
+            lastAiCacheKey = '';
+            lastAiComment = '';
+
+            updateLoginButton();
+            var card = document.getElementById('profile-card');
+            if (card) card.classList.add('hidden');
+
+            // 重新渲染页面（显示空状态）
+            renderDashboard();
         }
 
         async function restoreSession() {
@@ -369,7 +451,7 @@
                                 localStorage.setItem(STORAGE.AUTH, JSON.stringify(currentUser));
                             }
                         } else if (res.status === 401) {
-                            logout();
+                            forceLogout();
                             return;
                         }
                     } catch {}
@@ -599,7 +681,7 @@
                 var res = await fetch('/api/sync', {
                     headers: { 'Authorization': 'Bearer ' + currentUser.token }
                 });
-                if (res.status === 401) { logout(); return; }
+                if (res.status === 401) { forceLogout(); return; }
                 if (!res.ok) return;
                 var result = await res.json();
                 if (result.data) mergeCloudData(result.data);
@@ -907,9 +989,13 @@
         }
 
         async function postComment(payload) {
+            var headers = { 'Content-Type': 'application/json' };
+            if (isLoggedIn() && currentUser.token) {
+                headers['Authorization'] = 'Bearer ' + currentUser.token;
+            }
             const res = await fetch(COMMENT_API_ENDPOINT, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
                 body: JSON.stringify(payload)
             });
 
@@ -1155,8 +1241,36 @@
                 recentDiv.innerHTML = html;
                 // 准备历史数据
 const historyRecs = records.filter(r => r.examType === last.examType).map(r => r.total).slice(-5);
-// 呼叫 AI (传入：考试名、本次总分、历史记录)
-fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
+// AI 评论调用：根据用户模式决定行为
+const aiCacheKey = last.examType + ':' + last.total + ':' + historyRecs.join(',');
+if (isLoggedIn()) {
+    // 登录用户：正常调用（带 token）
+    if (aiCacheKey !== lastAiCacheKey) {
+        lastAiCacheKey = aiCacheKey;
+        fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
+    } else {
+        const box = document.getElementById('ai-comment-box');
+        const container = document.getElementById('ai-container');
+        const actions = document.getElementById('ai-actions');
+        if (container) container.style.display = 'block';
+        if (box && lastAiComment) renderAiComment(box, lastAiComment);
+        if (actions) actions.style.display = 'flex';
+    }
+    hideLocalAiHint();
+} else {
+    var mode = getUserMode();
+    if (!mode) {
+        // 未选择模式 → 弹出首次选择弹窗
+        showModeChoiceModal(function(chosenMode) {
+            if (chosenMode === 'local') {
+                triggerLocalAiComment(exam, last, historyRecs, aiCacheKey);
+            }
+            // 'login' 模式由弹窗内处理
+        });
+    } else if (mode === 'local') {
+        triggerLocalAiComment(exam, last, historyRecs, aiCacheKey);
+    }
+}
             }
 
             // Tabs
@@ -1210,7 +1324,7 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
 
         function switchDashboardTab(tab, btnElement) {
             // 使用传入的btnElement而不是event.target
-            const btn = btnElement || event.target;
+            const btn = btnElement || document.querySelector('.tab-btn.active');
             
             // 移除所有active状态
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1358,51 +1472,6 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
             });
         }
 
-        // ==================== 历史记录 ====================
-        function renderHistoryRecords() {
-            const records = getRecords();
-            const exams = allExams();
-            const listDiv = document.getElementById('records-list');
-            
-            if (!records.length) {
-                listDiv.innerHTML = '<div class="empty-state" style="padding:2rem;"><p style="color:#9ca3af;">暂无历史记录</p></div>';
-                return;
-            }
-            
-            let listHtml = '';
-            for (let i = records.length - 1; i >= 0; i--) {
-                const r = records[i];
-                const e = exams[r.examType];
-                if (!e) continue;
-
-                const isCet = r.examType === 'cet4' || r.examType === 'cet6';
-                let badges = '';
-
-                for (const s of e.subjects) {
-                    if (isCet && (s.id === 'writing' || s.id === 'translation')) continue;
-                    const sc = r.scores[s.id] || 0;
-                        badges += '<span class="score-badge" style="background:' + s.color + '15;color:' + s.color + ';">' + escapeHtml(s.short) + ': ' + sc.toFixed(s.dec) + '</span>';
-                }
-
-                if (isCet) {
-                    const writingScore = r.scores['writing'] || 0;
-                    const translationScore = r.scores['translation'] || 0;
-                    const wtTotal = writingScore + translationScore;
-                    const wtColor = '#f59e0b';
-                    badges += '<span class="score-badge" style="background:' + wtColor + '15;color:' + wtColor + ';">写作和翻译: ' + wtTotal + '</span>';
-                }
-
-                const theme = getExamTheme(r.examType);
-                listHtml += '<div class="record-box" style="border-color:' + theme.accent + '26;box-shadow:0 16px 34px -30px ' + theme.accent + '66;"><div class="record-row"><div class="record-main"><div class="record-meta">' + getExamBadgeMarkup(r.examType, e.name, 38) + '<span style="font-weight:700;color:' + theme.strong + ';">' + escapeHtml(e.name) + '</span><span style="color:#9ca3af;font-size:0.875rem;">' + escapeHtml(r.date) + '</span></div><div class="record-badges">' + badges + '</div></div><div class="record-side">';
-                if (r.total !== null) {
-                    const totalLabel = r.examType === 'ielts' ? 'Overall' : '总分';
-                    listHtml += '<div class="record-total"><div style="font-size:0.75rem;color:#9ca3af;">' + totalLabel + '</div><div style="font-size:1.75rem;font-weight:bold;color:' + theme.strong + ';">' + r.total.toFixed(1) + '</div></div>';
-                }
-                listHtml += '<button class="record-delete" onclick="deleteRecord(' + r.id + ')">×</button></div></div></div>';
-            }
-            listDiv.innerHTML = listHtml;
-        }
-
         function deleteRecord(id) {
             if (!confirm('确定删除这条记录？')) return;
             saveRecords(getRecords().filter(r => r.id !== id));
@@ -1498,7 +1567,7 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
                 }
                 else if (s.type === 'sections') {
                     html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;margin-bottom:0.75rem;">';
-                    for (const sec of s.sections) {
+                    for (const sec of (s.sections || [])) {
                         html += '<div><label style="display:block;font-size:0.75rem;color:#6b7280;margin-bottom:0.25rem;">' + sec.name + ' (' + sec.score + '分/题)</label><input type="number" id="sub-' + s.id + '-' + sec.name + '" min="0" max="' + sec.max + '" class="input" placeholder="0-' + sec.max + '" oninput="updateSections(this, \'' + s.id + '\')"></div>';
                     }
                     html += '</div>';
@@ -1510,7 +1579,7 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
                 else if (s.type === 'subquestions') {
                     html += '<div style="margin-bottom:0.75rem;"><label style="font-size:0.875rem;color:#6b7280;">各小题得分：</label></div>';
                     html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;margin-bottom:0.75rem;">';
-                    for (const sq of s.subquestions) {
+                    for (const sq of (s.subquestions || [])) {
                         html += '<div><label style="display:block;font-size:0.75rem;color:#6b7280;margin-bottom:0.25rem;">' + sq.name + ' (满分' + sq.max + ')</label><input type="number" id="sub-' + s.id + '-' + sq.name + '" min="0" max="' + sq.max + '" class="input" placeholder="0-' + sq.max + '" oninput="updateSubQuestions(this, \'' + s.id + '\')"></div>';
                     }
                     html += '</div>';
@@ -1520,9 +1589,10 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
                     html += '</div>';
                 }
                 else if (s.type === 'formula') {
-                    html += '<input type="number" id="sub-' + s.id + '" min="' + s.min + '" max="' + s.max + '" step="0.5" class="input" placeholder="原始分 (' + s.min + '-' + s.max + ')" oninput="updateFormula(this, \'' + s.id + '\', ' + s.mult + ')">';
+                    var formulaMult = s.mult || 1;
+                    html += '<input type="number" id="sub-' + s.id + '" min="' + s.min + '" max="' + s.max + '" step="0.5" class="input" placeholder="原始分 (' + s.min + '-' + s.max + ')" oninput="updateFormula(this, \'' + s.id + '\', ' + formulaMult + ')">';
                     html += '<div style="margin-top:0.75rem;padding:0.75rem;background:' + s.color + '15;border-radius:10px;border:1.5px solid ' + s.color + '30;">';
-                    html += '<span style="color:' + s.color + ';font-weight:500;">折算分 (×' + s.mult + '): </span>';
+                    html += '<span style="color:' + s.color + ';font-weight:500;">折算分 (×' + formulaMult + '): </span>';
                     html += '<strong id="calc-' + s.id + '" style="color:' + s.color + ';font-size:1.25rem;">-</strong>';
                     html += '</div>';
                 }
@@ -1603,8 +1673,9 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
 
         function updateFormula(el, subId, mult) {
             const raw = parseFloat(el.value) || 0;
+            const m = parseFloat(mult) || 1;
             const calcEl = document.getElementById('calc-' + subId);
-            if (calcEl) calcEl.textContent = roundUp(raw * mult);
+            if (calcEl) calcEl.textContent = roundUp(raw * m);
             updateTotalPreview();
         }
 
@@ -1642,7 +1713,7 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
                 } else if (s.type === 'sections' || s.type === 'subquestions') {
                     sc = parseFloat(document.getElementById('calc-' + s.id)?.textContent) || 0;
                 } else if (s.type === 'formula') {
-                    sc = parseInt(document.getElementById('calc-' + s.id)?.textContent) || 0;
+                    sc = parseFloat(document.getElementById('calc-' + s.id)?.textContent) || 0;
                 }
                 scores.push(sc);
             }
@@ -1673,7 +1744,7 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
                 } else if (s.type === 'sections' || s.type === 'subquestions') {
                     scores[s.id] = parseFloat(document.getElementById('calc-' + s.id)?.textContent) || 0;
                 } else if (s.type === 'formula') {
-                    scores[s.id] = parseInt(document.getElementById('calc-' + s.id)?.textContent) || 0;
+                    scores[s.id] = parseFloat(document.getElementById('calc-' + s.id)?.textContent) || 0;
                 }
             }
 
@@ -1758,7 +1829,7 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
                 html += '<input type="text" placeholder="简称" value="' + escapeAttr(s.short) + '" onchange="customSubs[' + i + '].short=this.value" class="input">';
                 html += '<input type="color" value="' + s.color + '" onchange="customSubs[' + i + '].color=this.value" style="width:40px;height:40px;border:none;border-radius:0.5rem;cursor:pointer;">';
                 html += '</div>';
-                html += '<select onchange="customSubs[' + i + '].type=this.value;renderSubList()" class="input" style="margin-bottom:0.5rem;">';
+                html += '<select onchange="customSubs[' + i + '].type=this.value;if(this.value===\'formula\'){if(!customSubs[' + i + '].mult)customSubs[' + i + '].mult=1;if(!customSubs[' + i + '].max)customSubs[' + i + '].max=100;if(customSubs[' + i + '].min==null)customSubs[' + i + '].min=0;}renderSubList()" class="input" style="margin-bottom:0.5rem;">';
                 html += '<option value="direct" ' + (s.type === 'direct' ? 'selected' : '') + '>直接输入分数</option>';
                 html += '<option value="subquestions" ' + (s.type === 'subquestions' ? 'selected' : '') + '>多小题计分</option>';
                 html += '<option value="sections" ' + (s.type === 'sections' ? 'selected' : '') + '>分部分计分</option>';
@@ -1776,7 +1847,7 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
                     }
                     html += '</div><button type="button" onclick="addSubQuestion(' + i + ')" style="color:#10b981;background:none;border:none;cursor:pointer;font-size:0.875rem;">+ 添加小题</button>';
                 } else if (s.type === 'formula') {
-                    html += '<div style="display:flex;gap:0.5rem;"><input type="number" placeholder="原始分最大值" value="' + (s.max || 15) + '" onchange="customSubs[' + i + '].max=parseFloat(this.value)" class="input"><input type="number" placeholder="乘数" value="' + (s.mult || 7.1) + '" onchange="customSubs[' + i + '].mult=parseFloat(this.value)" class="input"></div>';
+                    html += '<div style="display:flex;gap:0.5rem;"><input type="number" placeholder="原始分最大值" value="' + (s.max || 100) + '" onchange="customSubs[' + i + '].max=parseFloat(this.value)" class="input"><input type="number" placeholder="乘数" value="' + (s.mult || 1) + '" onchange="customSubs[' + i + '].mult=parseFloat(this.value)" class="input"></div>';
                 } else if (s.type === 'sections') {
                     if (!s.sections) s.sections = [{ name: '部分1', score: 1, max: 10 }];
                     html += '<div id="secs-' + i + '">';
@@ -1858,7 +1929,7 @@ fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
                 alert('暂无数据可导出！');
                 return;
             }
-            const data = { version: '4.0.0-beta', date: new Date().toISOString(), records, custom };
+            const data = { version: APP_VERSION, date: new Date().toISOString(), records, custom };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -1913,6 +1984,84 @@ let lastExamType = '';
 let lastScore = 0;
 let lastHistory = [];
 let lastAiComment = '';
+let lastAiCacheKey = '';
+
+// 本地模式 AI 评论调用（带次数限制）
+function triggerLocalAiComment(exam, last, historyRecs, aiCacheKey) {
+    if (isLocalAiLimitReached()) {
+        showLocalAiLimitModal();
+        showLocalAiHint();
+        const box = document.getElementById('ai-comment-box');
+        const container = document.getElementById('ai-container');
+        if (container) container.style.display = 'block';
+        if (box) box.innerHTML = '<span style="color:#9ca3af;">今日 AI 评论次数已用完</span>';
+        return;
+    }
+    if (aiCacheKey !== lastAiCacheKey) {
+        lastAiCacheKey = aiCacheKey;
+        fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs).then(function() {
+            incrementLocalAiUsage();
+            showLocalAiHint();
+        }).catch(function() {
+            showLocalAiHint();
+        });
+    } else {
+        const box = document.getElementById('ai-comment-box');
+        const container = document.getElementById('ai-container');
+        const actions = document.getElementById('ai-actions');
+        if (container) container.style.display = 'block';
+        if (box && lastAiComment) renderAiComment(box, lastAiComment);
+        if (actions) actions.style.display = 'flex';
+        showLocalAiHint();
+    }
+}
+
+// 显示本地模式提示条
+function showLocalAiHint() {
+    var hint = document.getElementById('local-ai-hint');
+    if (!hint || isLoggedIn()) return;
+    var usage = getLocalAiUsage();
+    hint.innerHTML = '本地模式 · 今日已用 ' + usage.count + '/' + LOCAL_AI_DAILY_LIMIT + ' 次 · <a href="#" onclick="openLoginModal();return false;" style="color:#6366f1;font-weight:600;">登录解锁完整功能</a>';
+    hint.style.display = 'block';
+}
+
+function hideLocalAiHint() {
+    var hint = document.getElementById('local-ai-hint');
+    if (hint) hint.style.display = 'none';
+}
+
+// 首次模式选择弹窗
+function showModeChoiceModal(onChoice) {
+    var overlay = document.getElementById('mode-choice-modal');
+    if (!overlay) return;
+    overlay.classList.add('active');
+    overlay._onChoice = onChoice;
+}
+
+function closeModeChoiceModal(choice) {
+    var overlay = document.getElementById('mode-choice-modal');
+    if (!overlay) return;
+    overlay.classList.remove('active');
+    if (choice === 'login') {
+        openLoginModal();
+    } else if (choice === 'local') {
+        setUserMode('local');
+    }
+    // choice 为空（背景点击）时不做任何选择，只关闭弹窗
+    if (choice && overlay._onChoice) overlay._onChoice(choice);
+}
+
+// 本地模式上限弹窗
+function showLocalAiLimitModal() {
+    var overlay = document.getElementById('local-ai-limit-modal');
+    if (overlay) overlay.classList.add('active');
+}
+
+function closeLocalAiLimitModal(goLogin) {
+    var overlay = document.getElementById('local-ai-limit-modal');
+    if (overlay) overlay.classList.remove('active');
+    if (goLogin) openLoginModal();
+}
 
 // 1. 初始获取评价 (renderDashboard 调用这个)
 async function fetchAIComment(examType, currentScore, historyScores) {
@@ -2265,7 +2414,7 @@ function pokeTeacher() {
     }, 3000);
 }
 // ==================== 版本日志与使用文档 ====================
-const APP_VERSION = '4.0.3-beta';
+const APP_VERSION = '4.1.0-beta';
 const CHANGELOG_STORAGE_KEY = 'myscore_changelog_seen_' + APP_VERSION;
 const CHANGELOG_PLACEHOLDER = `
 <div class="changelog-beta-banner">
@@ -2274,28 +2423,39 @@ const CHANGELOG_PLACEHOLDER = `
 </div>
 <div class="changelog-entry">
   <div class="changelog-header">
-    <span class="changelog-version">V4.0.3-beta</span>
+    <span class="changelog-version">V4.1.0-beta</span>
     <span class="changelog-date">2026-04-15</span>
   </div>
-  <div class="changelog-codename">Bug Fix &amp; UX Enhancement（修 Bug 与体验优化）</div>
+  <div class="changelog-codename">Dual Mode Architecture（本地/登录双模式架构）</div>
+  <div class="changelog-section">
+    <div class="changelog-section-title">
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#6366f1,#ec4899);">★</span>
+      架构升级
+    </div>
+    <ul class="changelog-list">
+      <li><strong>本地/登录双模式</strong>：新增使用方式选择弹窗，未登录用户可选择"本地使用"或"登录使用"</li>
+      <li><strong>AI 评论 API 认证</strong>：登录用户 AI 评论无限制，匿名用户每日限 5 次（按 IP），防止滥用</li>
+      <li><strong>本地模式提示条</strong>：AI 评论区域显示"今日已用 x/5 次"，引导用户登录</li>
+      <li><strong>退出登录重设计</strong>：退出时弹窗确认，清除本地成绩数据（云端保留），保留个人偏好设置</li>
+      <li><strong>本地→云端迁移</strong>：本地用户登录后自动将本地数据同步到云端</li>
+    </ul>
+  </div>
   <div class="changelog-section">
     <div class="changelog-section-title">
       <span class="changelog-icon" style="background:linear-gradient(135deg,#ef4444,#f97316);">!</span>
       修复
     </div>
     <ul class="changelog-list">
-      <li>修复头像点击跳转登录界面的 Bug，新增点击展开个人资料面板（含掩码邮箱、考试统计）</li>
-      <li>修复 Cloudflare Turnstile 验证反复失败问题——脚本重复注入、widget 生命周期管理、token 失效后自动重置</li>
-      <li>修复 AI 风格切换高频点击导致后端崩溃问题，新增请求锁与冷却期</li>
-    </ul>
-  </div>
-  <div class="changelog-section">
-    <div class="changelog-section-title">
-      <span class="changelog-icon" style="background:linear-gradient(135deg,#10b981,#3b82f6);">+</span>
-      新增
-    </div>
-    <ul class="changelog-list">
-      <li>新增内测感谢 Banner，滚动展示反馈贡献者</li>
+      <li>修复内测感谢 Banner 关闭按钮无法点击的问题（作用域错误）</li>
+      <li>修复 Banner 关闭按钮与主体高度不对齐、圆角衔接断裂的样式问题</li>
+      <li>修复中文字体（如"鲨"）渲染异常——补充加载 Noto Sans SC 字体</li>
+      <li>修复公式型成绩小数被截断的问题（parseInt → parseFloat）</li>
+      <li>修复 Dashboard 标签切换使用隐式 event 变量导致的不稳定问题</li>
+      <li>修复验证码登录时 code entry attempts 被多加一次的问题</li>
+      <li>修复 UID 生成在并发场景下可能重复的竞态条件</li>
+      <li>修复 forceLogout 后残留 user_mode 导致 AI 评论永久失效的问题</li>
+      <li>修复自定义考试"公式计算"类型科目折算分显示 NaN（mult 属性未初始化）</li>
+      <li>修复自定义考试 sections/subquestions 数据异常时页面崩溃的问题</li>
     </ul>
   </div>
   <div class="changelog-section">
@@ -2304,7 +2464,10 @@ const CHANGELOG_PLACEHOLDER = `
       优化
     </div>
     <ul class="changelog-list">
-      <li>优化悬停卡片过渡动画，使用 CSS opacity+transform 平滑过渡</li>
+      <li>移除未使用的 Tailwind CDN（减少 ~300KB 页面加载）</li>
+      <li>AI 评论新增缓存机制，避免相同参数重复调用 API</li>
+      <li>清理 3 个未使用的死代码函数（净减少 ~100 行）</li>
+      <li>导出数据/报告水印版本号改为动态引用，不再硬编码</li>
     </ul>
   </div>
 </div>`;
@@ -2874,8 +3037,8 @@ document.addEventListener('DOMContentLoaded', updatePetMood);
                 enabled: true,
                 items: [
                     '感谢反馈：',
-                    '<span class="banner-name banner-name-red">大鲣鱼</span>反馈人机验证失败问题',
-                    '<span class="banner-name banner-name-blue">Osc</span>反馈意外触发登录问题',
+                    '<span class="banner-name banner-name-red">大鲨鱼</span>反馈人机验证失败、自定义考试 NaN 问题',
+                    '<span class="banner-name banner-name-blue">Osc</span>反馈意外触发登录、数据存储逻辑问题',
                     '<span class="banner-name banner-name-green">处方</span>反馈登录 Turnstile 无法触发问题',
                     '开发组现已修复上述问题，请大家继续体验~'
                 ]
@@ -2892,8 +3055,10 @@ document.addEventListener('DOMContentLoaded', updatePetMood);
                 el.innerHTML =
                     '<div class="banner-badge"><span class="banner-badge-icon">✨</span>内测反馈</div>' +
                     '<div class="banner-scroll-wrapper"><div class="banner-scroll-track">' + scrollContent + '</div></div>' +
-                    '<button class="banner-close" onclick="dismissBanner()" aria-label="关闭">&times;</button>';
+                    '<button class="banner-close" id="banner-close-btn" aria-label="关闭">&times;</button>';
                 el.classList.remove("hidden");
+                var closeBtn = document.getElementById('banner-close-btn');
+                if (closeBtn) closeBtn.addEventListener('click', dismissBanner);
             }
             function dismissBanner() {
                 var today = new Date().toISOString().slice(0, 10);
@@ -3116,7 +3281,7 @@ function renderReportPreview() {
             html += `</div></div>`;
         }
         
-        html += `<div style="margin-top:1rem;text-align:center;font-size:0.75rem;color:#9ca3af;">Generated by MyScore V4.0.0-beta</div>`;
+        html += `<div style="margin-top:1rem;text-align:center;font-size:0.75rem;color:#9ca3af;">Generated by MyScore V` + APP_VERSION + `</div>`;
         container.innerHTML = html;
     }
 }
@@ -3333,7 +3498,7 @@ function downloadScorecardImage(records) {
     ctx.fillStyle = '#9ca3af';
     ctx.font = '12px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText('Generated by MyScore V4.0.0-beta', W / 2, totalH - 25);
+    ctx.fillText('Generated by MyScore V' + APP_VERSION, W / 2, totalH - 25);
 
     // 下载
     const dataURL = canvas.toDataURL('image/png');
@@ -3542,7 +3707,7 @@ function downloadShareCardDirect(records) {
     ctx.fillStyle = '#98a0b4';
     ctx.font = '11px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText('Generated by MyScore V4.0.0-beta', W / 2, H - 16);
+    ctx.fillText('Generated by MyScore V' + APP_VERSION, W / 2, H - 16);
 
     // 下载
     const dataURL = canvas.toDataURL('image/png');
@@ -3553,84 +3718,4 @@ function downloadShareCardDirect(records) {
 
     closeReportModal();
     alert('分享卡片已保存！');
-}
-
-async function downloadTextReport(records) {
-    const exams = allExams();
-    let content = '═══════════════════════════════════════\n';
-    content += '         MyScore 成绩单\n';
-    content += '═══════════════════════════════════════\n\n';
-    content += `生成时间: ${new Date().toLocaleString('zh-CN')}\n`;
-    content += `记录数量: ${records.length} 条\n\n`;
-    content += '───────────────────────────────────────\n\n';
-    
-    // 按考试类型分组
-    const grouped = {};
-    records.forEach(r => {
-        if (!grouped[r.examType]) grouped[r.examType] = [];
-        grouped[r.examType].push(r);
-    });
-    
-    for (const [type, recs] of Object.entries(grouped)) {
-        const exam = exams[type];
-        if (!exam) continue;
-        
-        content += `【${exam.name}】\n`;
-        
-        const subjects = exam.subjects || [];
-        let header = '日期';
-        subjects.forEach(s => {
-            if (type === 'cet4' || type === 'cet6') {
-                if (s.id === 'writing' || s.id === 'translation') return;
-            }
-            header += `\t${s.short}`;
-        });
-        if (type === 'cet4' || type === 'cet6') {
-            header += '\t写作翻译';
-        }
-        if (exam.calcTotal) {
-            const totalLabel = type === 'ielts' ? 'Overall' : '总分';
-            header += '\t' + totalLabel;
-        }
-        content += header + '\n';
-        
-        recs.forEach(r => {
-            let row = r.date;
-            subjects.forEach(s => {
-                if (type === 'cet4' || type === 'cet6') {
-                    if (s.id === 'writing' || s.id === 'translation') return;
-                }
-                const score = r.scores[s.id] || 0;
-                row += `\t${score.toFixed(s.dec || 1)}`;
-            });
-            if (type === 'cet4' || type === 'cet6') {
-                const wt = (r.scores.writing || 0) + (r.scores.translation || 0);
-                row += `\t${wt}`;
-            }
-            if (exam.calcTotal) {
-                row += `\t${r.total ? r.total.toFixed(1) : '-'}`;
-            }
-            content += row + '\n';
-        });
-        
-        content += '\n───────────────────────────────────────\n\n';
-    }
-    
-    content += 'Powered by MyScore V4.0.0-beta\n';
-    
-    // 下载文本文件
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `MyScore_成绩单_${new Date().toISOString().slice(0,10)}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-    
-    closeReportModal();
-    alert('报告已下载！');
-}
-
-async function downloadImageCard(records) {
-    downloadShareCardDirect(records);
 }

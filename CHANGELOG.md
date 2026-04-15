@@ -6,6 +6,90 @@ The format is based on [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [4.1.0-beta] - 2026-04-15
+
+**代号：Dual Mode Architecture（本地/登录双模式架构）**
+
+### Added
+- 本地/登录双模式架构：未登录用户首次触发 AI 时弹窗选择"登录使用"或"本地使用"
+- AI 评论 API 认证：登录用户无限制，匿名用户按 IP 每日限 5 次
+- 本地模式提示条：AI 区域下方显示"今日已用 x/5 次，登录解锁"
+- 首次模式选择弹窗（双按钮选择卡片式设计）
+- 本地 AI 使用上限弹窗（次数用尽时弹出，引导登录）
+- 退出登录确认弹窗：提示数据已存云端，确认后清除本地成绩、保留设置
+- 本地→云端数据自动迁移：本地用户登录后自动同步数据
+
+### Fixed
+- 修复 Banner 关闭按钮因作用域问题无法点击（addEventListener 替代 inline onclick）
+- 修复 Banner 三段高度不匹配、圆角衔接断裂的样式问题
+- 修复中文字体渲染异常（补充加载 Noto Sans SC）
+- 修复公式型成绩小数被 parseInt 截断（改为 parseFloat）
+- 修复 switchDashboardTab 使用隐式 event 变量
+- 修复验证码登录 attempts 计数器多加一次（新增 consumeCode 函数）
+- 修复 UID 生成并发竞态（改为内存计数器）
+- 修复 forceLogout 后 user_mode 残留导致 AI 评论永久失效
+- 修复模式选择弹窗背景点击强制选择本地模式的问题
+- 修复 confirmLogout 不清除 STORAGE.CUSTOM 的问题
+- 修复自定义考试"公式计算"类型科目折算分显示 NaN（mult 属性未初始化）
+- 修复自定义考试 sections/subquestions 数据异常时页面崩溃（添加 undefined 防御）
+- 修复自定义考试"公式计算"类型切换时 min 属性未初始化的问题
+
+### Changed
+- Banner 样式重设计：统一高度、优化 hover 过渡、增大关闭按钮点击区域
+- 移除未使用的 Tailwind CDN 脚本（减少 ~300KB 页面加载）
+- AI 评论新增内存缓存，避免相同参数重复调用 API
+- 删除 3 个未使用的死代码函数：renderHistoryRecords、downloadTextReport、downloadImageCard
+- 导出数据/报告水印版本号改为引用 APP_VERSION 常量
+
+---
+
+## [4.0.3-beta] - 2026-04-15
+
+**代号：Bug Fix & UX Enhancement（修 Bug 与体验优化）**
+
+### Fixed
+- 修复头像点击跳转登录界面的 Bug，新增点击展开个人资料面板
+- 修复 Cloudflare Turnstile 验证反复失败问题
+- 修复 AI 风格切换高频点击导致后端崩溃问题
+
+### Added
+- 新增内测感谢 Banner，滚动展示反馈贡献者
+
+### Changed
+- 优化悬停卡片过渡动画
+
+---
+
+## [4.0.2-beta] - 2026-04-14
+
+**代号：Beta Polish（内测打磨）**
+
+### Added
+- 内测邀请码系统：注册时输入邀请码获得「内测」标识
+- 新增头像：「涂鸦」「扁平」两款风格
+- 隐私政策/用户协议增补：服务器位置、第三方服务、数据删除流程
+- 版本日志重做：HTML 结构化排版
+
+---
+
+## [4.0.1-beta] - 2026-04-14
+
+**代号：Security Hardening（安全加固）**
+
+### Security
+- JWT_SECRET 强制配置（未设置则拒绝启动）
+- 路径遍历修复
+- 验证码暴力破解防护（5 次上限）
+- IP 限流：send-code 3/分、login 10/分、comment 20/分
+
+### Added
+- Cloudflare Turnstile 人机验证
+- UID 登录支持
+- 密码登录独立输入框
+- 错误信息脱敏、AI Prompt 长度截断
+
+---
+
 ## [4.0.0-beta] - 2026-04-13
 
 **代号：Account System（账号系统）**

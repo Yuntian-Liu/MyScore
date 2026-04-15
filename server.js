@@ -107,7 +107,28 @@ async function readJsonBody(req) {
   return body ? JSON.parse(body) : {};
 }
 
-async function handleCommentApi(req, res) {
+// 匿名用户每日 AI 评论限额（按 IP）
+const ANONYMOUS_DAILY_LIMIT = 5;
+const dailyCommentStore = new Map(); // key: "ip:date", value: count
+
+function checkAnonymousDailyLimit(ip) {
+  const today = new Date().toISOString().slice(0, 10);
+  const key = `${ip}:${today}`;
+  const count = dailyCommentStore.get(key) || 0;
+  if (count >= ANONYMOUS_DAILY_LIMIT) return false;
+  dailyCommentStore.set(key, count + 1);
+  return true;
+}
+
+// 清理过期的每日计数器（每小时执行一次）
+setInterval(() => {
+  const today = new Date().toISOString().slice(0, 10);
+  for (const [key] of dailyCommentStore) {
+    if (!key.endsWith(today)) dailyCommentStore.delete(key);
+  }
+}, 3_600_000);
+
+async function handleCommentApi(req, res, ip) {
   if (req.method === "OPTIONS") {
     res.writeHead(200, CORS_HEADERS);
     res.end("OK");
@@ -119,6 +140,18 @@ async function handleCommentApi(req, res) {
     return;
   }
 
+  // 检查认证状态
+  const token = extractBearerToken(req);
+  const payload = token ? verifyToken(token) : null;
+
+  // 未认证用户：检查每日限额
+  if (!payload) {
+    if (!checkAnonymousDailyLimit(ip)) {
+      sendJson(res, 429, { error: "今日 AI 评论次数已用完，登录即可解锁完整功能", limit: ANONYMOUS_DAILY_LIMIT }, CORS_HEADERS);
+      return;
+    }
+  }
+
   try {
     const body = await readJsonBody(req);
     const config = {
@@ -126,8 +159,8 @@ async function handleCommentApi(req, res) {
       apiBaseUrl: process.env.AI_BASE_URL || "https://api.deepseek.com",
       model: process.env.AI_MODEL || "deepseek-chat",
     };
-    const payload = await requestAiComment(body, config);
-    sendJson(res, 200, payload, CORS_HEADERS);
+    const result = await requestAiComment(body, config);
+    sendJson(res, 200, result, CORS_HEADERS);
   } catch (error) {
     sendJson(
       res,
@@ -433,7 +466,7 @@ const server = createServer(async (req, res) => {
   }
 
   if (path.startsWith("/api/comment")) {
-    await handleCommentApi(req, res);
+    await handleCommentApi(req, res, ip);
     return;
   }
 

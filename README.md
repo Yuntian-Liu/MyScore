@@ -1,9 +1,9 @@
 ﻿<div align="center">
 
-# MyScore - AI 智能成绩管理系统 · V4.0.3-beta
+# MyScore - AI 智能成绩管理系统 · V4.1.0-beta
 
 <p>
-    <img src="https://img.shields.io/badge/v4.0.3--beta-Bug_Fix-ff8a63?style=flat-square&logo=rocket&logoColor=white" alt="Version">
+    <img src="https://img.shields.io/badge/v4.1.0--beta-Dual_Mode-ff8a63?style=flat-square&logo=rocket&logoColor=white" alt="Version">
     <img src="https://img.shields.io/badge/Model-DeepSeek-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
     <img src="https://img.shields.io/badge/Deploy-Netlify_%2B_Zeabur-5468ff?style=flat-square&logo=vercel&logoColor=white" alt="Deploy">
     <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=flat-square" alt="License">
@@ -13,11 +13,19 @@
 
 </div>
 
-一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V4.0.3-beta**，在安全加固基础上修复头像点击、Turnstile、AI 频率限制等 Bug，新增内测感谢 Banner 与资料面板。
+一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V4.1.0-beta**，新增本地/登录双模式架构——未登录用户可选择本地使用（AI 评论每日限 5 次）或登录解锁完整功能，退出登录时清除本地数据、保留云端备份。
 
 ## 🔔 最新版本速览
 
-### V4.0.3-beta (Current)
+### V4.1.0-beta (Current)
+- ✅ **本地/登录双模式架构**：未登录用户首次触发 AI 时弹窗选择"登录使用"或"本地使用"，本地模式每日 AI 评论限 5 次。
+- ✅ **AI 评论 API 认证**：登录用户 AI 无限制，匿名用户按 IP 每日限 5 次，防止 API 滥用。
+- ✅ **退出登录重设计**：弹窗确认后清除本地成绩数据（云端保留），保留个人偏好设置。
+- ✅ **本地→云端迁移**：本地用户登录后自动将本地数据同步到云端。
+- ✅ **Bug 修复**：Banner 关闭、字体渲染、成绩精度、自定义考试 NaN/崩溃防御、验证码逻辑、UID 竞态等多个问题。
+- ✅ **性能优化**：移除 Tailwind CDN（-300KB）、AI 评论缓存、清理死代码。
+
+### V4.0.3-beta
 - ✅ **头像交互修复**：修复点击头像跳转登录界面的 Bug，新增点击展开个人资料面板（含掩码邮箱、考试统计）。
 - ✅ **Turnstile 验证修复**：修复脚本重复注入、widget 生命周期管理、token 失效后自动重置问题。
 - ✅ **AI 风格切换频率限制**：新增请求锁与冷却期，防止高频点击导致后端崩溃。
@@ -105,7 +113,7 @@
 
 ## ✨ 核心特性
 
-### 👤 用户系统 (4.0.0-beta 新增, 4.0.1-beta 加固, 4.0.3-beta 修复)
+### 👤 用户系统 (4.0.0-beta 新增, 4.0.1-beta 加固, 4.0.3-beta 修复, 4.1.0-beta 双模式)
 - **邮箱验证码登录**: 输入邮箱 → 接收 6 位验证码 → 验证身份。
 - **密码登录**: 已注册用户可直接输入密码快速登录。
 - **UID 登录**: 验证码和密码登录均支持邮箱或 UID 输入 (4.0.1 新增)。
@@ -305,7 +313,7 @@ MyScore/
 - **API Key 安全**: 请务必在环境变量中配置 Key，不要直接写在代码里。
 - **双平台隔离原则**: Netlify 与 Zeabur 的环境变量互不影响。
 - **数据兼容性**: 4.0.1 与 4.0.0 数据格式完全兼容，现有用户数据不受影响。
-- **本地优先**: 不登录也能正常使用，数据保存在 localStorage。
+- **本地/登录双模式**: 不登录可选择"本地使用"（AI 每日限 5 次），登录后解锁完整功能并自动同步数据至云端 (4.1.0 新增)。
 - **零依赖**: 整个项目不需要 npm install，所有功能使用 Node.js 内置模块实现。
 - **内测邀请码 (可选)**: 在 Zeabur 环境变量中设置 `INVITE_CODES`（逗号分隔），注册时输入有效邀请码可获得「内测」标识。不设置则邀请码功能禁用。
 - **Cloudflare Turnstile (可选)**: Site Key 填入 `app.js`，Secret Key 填入 Zeabur 环境变量 `TURNSTILE_SECRET_KEY`，两者缺一则验证不生效。
