@@ -42,8 +42,10 @@
             var btn = document.getElementById('btn-send-code');
             var checkbox = document.getElementById('login-agree');
             if (btn && checkbox) {
-                btn.disabled = !checkbox.checked;
-                btn.style.opacity = checkbox.checked ? '1' : '0.5';
+                var agreed = checkbox.checked;
+                var tokenReady = !TURNSTILE_SITE_KEY || getTurnstileToken() !== null;
+                btn.disabled = !agreed || !tokenReady;
+                btn.style.opacity = (agreed && tokenReady) ? '1' : '0.5';
             }
         }
 
@@ -104,30 +106,78 @@
         }
 
         function closeLoginModal() {
+            destroyTurnstile();
             var modal = document.getElementById('login-modal');
             if (modal) modal.classList.remove('active');
+        }
+
+        var turnstileWidgetId = null;
+        var turnstileReady = false;
+        var turnstileScriptLoaded = false;
+
+        function loadTurnstileScript() {
+            if (turnstileScriptLoaded) return;
+            turnstileScriptLoaded = true;
+            var script = document.createElement('script');
+            script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad';
+            script.async = true;
+            document.head.appendChild(script);
+        }
+
+        window.onTurnstileLoad = function() {
+            turnstileReady = true;
+            renderTurnstileWidget();
+        };
+
+        function renderTurnstileWidget() {
+            var container = document.getElementById('turnstile-container');
+            if (!container || !TURNSTILE_SITE_KEY) return;
+            container.innerHTML = '';
+            if (typeof turnstile === 'undefined') return;
+            turnstileWidgetId = turnstile.render(container, {
+                sitekey: TURNSTILE_SITE_KEY,
+                theme: 'light',
+                callback: function() {
+                    updateSendCodeBtn();
+                },
+                'error-callback': function() {
+                    updateSendCodeBtn();
+                },
+                'expired-callback': function() {
+                    updateSendCodeBtn();
+                }
+            });
         }
 
         function initTurnstile() {
             var container = document.getElementById('turnstile-container');
             if (!container) return;
             container.innerHTML = '';
+            turnstileWidgetId = null;
             if (!TURNSTILE_SITE_KEY) return;
-            var script = document.createElement('script');
-            script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
-            script.async = true;
-            script.defer = true;
-            document.head.appendChild(script);
-            var widget = document.createElement('div');
-            widget.className = 'cf-turnstile';
-            widget.setAttribute('data-sitekey', TURNSTILE_SITE_KEY);
-            widget.setAttribute('data-theme', 'light');
-            container.appendChild(widget);
+            if (turnstileReady) {
+                renderTurnstileWidget();
+            } else {
+                loadTurnstileScript();
+            }
+        }
+
+        function destroyTurnstile() {
+            if (turnstileWidgetId !== null && typeof turnstile !== 'undefined') {
+                try { turnstile.remove(turnstileWidgetId); } catch (e) {}
+            }
+            turnstileWidgetId = null;
         }
 
         function getTurnstileToken() {
-            if (!TURNSTILE_SITE_KEY || typeof turnstile === 'undefined') return null;
-            try { return turnstile.getResponse(); } catch (e) { return null; }
+            if (!TURNSTILE_SITE_KEY || typeof turnstile === 'undefined' || turnstileWidgetId === null) return null;
+            try { return turnstile.getResponse(turnstileWidgetId); } catch (e) { return null; }
+        }
+
+        function resetTurnstile() {
+            if (turnstileWidgetId !== null && typeof turnstile !== 'undefined') {
+                try { turnstile.reset(turnstileWidgetId); } catch (e) {}
+            }
         }
 
         async function requestLoginCode() {
@@ -147,6 +197,11 @@
             try {
                 var body = { account: account };
                 var token = getTurnstileToken();
+                if (!token && TURNSTILE_SITE_KEY) {
+                    showLoginError('人机验证加载中，请稍候再试');
+                    resetTurnstile();
+                    return;
+                }
                 if (token) body.turnstileToken = token;
                 var res = await fetch('/api/auth/send-code', {
                     method: 'POST',
@@ -154,7 +209,11 @@
                     body: JSON.stringify(body)
                 });
                 var data = await res.json();
-                if (!res.ok) { showLoginError(data.error || '发送失败'); return; }
+                if (!res.ok) {
+                    showLoginError(data.error || '发送失败');
+                    resetTurnstile();
+                    return;
+                }
                 loginEmailCache = account;
                 document.getElementById('login-email-display').textContent = data.maskedEmail || account;
                 goToStep('step-code');
@@ -324,16 +383,19 @@
             var area = document.getElementById('nav-user-area');
             if (!area) return;
             if (isLoggedIn()) {
+                var badges = (currentUser.isAdmin ? '<span class="admin-badge">管理员</span>' : '') +
+                             (currentUser.isBeta ? '<span class="beta-badge">内测</span>' : '');
+                var _records = getRecords();
+                var _examTypes = new Set(_records.map(function(r){return r.examType;})).size;
                 area.innerHTML =
-                    '<img class="nav-avatar" id="nav-avatar-img" src="' + getAvatarUrl(currentUser.avatarSeed, 32) + '" alt="avatar" onclick="openLoginModal()" onmouseenter="showProfileCard()" onmouseleave="scheduleHideProfileCard()">' +
+                    '<img class="nav-avatar" id="nav-avatar-img" src="' + getAvatarUrl(currentUser.avatarSeed, 32) + '" alt="avatar" onclick="toggleProfilePanel(event)" onmouseenter="showProfileCard()" onmouseleave="scheduleHideProfileCard()">' +
                     '<div class="profile-card hidden" id="profile-card" onmouseenter="cancelHideProfileCard()" onmouseleave="hideProfileCard()">' +
                         '<div class="profile-card-header">' +
                             '<img class="profile-card-avatar" id="profile-card-avatar" src="' + getAvatarUrl(currentUser.avatarSeed, 64) + '" alt="">' +
                             '<div class="profile-card-info">' +
                                 '<div class="profile-card-name">' +
                                     '<span id="profile-card-nickname">' + escapeHtml(currentUser.nickname || '') + '</span>' +
-                                    (currentUser.isAdmin ? '<span class="admin-badge">管理员</span>' : '') +
-                                    (currentUser.isBeta ? '<span class="beta-badge">内测</span>' : '') +
+                                    badges +
                                 '</div>' +
                                 '<div class="profile-card-uid">UID: ' + currentUser.uid + '</div>' +
                             '</div>' +
@@ -342,6 +404,24 @@
                         '<div class="profile-card-actions">' +
                             '<button class="profile-card-btn" onclick="openEditProfileModal()">编辑资料</button>' +
                             '<button class="profile-card-btn profile-card-btn-logout" onclick="logout()">退出登录</button>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="profile-panel hidden" id="profile-panel">' +
+                        '<div class="profile-panel-header">' +
+                            '<img class="profile-panel-avatar" src="' + getAvatarUrl(currentUser.avatarSeed, 96) + '" alt="">' +
+                            '<div class="profile-panel-info">' +
+                                '<div class="profile-panel-name">' + escapeHtml(currentUser.nickname || '') + badges + '</div>' +
+                                '<div class="profile-panel-uid">UID: ' + currentUser.uid + '</div>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="profile-panel-divider"></div>' +
+                        (currentUser.bio ? '<div class="profile-panel-bio">' + escapeHtml(currentUser.bio) + '</div><div class="profile-panel-divider"></div>' : '') +
+                        '<div class="profile-panel-detail"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:.45;"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/></svg><span>' + maskEmail(currentUser.email) + '</span></div>' +
+                        '<div class="profile-panel-detail"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:.45;"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg><span id="profile-stats">' + _records.length + ' 条记录 · ' + _examTypes + ' 种考试</span></div>' +
+                        '<div class="profile-panel-divider"></div>' +
+                        '<div class="profile-panel-actions">' +
+                            '<button class="profile-panel-btn" onclick="openEditProfileModal()">编辑资料</button>' +
+                            '<button class="profile-panel-btn profile-panel-btn-logout" onclick="logout()">退出登录</button>' +
                         '</div>' +
                     '</div>';
             } else {
@@ -354,7 +434,10 @@
         }
 
         var profileCardTimer = null;
+        var profilePanelOpen = false;
+        var hoverCooldown = false;
         function showProfileCard() {
+            if (profilePanelOpen || hoverCooldown) return;
             clearTimeout(profileCardTimer);
             var card = document.getElementById('profile-card');
             if (card) card.classList.remove('hidden');
@@ -371,8 +454,44 @@
             showProfileCard();
         }
 
+        function toggleProfilePanel(event) {
+            event.stopPropagation();
+            if (profilePanelOpen) {
+                hideProfilePanel();
+            } else {
+                hideProfileCard();
+                var panel = document.getElementById('profile-panel');
+                if (panel) {
+                    panel.classList.remove('hidden');
+                    profilePanelOpen = true;
+                    updateProfileStats();
+                }
+            }
+        }
+        function hideProfilePanel() {
+            var panel = document.getElementById('profile-panel');
+            if (panel) panel.classList.add('hidden');
+            profilePanelOpen = false;
+            hoverCooldown = true;
+            setTimeout(function() { hoverCooldown = false; }, 350);
+        }
+        function maskEmail(email) {
+            if (!email) return '';
+            var parts = email.split('@');
+            if (parts.length !== 2) return email;
+            return parts[0][0] + '***@' + parts[1];
+        }
+        function updateProfileStats() {
+            var records = getRecords();
+            var count = records.length;
+            var types = new Set(records.map(function(r) { return r.examType; })).size;
+            var el = document.getElementById('profile-stats');
+            if (el) el.textContent = count + ' 条记录 · ' + types + ' 种考试';
+        }
+
         function openEditProfileModal() {
             hideProfileCard();
+            hideProfilePanel();
             var modal = document.getElementById('edit-profile-modal');
             if (!modal) return;
             document.getElementById('edit-nickname').value = currentUser.nickname || '';
@@ -543,6 +662,24 @@
         };
         let currentAiStyle = localStorage.getItem('myscore_ai_style') || 'storm';
 
+        var aiStyleLocked = false;
+        var aiStyleCooldown = false;
+
+        function showAiToast(msg) {
+            var existing = document.getElementById('ai-toast');
+            if (existing) existing.remove();
+            var toast = document.createElement('div');
+            toast.id = 'ai-toast';
+            toast.textContent = msg;
+            toast.style.cssText = 'position:fixed;top:1.5rem;left:50%;transform:translateX(-50%);background:rgba(31,106,82,0.92);color:#fff;padding:0.65rem 1.3rem;border-radius:99px;font-size:0.88rem;font-weight:600;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.15);opacity:0;transition:opacity 0.3s ease;pointer-events:none;';
+            document.body.appendChild(toast);
+            requestAnimationFrame(function() { toast.style.opacity = '1'; });
+            setTimeout(function() {
+                toast.style.opacity = '0';
+                setTimeout(function() { toast.remove(); }, 300);
+            }, 2200);
+        }
+
         function setAiStyle(styleKey) {
             if (!AI_STYLES[styleKey]) return;
             var prevStyle = currentAiStyle;
@@ -563,6 +700,10 @@
             }
             // 切换风格后自动重新请求评价
             if (prevStyle !== styleKey && lastExamType && lastScore) {
+                if (aiStyleLocked || aiStyleCooldown) {
+                    showAiToast('您点得太快啦~ 老师还在赶来的路上');
+                    return;
+                }
                 fetchAIComment(lastExamType, lastScore, lastHistory);
             }
         }
@@ -1786,6 +1927,7 @@ async function fetchAIComment(examType, currentScore, historyScores) {
     const replyArea = document.getElementById('reply-input-area');
 
     if (!container) return;
+    aiStyleLocked = true;  // 加锁
 
     // 重置界面状态
     container.style.display = 'block';
@@ -1817,6 +1959,10 @@ async function fetchAIComment(examType, currentScore, historyScores) {
     } catch (err) {
         console.error(err);
         box.innerHTML = '老师断线了...';
+    } finally {
+        aiStyleLocked = false;
+        aiStyleCooldown = true;
+        setTimeout(function() { aiStyleCooldown = false; }, 3000);
     }
 }
 
@@ -2119,7 +2265,7 @@ function pokeTeacher() {
     }, 3000);
 }
 // ==================== 版本日志与使用文档 ====================
-const APP_VERSION = '4.0.2-beta';
+const APP_VERSION = '4.0.3-beta';
 const CHANGELOG_STORAGE_KEY = 'myscore_changelog_seen_' + APP_VERSION;
 const CHANGELOG_PLACEHOLDER = `
 <div class="changelog-beta-banner">
@@ -2128,49 +2274,37 @@ const CHANGELOG_PLACEHOLDER = `
 </div>
 <div class="changelog-entry">
   <div class="changelog-header">
-    <span class="changelog-version">V4.0.2-beta</span>
-    <span class="changelog-date">2026-04-14</span>
+    <span class="changelog-version">V4.0.3-beta</span>
+    <span class="changelog-date">2026-04-15</span>
   </div>
-  <div class="changelog-codename">Security Hardening · 安全加固</div>
+  <div class="changelog-codename">Bug Fix &amp; UX Enhancement（修 Bug 与体验优化）</div>
   <div class="changelog-section">
     <div class="changelog-section-title">
-      <span class="changelog-icon" style="background:linear-gradient(135deg,#ef4444,#f97316);">⚠</span>
-      安全升级
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#ef4444,#f97316);">!</span>
+      修复
     </div>
     <ul class="changelog-list">
-      <li>修复 <strong>JWT_SECRET</strong> 硬编码漏洞——未配置时服务将拒绝启动</li>
-      <li>修复路径遍历漏洞，新增验证码暴力破解防护（5 次错误自动锁定）</li>
-      <li>新增 IP 请求限流，防止接口被高频调用</li>
-      <li>新增 <strong>Cloudflare Turnstile</strong> 人机验证（可选），防止验证码接口被机器人滥用</li>
+      <li>修复头像点击跳转登录界面的 Bug，新增点击展开个人资料面板（含掩码邮箱、考试统计）</li>
+      <li>修复 Cloudflare Turnstile 验证反复失败问题——脚本重复注入、widget 生命周期管理、token 失效后自动重置</li>
+      <li>修复 AI 风格切换高频点击导致后端崩溃问题，新增请求锁与冷却期</li>
     </ul>
   </div>
   <div class="changelog-section">
     <div class="changelog-section-title">
-      <span class="changelog-icon" style="background:linear-gradient(135deg,#10b981,#3b82f6);">✦</span>
-      内测邀请码
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#10b981,#3b82f6);">+</span>
+      新增
     </div>
     <ul class="changelog-list">
-      <li>注册时可输入邀请码，激活后获得「内测」专属标识</li>
+      <li>新增内测感谢 Banner，滚动展示反馈贡献者</li>
     </ul>
   </div>
   <div class="changelog-section">
     <div class="changelog-section-title">
-      <span class="changelog-icon" style="background:linear-gradient(135deg,#8b5cf6,#3b82f6);">⬆</span>
-      登录体验优化
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#8b5cf6,#3b82f6);">~</span>
+      优化
     </div>
     <ul class="changelog-list">
-      <li>验证码登录和密码登录均支持<strong>邮箱或 UID</strong> 输入</li>
-      <li>密码登录新增独立账号输入框，无需先填邮箱再切换</li>
-      <li>验证码错误提示移至弹窗顶部，始终可见</li>
-    </ul>
-  </div>
-  <div class="changelog-section">
-    <div class="changelog-section-title">
-      <span class="changelog-icon" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">+</span>
-      新增头像
-    </div>
-    <ul class="changelog-list">
-      <li>新增「涂鸦」和「扁平」两款头像风格，共 10 种可选</li>
+      <li>优化悬停卡片过渡动画，使用 CSS opacity+transform 平滑过渡</li>
     </ul>
   </div>
 </div>`;
@@ -2625,6 +2759,15 @@ function bindTutuerViewportEvents() {
             setTimeout(scheduleTutuerViewportSync, 120);
             setTimeout(scheduleTutuerViewportSync, 260);
         });
+        document.addEventListener('click', function(e) {
+            var area = document.getElementById('nav-user-area');
+            if (profilePanelOpen && area && !area.contains(e.target)) {
+                hideProfilePanel();
+            }
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && profilePanelOpen) hideProfilePanel();
+        });
         input.addEventListener('blur', function () {
             setTimeout(scheduleTutuerViewportSync, 80);
         });
@@ -2726,6 +2869,39 @@ document.addEventListener('keydown', function (event) {
 document.addEventListener('DOMContentLoaded', updatePetMood);
         // ==================== 初始化 ====================
         document.addEventListener('DOMContentLoaded', function () {
+            // ==================== 内测感谢 Banner ====================
+            var BETA_BANNER = {
+                enabled: true,
+                items: [
+                    '感谢反馈：',
+                    '<span class="banner-name banner-name-red">大鲣鱼</span>反馈人机验证失败问题',
+                    '<span class="banner-name banner-name-blue">Osc</span>反馈意外触发登录问题',
+                    '<span class="banner-name banner-name-green">处方</span>反馈登录 Turnstile 无法触发问题',
+                    '开发组现已修复上述问题，请大家继续体验~'
+                ]
+            };
+            function renderBetaBanner() {
+                var el = document.getElementById("beta-banner");
+                if (!el) return;
+                if (!BETA_BANNER.enabled) { el.classList.add("hidden"); return; }
+                var today = new Date().toISOString().slice(0, 10);
+                var dismissed = localStorage.getItem("banner_dismissed");
+                if (dismissed === today) { el.classList.add("hidden"); return; }
+                var content = BETA_BANNER.items.join(" · ");
+                var scrollContent = "<span>" + content + "</span><span>" + content + "</span>";
+                el.innerHTML =
+                    '<div class="banner-badge"><span class="banner-badge-icon">✨</span>内测反馈</div>' +
+                    '<div class="banner-scroll-wrapper"><div class="banner-scroll-track">' + scrollContent + '</div></div>' +
+                    '<button class="banner-close" onclick="dismissBanner()" aria-label="关闭">&times;</button>';
+                el.classList.remove("hidden");
+            }
+            function dismissBanner() {
+                var today = new Date().toISOString().slice(0, 10);
+                localStorage.setItem("banner_dismissed", today);
+                var el = document.getElementById("beta-banner");
+                if (el) el.classList.add("hidden");
+            }
+            renderBetaBanner();
             restoreSession();
             renderDashboard();
             maybeShowChangelogOnFirstOpen();

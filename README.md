@@ -1,9 +1,9 @@
 ﻿<div align="center">
 
-# MyScore - AI 智能成绩管理系统 · V4.0.2-beta
+# MyScore - AI 智能成绩管理系统 · V4.0.3-beta
 
 <p>
-    <img src="https://img.shields.io/badge/v4.0.2--beta-Beta_Polish-ff8a63?style=flat-square&logo=rocket&logoColor=white" alt="Version">
+    <img src="https://img.shields.io/badge/v4.0.3--beta-Bug_Fix-ff8a63?style=flat-square&logo=rocket&logoColor=white" alt="Version">
     <img src="https://img.shields.io/badge/Model-DeepSeek-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
     <img src="https://img.shields.io/badge/Deploy-Netlify_%2B_Zeabur-5468ff?style=flat-square&logo=vercel&logoColor=white" alt="Deploy">
     <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=flat-square" alt="License">
@@ -13,15 +13,17 @@
 
 </div>
 
-一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V4.0.2-beta**，在安全加固基础上新增内测邀请码、更多头像与版本日志优化。
+一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V4.0.3-beta**，在安全加固基础上修复头像点击、Turnstile、AI 频率限制等 Bug，新增内测感谢 Banner 与资料面板。
 
 ## 🔔 最新版本速览
 
-### V4.0.2-beta (Current)
-- ✅ **内测邀请码**：注册时可输入邀请码，获得「内测」专属标识。
-- ✅ **新增头像**：「涂鸦」「扁平」两款风格，共 10 种可选。
-- ✅ **隐私政策/用户协议增补**：服务器位置说明、第三方服务、数据删除流程、未成年人保护。
-- ✅ **版本日志重做**：HTML 结构化排版、Beta 免责声明、板块淡入动画。
+### V4.0.3-beta (Current)
+- ✅ **头像交互修复**：修复点击头像跳转登录界面的 Bug，新增点击展开个人资料面板（含掩码邮箱、考试统计）。
+- ✅ **Turnstile 验证修复**：修复脚本重复注入、widget 生命周期管理、token 失效后自动重置问题。
+- ✅ **AI 风格切换频率限制**：新增请求锁与冷却期，防止高频点击导致后端崩溃。
+- ✅ **内测感谢 Banner**：导航栏顶部新增滚动 Banner，展示反馈贡献者名单。
+- ✅ **悬停卡片优化**：优化过渡动画，使用 CSS opacity+transform 平滑过渡。
+
 
 ### V4.0.1-beta
 - ✅ **安全加固**：JWT_SECRET 强制配置、路径遍历修复、验证码暴力破解防护、IP 限流。
@@ -103,7 +105,7 @@
 
 ## ✨ 核心特性
 
-### 👤 用户系统 (4.0.0-beta 新增, 4.0.1-beta 加固)
+### 👤 用户系统 (4.0.0-beta 新增, 4.0.1-beta 加固, 4.0.3-beta 修复)
 - **邮箱验证码登录**: 输入邮箱 → 接收 6 位验证码 → 验证身份。
 - **密码登录**: 已注册用户可直接输入密码快速登录。
 - **UID 登录**: 验证码和密码登录均支持邮箱或 UID 输入 (4.0.1 新增)。
@@ -212,7 +214,13 @@ MyScore/
 
 ## 🎯 版本历史
 
-### V4.0.1-beta (当前版本)
+### V4.0.2-beta
+- ✅ **内测邀请码**：注册时可输入邀请码，获得「内测」专属标识。
+- ✅ **新增头像**：「涂鸦」「扁平」两款风格，共 10 种可选。
+- ✅ **隐私政策/用户协议增补**：服务器位置说明、第三方服务、数据删除流程、未成年人保护。
+- ✅ **版本日志重做**：HTML 结构化排版，Beta 免责声明、板块淡入动画。
+
+### V4.0.1-beta
 - ✅ **安全加固**：JWT_SECRET 强制配置（未设置则拒绝启动）、路径遍历修复、验证码暴力破解防护。
 - ✅ **IP 限流**：send-code 3次/分、login 10次/分、comment 20次/分。
 - ✅ **错误信息脱敏**：500 错误不再暴露 error.message 内部细节。
