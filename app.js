@@ -2448,7 +2448,7 @@ const CHANGELOG_PLACEHOLDER = `
     <ul class="changelog-list">
       <li>修复内测感谢 Banner 关闭按钮无法点击的问题（作用域错误）</li>
       <li>修复 Banner 关闭按钮与主体高度不对齐、圆角衔接断裂的样式问题</li>
-      <li>修复中文字体（如"鲨"）渲染异常——补充加载 Noto Sans SC 字体</li>
+      <li>修复中文字体（如"鲨"）渲染异常</li>
       <li>修复公式型成绩小数被截断的问题（parseInt → parseFloat）</li>
       <li>修复 Dashboard 标签切换使用隐式 event 变量导致的不稳定问题</li>
       <li>修复验证码登录时 code entry attempts 被多加一次的问题</li>
@@ -3047,9 +3047,6 @@ document.addEventListener('DOMContentLoaded', updatePetMood);
                 var el = document.getElementById("beta-banner");
                 if (!el) return;
                 if (!BETA_BANNER.enabled) { el.classList.add("hidden"); return; }
-                var today = new Date().toISOString().slice(0, 10);
-                var dismissed = localStorage.getItem("banner_dismissed");
-                if (dismissed === today) { el.classList.add("hidden"); return; }
                 var content = BETA_BANNER.items.join(" · ");
                 var scrollContent = "<span>" + content + "</span><span>" + content + "</span>";
                 el.innerHTML =
@@ -3061,8 +3058,6 @@ document.addEventListener('DOMContentLoaded', updatePetMood);
                 if (closeBtn) closeBtn.addEventListener('click', dismissBanner);
             }
             function dismissBanner() {
-                var today = new Date().toISOString().slice(0, 10);
-                localStorage.setItem("banner_dismissed", today);
                 var el = document.getElementById("beta-banner");
                 if (el) el.classList.add("hidden");
             }
@@ -3168,7 +3163,7 @@ function renderReportPreview() {
     const previewTheme = getExamTheme(examType === 'all' ? (records[0] && records[0].examType) : examType);
     
     if (currentReportType === 'scorecard') {
-        let html = `<div style="font-family:Manrope,'Noto Sans SC',sans-serif;color:#243144;">`;
+        let html = `<div style="font-family:Manrope,sans-serif;color:#243144;">`;
         html += `<div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.2rem;padding:1rem 1.1rem;border-radius:20px;background:linear-gradient(135deg,${previewTheme.soft},${previewTheme.softAlt});border:1px solid ${previewTheme.accent}22;">`;
         html += `<div style="display:flex;align-items:center;gap:0.85rem;">${getReportTypeIconMarkup('scorecard', 34)}<div><h3 style="font-size:1.18rem;font-weight:800;color:${previewTheme.strong};margin-bottom:0.18rem;">MyScore 成绩报告</h3><p style="font-size:0.82rem;color:#6d758d;">按考试类型整理近期表现与总分记录</p></div></div>`;
         html += `<div style="text-align:right;font-size:0.8rem;color:#6d758d;"><div>生成时间</div><div style="font-weight:700;color:${previewTheme.strong};margin-top:0.12rem;">${escapeHtml(new Date().toLocaleString('zh-CN'))}</div></div>`;
@@ -3240,7 +3235,7 @@ function renderReportPreview() {
         const theme = getExamTheme(latest.examType);
         const trendData = buildShareTrendData(records);
         
-        let html = `<div style="font-family:Manrope,'Noto Sans SC',sans-serif;">`;
+        let html = `<div style="font-family:Manrope,sans-serif;">`;
         html += `<div style="background:linear-gradient(140deg,${theme.reportGradientStart},${theme.reportGradientEnd});border-radius:30px;padding:1.5rem 1.35rem 1.4rem;color:white;text-align:center;position:relative;overflow:hidden;min-height:235px;">`;
         html += `<div style="position:absolute;inset:-46px auto auto -44px;width:132px;height:132px;border-radius:50%;background:rgba(255,255,255,0.12);"></div>`;
         html += `<div style="position:absolute;inset:auto -48px -62px auto;width:176px;height:176px;border-radius:50%;background:rgba(255,255,255,0.12);"></div>`;

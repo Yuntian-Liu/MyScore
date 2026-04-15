@@ -26,7 +26,7 @@
             --translation: #ef6a6a;
         }
 
-        * { box-sizing: border-box; font-family: 'Manrope', 'Noto Sans SC', sans-serif; }
+        * { box-sizing: border-box; font-family: 'Manrope', sans-serif; }
 
         body {
             background: var(--bg-main);

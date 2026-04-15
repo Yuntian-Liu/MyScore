@@ -22,7 +22,7 @@ The format is based on [Semantic Versioning](https://semver.org/).
 ### Fixed
 - 修复 Banner 关闭按钮因作用域问题无法点击（addEventListener 替代 inline onclick）
 - 修复 Banner 三段高度不匹配、圆角衔接断裂的样式问题
-- 修复中文字体渲染异常（补充加载 Noto Sans SC）
+- 修复中文字体渲染异常
 - 修复公式型成绩小数被 parseInt 截断（改为 parseFloat）
 - 修复 switchDashboardTab 使用隐式 event 变量
 - 修复验证码登录 attempts 计数器多加一次（新增 consumeCode 函数）
