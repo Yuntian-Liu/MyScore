@@ -116,6 +116,7 @@
             background: transparent;
             color: var(--text-secondary);
             letter-spacing: 0.01em;
+            transform: translateY(0);
         }
 
         .nav-btn:hover {
@@ -136,7 +137,7 @@
             content: "";
             position: absolute;
             left: 50%;
-            bottom: 0.28rem;
+            bottom: 0.25rem;
             transform: translateX(-50%);
             width: 16px;
             height: 3px;
