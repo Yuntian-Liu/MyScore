@@ -14,6 +14,14 @@
             --text-main: #22303a;
             --text-secondary: #5d6875;
             --text-muted: #8a91a4;
+            --ink-strong: #111827;
+            --ink-stronger: #0f172a;
+            --ink-strong-06: rgba(17, 24, 39, 0.06);
+            --ink-strong-08: rgba(17, 24, 39, 0.08);
+            --ink-strong-14: rgba(17, 24, 39, 0.14);
+            --ink-strong-16: rgba(17, 24, 39, 0.16);
+            --ink-strong-24: rgba(17, 24, 39, 0.24);
+            --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
             --border: rgba(84, 99, 125, 0.14);
             --border-light: rgba(84, 99, 125, 0.08);
             --shadow-sm: 0 16px 38px rgba(96, 108, 139, 0.08);
@@ -110,7 +118,7 @@
             padding: 0.8rem 1.1rem;
             border-radius: 999px;
             font-weight: 600;
-            transition: color 0.28s cubic-bezier(0.22, 1, 0.36, 1), transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: background 0.28s var(--ease-smooth), color 0.28s var(--ease-smooth), transform 0.28s var(--ease-smooth);
             cursor: pointer;
             border: none;
             background: transparent;
@@ -127,15 +135,15 @@
             position: absolute;
             inset: 2px;
             border-radius: 999px;
-            background: rgba(17, 24, 39, 0.06);
+            background: var(--ink-strong-06);
             opacity: 0;
             transform: scale(0.9);
-            transition: opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1), transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), background 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+            transition: opacity 0.28s var(--ease-smooth), transform 0.28s var(--ease-smooth), background 0.28s var(--ease-smooth);
             z-index: -1;
         }
 
         .nav-btn:hover {
-            color: #111827;
+            color: var(--ink-strong);
             transform: translateY(0);
         }
 
@@ -148,19 +156,19 @@
 
         .nav-btn:focus-visible {
             outline: none;
-            color: #111827;
+            color: var(--ink-strong);
         }
 
         .nav-btn.active {
             position: relative;
             background: transparent;
-            color: #111827;
+            color: var(--ink-strong);
             font-weight: 700;
             box-shadow: none;
         }
 
         .nav-btn.active::before {
-            background: rgba(17, 24, 39, 0.08);
+            background: var(--ink-strong-08);
         }
 
         .nav-btn.active::after {
@@ -172,7 +180,7 @@
             width: 16px;
             height: 3px;
             border-radius: 999px;
-            background: #111827;
+            background: var(--ink-strong);
         }
 
         .btn-primary {
@@ -2753,11 +2761,10 @@
     margin-bottom: 1.25rem;
 }
 .login-modal-title {
-    font-size: 1.45rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    color: #111827;
+    color: var(--ink-strong);
     background: none !important;
-    -webkit-text-fill-color: #111827;
 }
 .login-modal-close {
     background: #f8fafc;
@@ -2810,12 +2817,12 @@
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 0.9rem 1rem;
-    color: #111827;
+    color: var(--ink-strong);
     transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
 }
 .login-modal-content .input:focus {
     border-color: #9ca3af;
-    box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 0 0 4px var(--ink-strong-24);
     transform: translateY(-1px);
 }
 .login-code-input {
@@ -2893,16 +2900,16 @@
 .login-modal-content .btn-primary,
 .login-modal-content .btn-secondary {
     border-radius: 12px;
-    transition: background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, transform 0.18s ease;
+    transition: background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
 }
 .login-modal-content .btn-primary {
-    background: #111827;
+    background: var(--ink-strong);
     color: #ffffff;
-    border: 1px solid #111827;
-    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
+    border: 1px solid var(--ink-strong);
+    box-shadow: 0 10px 24px var(--ink-strong-16);
 }
 .login-modal-content .btn-primary:hover {
-    background: #0f172a;
+    background: var(--ink-stronger);
     box-shadow: 0 14px 26px rgba(15, 23, 42, 0.2);
     transform: translateY(-1px);
 }
