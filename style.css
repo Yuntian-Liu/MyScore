@@ -14,6 +14,14 @@
             --text-main: #22303a;
             --text-secondary: #5d6875;
             --text-muted: #8a91a4;
+            --ink-strong: #111827;
+            --ink-stronger: #0f172a;
+            --ink-strong-06: rgba(17, 24, 39, 0.06);
+            --ink-strong-08: rgba(17, 24, 39, 0.08);
+            --ink-strong-14: rgba(17, 24, 39, 0.14);
+            --ink-strong-16: rgba(17, 24, 39, 0.16);
+            --ink-strong-24: rgba(17, 24, 39, 0.24);
+            --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
             --border: rgba(84, 99, 125, 0.14);
             --border-light: rgba(84, 99, 125, 0.08);
             --shadow-sm: 0 16px 38px rgba(96, 108, 139, 0.08);
@@ -110,27 +118,57 @@
             padding: 0.8rem 1.1rem;
             border-radius: 999px;
             font-weight: 600;
-            transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+            transition: background 0.28s var(--ease-smooth), color 0.28s var(--ease-smooth), transform 0.28s var(--ease-smooth);
             cursor: pointer;
             border: none;
             background: transparent;
             color: var(--text-secondary);
             letter-spacing: 0.01em;
             transform: translateY(0);
+            position: relative;
+            isolation: isolate;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .nav-btn::before {
+            content: "";
+            position: absolute;
+            inset: 2px;
+            border-radius: 999px;
+            background: var(--ink-strong-06);
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.28s var(--ease-smooth), transform 0.28s var(--ease-smooth), background 0.28s var(--ease-smooth);
+            z-index: -1;
         }
 
         .nav-btn:hover {
-            background: rgba(0, 0, 0, 0.04);
-            color: var(--text-main);
+            color: var(--ink-strong);
             transform: translateY(0);
+        }
+
+        .nav-btn:hover::before,
+        .nav-btn:focus-visible::before,
+        .nav-btn.active::before {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .nav-btn:focus-visible {
+            outline: none;
+            color: var(--ink-strong);
         }
 
         .nav-btn.active {
             position: relative;
             background: transparent;
-            color: var(--primary);
-            font-weight: 800;
+            color: var(--ink-strong);
+            font-weight: 700;
             box-shadow: none;
+        }
+
+        .nav-btn.active::before {
+            background: var(--ink-strong-08);
         }
 
         .nav-btn.active::after {
@@ -142,7 +180,7 @@
             width: 16px;
             height: 3px;
             border-radius: 999px;
-            background: var(--primary);
+            background: var(--ink-strong);
         }
 
         .btn-primary {
@@ -2401,8 +2439,7 @@
                 width: 100%;
                 padding: 0.62rem 0.85rem;
                 font-size: 0.85rem;
-                border-radius: 10px;
-                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+                border-radius: 999px;
             }
 
             main {
@@ -2711,27 +2748,29 @@
 /* ==================== Login / Register Modal ==================== */
 .login-modal-content {
     max-width: 420px;
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(31, 106, 82, 0.06);
+    background: #ffffff;
+    border-radius: 18px;
+    border: 1px solid #eceff3;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+    padding: 1.75rem;
 }
 .login-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
 }
 .login-modal-title {
     font-size: 1.5rem;
     font-weight: 700;
+    color: var(--ink-strong);
+    background: none !important;
 }
 .login-modal-close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: #9ca3af;
+    background: #f8fafc;
+    border: 1px solid #edf0f4;
+    font-size: 1.4rem;
+    color: #6b7280;
     cursor: pointer;
     width: 36px;
     height: 36px;
@@ -2739,11 +2778,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s, color 0.2s;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
 }
 .login-modal-close:hover {
-    background: #f3f4f6;
+    background: #f1f5f9;
+    border-color: #e5e7eb;
     color: #374151;
+    transform: translateY(-1px);
 }
 .login-steps-wrapper {
     position: relative;
@@ -2765,11 +2806,24 @@
     margin-bottom: 0.5rem;
     font-weight: 600;
     font-size: 0.9rem;
-    color: #374151;
+    color: #1f2937;
 }
 .login-input {
     width: 100%;
     box-sizing: border-box;
+}
+.login-modal-content .input {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 0.9rem 1rem;
+    color: var(--ink-strong);
+    transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+}
+.login-modal-content .input:focus {
+    border-color: #9ca3af;
+    box-shadow: 0 0 0 4px var(--ink-strong-24);
+    transform: translateY(-1px);
 }
 .login-code-input {
     letter-spacing: 0.5em;
@@ -2830,7 +2884,7 @@
     color: #9ca3af;
 }
 .login-hint {
-    color: #9ca3af;
+    color: #6b7280;
     font-size: 0.8rem;
     margin-top: 1rem;
     text-align: center;
@@ -2838,10 +2892,40 @@
 }
 .login-error {
     display: none;
-    color: #ef4444;
+    color: #dc2626;
     font-size: 0.85rem;
     margin-bottom: 0.75rem;
     text-align: center;
+}
+.login-modal-content .btn-primary,
+.login-modal-content .btn-secondary {
+    border-radius: 12px;
+    transition: background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+}
+.login-modal-content .btn-primary {
+    background: var(--ink-strong);
+    color: #ffffff;
+    border: 1px solid var(--ink-strong);
+    box-shadow: 0 10px 24px var(--ink-strong-16);
+}
+.login-modal-content .btn-primary:hover {
+    background: var(--ink-stronger);
+    box-shadow: 0 14px 26px rgba(15, 23, 42, 0.2);
+    transform: translateY(-1px);
+}
+.login-modal-content .btn-secondary {
+    background: #f8fafc;
+    color: #1f2937;
+    border: 1px solid #e5e7eb;
+}
+.login-modal-content .btn-secondary:hover {
+    background: #f1f5f9;
+    border-color: #d1d5db;
+    transform: translateY(-1px);
+}
+.login-modal-content .btn-primary:active,
+.login-modal-content .btn-secondary:active {
+    transform: scale(0.98);
 }
 
 .turnstile-container {
