@@ -1,9 +1,9 @@
 ﻿<div align="center">
 
-# MyScore - AI 智能成绩管理系统 · V4.1.0-beta
+# MyScore - AI 智能成绩管理系统 · V4.2.0-beta
 
 <p>
-    <img src="https://img.shields.io/badge/v4.1.0--beta-Dual_Mode-ff8a63?style=flat-square&logo=rocket&logoColor=white" alt="Version">
+    <img src="https://img.shields.io/badge/v4.2.0--beta-Splash_Stability-7c3aed?style=flat-square&logo=rocket&logoColor=white" alt="Version">
     <img src="https://img.shields.io/badge/Model-DeepSeek-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
     <img src="https://img.shields.io/badge/Deploy-Netlify_%2B_Zeabur-5468ff?style=flat-square&logo=vercel&logoColor=white" alt="Deploy">
     <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=flat-square" alt="License">
@@ -13,11 +13,17 @@
 
 </div>
 
-一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V4.1.0-beta**，新增本地/登录双模式架构——未登录用户可选择本地使用（AI 评论每日限 5 次）或登录解锁完整功能，退出登录时清除本地数据、保留云端备份。
+一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V4.2.0-beta**，新增开屏动画与全面稳健性增强——Siri 风格流体光球 + 手写字体描边动画，配合十余项 Bug 修复与安全加固。
 
 ## 🔔 最新版本速览
 
-### V4.1.0-beta (Current)
+### V4.2.0-beta (Current)
+- ✅ **开屏动画**：Siri 风格流体光球背景 + Great Vibes 手写字体四色渐变描边 + Gemini 呼吸渐变填充，4 秒自动过渡，支持跳过。
+- ✅ **云同步失败提示**：推送/拉取失败时 Toast 通知用户。
+- ✅ **全面稳健性修复**：修复云端误删、注销残留、NaN 显示、弹窗层级、成绩验证、存储溢出等十余项问题。
+- ✅ **安全加固**：CORS 默认拒绝、AI 请求超时、登录同步防竞态。
+
+### V4.1.0-beta
 - ✅ **本地/登录双模式架构**：未登录用户首次触发 AI 时弹窗选择"登录使用"或"本地使用"，本地模式每日 AI 评论限 5 次。
 - ✅ **AI 评论 API 认证**：登录用户 AI 无限制，匿名用户按 IP 每日限 5 次，防止 API 滥用。
 - ✅ **退出登录重设计**：弹窗确认后清除本地成绩数据（云端保留），保留个人偏好设置。

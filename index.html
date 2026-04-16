@@ -1,17 +1,98 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="myscore-comment-endpoint" content="/api/comment">
-    <title>MyScore V4.1.0-beta - AI 智能成绩单 | 碳碳四键的个人开发应用实践</title>
+    <title>MyScore V4.2.0-beta - AI 智能成绩单 | 碳碳四键的个人开发应用实践</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@600;700&family=Great+Vibes&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- 开屏动画 -->
+    <div id="splash-screen">
+        <!-- Siri 风格流体光球背景 -->
+        <div class="splash-orbs">
+            <div class="orb orb-1"></div>
+            <div class="orb orb-2"></div>
+            <div class="orb orb-3"></div>
+        </div>
+
+        <!-- 顶部栏：徽章 + 版本号 + 跳过 -->
+        <div class="splash-topbar">
+            <div class="splash-topbar-left">
+                <div class="splash-badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    AI SMART REPORT
+                </div>
+                <span class="splash-version" id="splash-version"></span>
+            </div>
+            <button class="splash-skip" id="splash-skip">Skip</button>
+        </div>
+
+        <!-- 主内容 -->
+        <div class="splash-center">
+            <div class="splash-text-wrap">
+                <svg class="splash-text-svg" viewBox="0 0 1000 300" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <!-- 四色渐变描边 -->
+                        <linearGradient id="stroke-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#4285f4"/>
+                            <stop offset="33%" stop-color="#9b72cb"/>
+                            <stop offset="66%" stop-color="#d96570"/>
+                            <stop offset="100%" stop-color="#f9ab00"/>
+                        </linearGradient>
+                        <!-- Gemini 呼吸渐变填充 -->
+                        <linearGradient id="fill-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stop-color="#4285f4">
+                                <animate attributeName="stop-color" values="#4285f4;#9b72cb;#d96570;#f9ab00;#4285f4" dur="6s" repeatCount="indefinite"/>
+                            </stop>
+                            <stop offset="33%" stop-color="#9b72cb">
+                                <animate attributeName="stop-color" values="#9b72cb;#d96570;#f9ab00;#4285f4;#9b72cb" dur="6s" repeatCount="indefinite"/>
+                            </stop>
+                            <stop offset="66%" stop-color="#d96570">
+                                <animate attributeName="stop-color" values="#d96570;#f9ab00;#4285f4;#9b72cb;#d96570" dur="6s" repeatCount="indefinite"/>
+                            </stop>
+                            <stop offset="100%" stop-color="#f9ab00">
+                                <animate attributeName="stop-color" values="#f9ab00;#4285f4;#9b72cb;#d96570;#f9ab00" dur="6s" repeatCount="indefinite"/>
+                            </stop>
+                        </linearGradient>
+                    </defs>
+                    <!-- 描边层：渐变线条画出文字 -->
+                    <text x="500" y="180" text-anchor="middle"
+                          font-family="'Great Vibes', cursive" font-size="180"
+                          fill="none" stroke="url(#stroke-grad)" stroke-width="4"
+                          stroke-linecap="round" stroke-linejoin="round"
+                          class="splash-stroke">
+                        My Score
+                    </text>
+                    <!-- 填充层：呼吸渐变淡入 -->
+                    <text x="500" y="180" text-anchor="middle"
+                          font-family="'Great Vibes', cursive" font-size="180"
+                          fill="url(#fill-grad)" class="splash-fill">
+                        My Score
+                    </text>
+                </svg>
+            </div>
+            <!-- Slogan -->
+            <div class="splash-slogan">
+                <span>INTELLIGENT</span>
+                <span class="slogan-dot"></span>
+                <span>TRACKING</span>
+                <span class="slogan-dot"></span>
+                <span>SYSTEM</span>
+            </div>
+        </div>
+
+        <!-- 底部签名 -->
+        <div class="splash-bottom">
+            <div class="splash-divider-line"></div>
+            <span class="splash-signature">碳碳四键的个人开发实践项目</span>
+        </div>
+    </div>
     <div id="app">
         <!-- 头部 -->
         <header class="site-header">
@@ -424,7 +505,7 @@
                     <div class="login-step" id="step-code">
                         <p class="login-code-sent">验证码已发送至 <strong id="login-email-display"></strong></p>
                         <label class="login-label">验证码</label>
-                        <input type="text" id="login-code" class="input login-input login-code-input" maxlength="6" placeholder="6位验证码">
+                        <input type="text" id="login-code" class="input login-input login-code-input" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="6位验证码">
                         <button class="btn-primary" onclick="submitVerifyCode()" id="btn-verify" style="width:100%;margin-top:1rem;">验证</button>
                         <button class="btn-secondary" onclick="goToStep('step-email')" style="width:100%;margin-top:0.5rem;">重新输入</button>
                     </div>
@@ -527,7 +608,7 @@
                         </svg>
                     </span>
                     <div>
-                        <div class="footer-title">MyScore V4.1.0-beta</div>
+                        <div class="footer-title">MyScore V4.2.0-beta</div>
                         <div class="footer-desc">碳碳四键的个人开发实践项目 · 把成绩记录、趋势和陪学反馈收进一个更顺手的仪表盘。</div>
                     </div>
                 </div>
@@ -544,7 +625,7 @@
                         <span class="footer-pill-icon" style="background:#fff0e8;color:#e26d4a;">
                             <svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3.2v13.6M3.2 10h13.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                         </span>
-                        <span><strong>版本</strong> V4.1.0-beta</span>
+                        <span><strong>版本</strong> V4.2.0-beta</span>
                     </span>
 
                     <a class="footer-link-pill" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">

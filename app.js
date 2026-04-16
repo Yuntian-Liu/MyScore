@@ -264,8 +264,8 @@
         async function submitVerifyCode() {
             var email = loginEmailCache;
             var code = document.getElementById('login-code').value.trim();
-            if (!code || code.length !== 6) {
-                showLoginError('请输入6位验证码');
+            if (!code || code.length !== 6 || !/^\d{6}$/.test(code)) {
+                showLoginError('请输入6位数字验证码');
                 return;
             }
             var btn = document.getElementById('btn-verify');
@@ -376,11 +376,15 @@
             updateLoginButton();
 
             // 先拉取云端数据（mergeCloudData 会合并本地+云端），再推送合并结果
+            _isSyncing = true;
             pullFromCloud().then(function() {
                 if (hadLocalRecords) {
                     pushToCloud();
-                    renderDashboard();
                 }
+                _isSyncing = false;
+                renderDashboard();
+            }).catch(function() {
+                _isSyncing = false;
             });
         }
 
@@ -407,15 +411,21 @@
             var overlay = document.getElementById('logout-confirm-modal');
             if (overlay) overlay.classList.remove('active');
 
+            // 清理可能残留的同步定时器
+            clearTimeout(syncTimer);
+
             // 清除成绩和 AI 相关数据，保留偏好设置
             localStorage.removeItem(STORAGE.RECORDS);
             localStorage.removeItem(STORAGE.CUSTOM);
             localStorage.removeItem(STORAGE.AUTH);
-            localStorage.removeItem(STORAGE.USER_MODE);
             localStorage.removeItem(STORAGE.LOCAL_AI_USAGE);
             localStorage.removeItem('myscore_goals');
             localStorage.removeItem('myscore_ai_style');
             localStorage.removeItem('myscore_tutuer_history');
+
+            // 静默进入本地模式，不触发模式选择弹窗
+            localStorage.setItem(STORAGE.USER_MODE, 'local');
+            _justLoggedOut = true;
 
             currentUser = null;
             lastAiCacheKey = '';
@@ -672,6 +682,7 @@
                 });
             } catch (e) {
                 console.warn('Cloud sync failed:', e);
+                showAiToast('云同步失败，请检查网络连接');
             }
         }
 
@@ -687,6 +698,7 @@
                 if (result.data) mergeCloudData(result.data);
             } catch (e) {
                 console.warn('Cloud pull failed:', e);
+                showAiToast('云端数据拉取失败，请检查网络连接');
             }
         }
 
@@ -746,6 +758,8 @@
 
         var aiStyleLocked = false;
         var aiStyleCooldown = false;
+        var _justLoggedOut = false;
+        var _isSyncing = false;
 
         function showAiToast(msg) {
             var existing = document.getElementById('ai-toast');
@@ -993,26 +1007,36 @@
             if (isLoggedIn() && currentUser.token) {
                 headers['Authorization'] = 'Bearer ' + currentUser.token;
             }
-            const res = await fetch(COMMENT_API_ENDPOINT, {
-                method: 'POST',
-                headers: headers,
-                body: JSON.stringify(payload)
-            });
-
-            let data = {};
+            var controller = new AbortController();
+            var timeoutId = setTimeout(function() { controller.abort(); }, 30000);
             try {
-                data = await res.json();
-            } catch (error) {
-                if (!res.ok) {
-                    throw new Error('AI 服务返回了不可解析的响应');
+                const res = await fetch(COMMENT_API_ENDPOINT, {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(payload),
+                    signal: controller.signal
+                });
+
+                let data = {};
+                try {
+                    data = await res.json();
+                } catch (error) {
+                    if (!res.ok) {
+                        throw new Error('AI 服务返回了不可解析的响应');
+                    }
                 }
-            }
 
-            if (!res.ok) {
-                throw new Error(data.error || ('AI 请求失败（' + res.status + '）'));
-            }
+                if (!res.ok) {
+                    throw new Error(data.error || ('AI 请求失败（' + res.status + '）'));
+                }
 
-            return data;
+                return data;
+            } catch (e) {
+                if (e.name === 'AbortError') throw new Error('AI 请求超时，请稍后再试');
+                throw e;
+            } finally {
+                clearTimeout(timeoutId);
+            }
         }
 
         function getRecords() {
@@ -1021,8 +1045,12 @@
         }
 
         function saveRecords(r) {
-            localStorage.setItem(STORAGE.RECORDS, JSON.stringify(r));
-            scheduleCloudSync();
+            try {
+                localStorage.setItem(STORAGE.RECORDS, JSON.stringify(r));
+                scheduleCloudSync();
+            } catch (e) {
+                showAiToast('本地存储空间不足，请导出并清理旧数据');
+            }
         }
 
         function getCustom() {
@@ -1031,8 +1059,12 @@
         }
 
         function saveCustom(c) {
-            localStorage.setItem(STORAGE.CUSTOM, JSON.stringify(c));
-            scheduleCloudSync();
+            try {
+                localStorage.setItem(STORAGE.CUSTOM, JSON.stringify(c));
+                scheduleCloudSync();
+            } catch (e) {
+                showAiToast('本地存储空间不足，请导出并清理旧数据');
+            }
         }
 
         function allExams() {
@@ -1106,10 +1138,14 @@
 
         // ==================== 页面切换 ====================
         function showPage(p) {
+            if (_isSyncing) return;
             document.querySelectorAll('.page').forEach(el => el.classList.add('hidden'));
-            document.getElementById('page-' + p).classList.remove('hidden');
+            var pageEl = document.getElementById('page-' + p);
+            if (!pageEl) return;
+            pageEl.classList.remove('hidden');
             document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById('nav-' + p).classList.add('active');
+            var navEl = document.getElementById('nav-' + p);
+            if (navEl) navEl.classList.add('active');
 
             if (p === 'dashboard') renderDashboard();
             else if (p === 'entry') {
@@ -1358,12 +1394,14 @@ if (isLoggedIn()) {
             statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">考试次数</p><p style="font-size:2rem;font-weight:bold;" class="gradient-text">' + recs.length + '</p></div>';
             statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">最近</p><p style="font-size:1.25rem;font-weight:bold;">' + escapeHtml(recs[recs.length-1].date) + '</p></div>';
             if (exam.calcTotal) {
-                const totals = recs.map(r => r.total);
-                const rootStyle = getComputedStyle(document.documentElement);
-                const accentColor = rootStyle.getPropertyValue('--accent').trim() || '#c35f3d';
-                const supportColor = rootStyle.getPropertyValue('--support').trim() || '#7b6aa6';
-                statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">最佳</p><p style="font-size:2rem;font-weight:bold;color:' + accentColor + ';">' + Math.max(...totals).toFixed(1) + '</p></div>';
-                statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">平均</p><p style="font-size:2rem;font-weight:bold;color:' + supportColor + ';">' + (totals.reduce((a,b)=>a+b,0)/totals.length).toFixed(1) + '</p></div>';
+                const totals = recs.map(r => r.total).filter(t => typeof t === 'number' && isFinite(t));
+                if (totals.length > 0) {
+                    const rootStyle = getComputedStyle(document.documentElement);
+                    const accentColor = rootStyle.getPropertyValue('--accent').trim() || '#c35f3d';
+                    const supportColor = rootStyle.getPropertyValue('--support').trim() || '#7b6aa6';
+                    statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">最佳</p><p style="font-size:2rem;font-weight:bold;color:' + accentColor + ';">' + Math.max(...totals).toFixed(1) + '</p></div>';
+                    statsHtml += '<div class="stat-box"><p style="color:#6b7280;font-size:0.875rem;">平均</p><p style="font-size:2rem;font-weight:bold;color:' + supportColor + ';">' + (totals.reduce((a,b)=>a+b,0)/totals.length).toFixed(1) + '</p></div>';
+                }
             }
             statsHtml += '</div>';
 
@@ -1481,7 +1519,10 @@ if (isLoggedIn()) {
         function clearAllRecords() {
             if (!confirm('确定清空所有记录？此操作不可恢复！')) return;
             localStorage.removeItem(STORAGE.RECORDS);
-            scheduleCloudSync();
+            // 已登录状态下仅清空本地，不同步空数据到云端
+            if (!isLoggedIn()) {
+                scheduleCloudSync();
+            }
             renderDashboard();
         }
 
@@ -1734,18 +1775,35 @@ if (isLoggedIn()) {
             const exam = allExams()[currentExam];
             const scores = {};
 
+            // 验证日期
+            var dateVal = document.getElementById('score-date').value;
+            if (!dateVal) {
+                showAiToast('请选择考试日期');
+                return;
+            }
+
             for (const s of exam.subjects) {
+                var rawVal;
                 if (s.type === 'ielts-writing') {
-                    scores[s.id] = parseFloat(document.getElementById('sub-' + s.id)?.value) || 0;
+                    rawVal = parseFloat(document.getElementById('sub-' + s.id)?.value);
                 } else if (s.type === 'direct') {
-                    scores[s.id] = parseFloat(document.getElementById('sub-' + s.id)?.value) || 0;
+                    rawVal = parseFloat(document.getElementById('sub-' + s.id)?.value);
                 } else if (s.type === 'lookup') {
-                    scores[s.id] = lookup(document.getElementById('sub-' + s.id)?.value, s.id);
+                    rawVal = lookup(document.getElementById('sub-' + s.id)?.value, s.id);
                 } else if (s.type === 'sections' || s.type === 'subquestions') {
-                    scores[s.id] = parseFloat(document.getElementById('calc-' + s.id)?.textContent) || 0;
+                    rawVal = parseFloat(document.getElementById('calc-' + s.id)?.textContent);
                 } else if (s.type === 'formula') {
-                    scores[s.id] = parseFloat(document.getElementById('calc-' + s.id)?.textContent) || 0;
+                    rawVal = parseFloat(document.getElementById('calc-' + s.id)?.textContent);
                 }
+                // 拒绝 NaN 和非有限值
+                if (typeof rawVal !== 'number' || !isFinite(rawVal)) rawVal = 0;
+                scores[s.id] = rawVal;
+            }
+
+            // 检查是否全为零
+            var allZero = Object.values(scores).every(function(v) { return v === 0; });
+            if (allZero) {
+                if (!confirm('所有成绩均为 0，确定要提交吗？')) return;
             }
 
             let total = null;
@@ -1757,7 +1815,7 @@ if (isLoggedIn()) {
             const rec = {
                 id: Date.now(),
                 examType: currentExam,
-                date: document.getElementById('score-date').value,
+                date: dateVal,
                 scores: scores,
                 total: total
             };
@@ -1988,6 +2046,16 @@ let lastAiCacheKey = '';
 
 // 本地模式 AI 评论调用（带次数限制）
 function triggerLocalAiComment(exam, last, historyRecs, aiCacheKey) {
+    // 退出登录后首次触发 AI → 弹出模式选择
+    if (_justLoggedOut) {
+        _justLoggedOut = false;
+        showModeChoiceModal(function(chosenMode) {
+            if (chosenMode === 'local') {
+                triggerLocalAiComment(exam, last, historyRecs, aiCacheKey);
+            }
+        });
+        return;
+    }
     if (isLocalAiLimitReached()) {
         showLocalAiLimitModal();
         showLocalAiHint();
@@ -2414,7 +2482,7 @@ function pokeTeacher() {
     }, 3000);
 }
 // ==================== 版本日志与使用文档 ====================
-const APP_VERSION = '4.1.0-beta';
+const APP_VERSION = '4.2.0-beta';
 const CHANGELOG_STORAGE_KEY = 'myscore_changelog_seen_' + APP_VERSION;
 const CHANGELOG_PLACEHOLDER = `
 <div class="changelog-beta-banner">
@@ -2423,21 +2491,18 @@ const CHANGELOG_PLACEHOLDER = `
 </div>
 <div class="changelog-entry">
   <div class="changelog-header">
-    <span class="changelog-version">V4.1.0-beta</span>
-    <span class="changelog-date">2026-04-15</span>
+    <span class="changelog-version">V4.2.0-beta</span>
+    <span class="changelog-date">2026-04-17</span>
   </div>
-  <div class="changelog-codename">Dual Mode Architecture（本地/登录双模式架构）</div>
+  <div class="changelog-codename">Splash & Stability（开屏动画与稳健性增强）</div>
   <div class="changelog-section">
     <div class="changelog-section-title">
-      <span class="changelog-icon" style="background:linear-gradient(135deg,#6366f1,#ec4899);">★</span>
-      架构升级
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#4285f4,#f9ab00);">★</span>
+      新增
     </div>
     <ul class="changelog-list">
-      <li><strong>本地/登录双模式</strong>：新增使用方式选择弹窗，未登录用户可选择"本地使用"或"登录使用"</li>
-      <li><strong>AI 评论 API 认证</strong>：登录用户 AI 评论无限制，匿名用户每日限 5 次（按 IP），防止滥用</li>
-      <li><strong>本地模式提示条</strong>：AI 评论区域显示"今日已用 x/5 次"，引导用户登录</li>
-      <li><strong>退出登录重设计</strong>：退出时弹窗确认，清除本地成绩数据（云端保留），保留个人偏好设置</li>
-      <li><strong>本地→云端迁移</strong>：本地用户登录后自动将本地数据同步到云端</li>
+      <li><strong>开屏动画</strong>：Siri 风格流体光球背景 + Great Vibes 手写字体四色渐变描边动画 + Gemini 呼吸渐变填充，4 秒自动过渡，支持跳过</li>
+      <li><strong>云同步失败提示</strong>：推送/拉取云端数据失败时显示 Toast 通知用户</li>
     </ul>
   </div>
   <div class="changelog-section">
@@ -2446,16 +2511,16 @@ const CHANGELOG_PLACEHOLDER = `
       修复
     </div>
     <ul class="changelog-list">
-      <li>修复内测感谢 Banner 关闭按钮无法点击的问题（作用域错误）</li>
-      <li>修复 Banner 关闭按钮与主体高度不对齐、圆角衔接断裂的样式问题</li>
-      <li>修复中文字体（如"鲨"）渲染异常</li>
-      <li>修复公式型成绩小数被截断的问题（parseInt → parseFloat）</li>
-      <li>修复 Dashboard 标签切换使用隐式 event 变量导致的不稳定问题</li>
-      <li>修复验证码登录时 code entry attempts 被多加一次的问题</li>
-      <li>修复 UID 生成在并发场景下可能重复的竞态条件</li>
-      <li>修复 forceLogout 后残留 user_mode 导致 AI 评论永久失效的问题</li>
-      <li>修复自定义考试"公式计算"类型科目折算分显示 NaN（mult 属性未初始化）</li>
-      <li>修复自定义考试 sections/subquestions 数据异常时页面崩溃的问题</li>
+      <li>修复已登录状态清空记录误删云端数据的问题</li>
+      <li>修复注销后残留同步定时器可能触发空推送</li>
+      <li>修复无本地记录时登录成功后页面不刷新</li>
+      <li>修复无有效成绩时统计卡片显示 NaN</li>
+      <li>修复 Profile Card 浮在弹窗之上的层级错误</li>
+      <li>修复成绩提交无验证（NaN/负数/空日期/全零）</li>
+      <li>修复 localStorage 存储溢出导致应用崩溃</li>
+      <li>修复无效页面名导致页面切换崩溃</li>
+      <li>修复验证码输入框可输入非数字字符</li>
+      <li>修复退出登录后立即弹出模式选择的时机问题</li>
     </ul>
   </div>
   <div class="changelog-section">
@@ -2464,10 +2529,9 @@ const CHANGELOG_PLACEHOLDER = `
       优化
     </div>
     <ul class="changelog-list">
-      <li>移除未使用的 Tailwind CDN（减少 ~300KB 页面加载）</li>
-      <li>AI 评论新增缓存机制，避免相同参数重复调用 API</li>
-      <li>清理 3 个未使用的死代码函数（净减少 ~100 行）</li>
-      <li>导出数据/报告水印版本号改为动态引用，不再硬编码</li>
+      <li>CORS 默认策略改为拒绝未配置来源（安全加固）</li>
+      <li>登录同步期间阻止页面切换，防止数据竞态</li>
+      <li>AI API 请求增加 30 秒超时保护</li>
     </ul>
   </div>
 </div>`;
@@ -2980,6 +3044,16 @@ function askTutuerStudyPlan() {
 
 async function sendTutuerMessage() {
     if (tutuerSending) return;
+    // 退出登录后首次触发 AI → 弹出模式选择
+    if (_justLoggedOut) {
+        _justLoggedOut = false;
+        showModeChoiceModal(function(chosenMode) {
+            if (chosenMode === 'local') {
+                sendTutuerMessage();
+            }
+        });
+        return;
+    }
     const input = document.getElementById('tutuer-input');
     if (!input) return;
     const userText = input.value.trim();
@@ -3032,15 +3106,42 @@ document.addEventListener('keydown', function (event) {
 document.addEventListener('DOMContentLoaded', updatePetMood);
         // ==================== 初始化 ====================
         document.addEventListener('DOMContentLoaded', function () {
+            // ==================== 开屏动画 ====================
+            (function initSplash() {
+                var splash = document.getElementById('splash-screen');
+                if (!splash) return;
+
+                if (sessionStorage.getItem('myscore_splash_shown')) {
+                    splash.remove();
+                    return;
+                }
+                sessionStorage.setItem('myscore_splash_shown', '1');
+
+                var ver = document.getElementById('splash-version');
+                if (ver) ver.textContent = 'V' + APP_VERSION;
+
+                var dismissed = false;
+                function dismissSplash() {
+                    if (dismissed || !splash.parentNode) return;
+                    dismissed = true;
+                    splash.classList.add('fade-out');
+                    setTimeout(function() { splash.remove(); }, 800);
+                }
+
+                var skipBtn = document.getElementById('splash-skip');
+                if (skipBtn) skipBtn.addEventListener('click', dismissSplash);
+
+                setTimeout(dismissSplash, 4000);
+            })();
+
             // ==================== 内测感谢 Banner ====================
             var BETA_BANNER = {
                 enabled: true,
                 items: [
-                    '感谢反馈：',
-                    '<span class="banner-name banner-name-red">大鲨鱼</span>反馈人机验证失败、自定义考试 NaN 问题',
-                    '<span class="banner-name banner-name-blue">Osc</span>反馈意外触发登录、数据存储逻辑问题',
-                    '<span class="banner-name banner-name-green">处方</span>反馈登录 Turnstile 无法触发问题',
-                    '开发组现已修复上述问题，请大家继续体验~'
+                    'V4.2.0-beta 更新：',
+                    '新增开屏动画（Siri 风格流体光球 + 手写字体描边）',
+                    '修复云端误删、NaN 显示、弹窗层级等十余项稳健性问题',
+                    '感谢 <span class="banner-name banner-name-red">大鲨鱼</span><span class="banner-name banner-name-blue">Osc</span><span class="banner-name banner-name-green">处方</span> 的反馈贡献'
                 ]
             };
             function renderBetaBanner() {
