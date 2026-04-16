@@ -1,4 +1,13 @@
-        :root {
+        /* 自托管 Great Vibes 字体（避免国内无法访问 Google Fonts） */
+@font-face {
+    font-family: 'Great Vibes';
+    src: url('fonts/GreatVibes-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+:root {
             --bg-main: #f7f5ff;
             --bg-soft: #eef7f5;
             --bg-card: rgba(255, 255, 255, 0.82);

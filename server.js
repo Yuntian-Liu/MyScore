@@ -78,6 +78,9 @@ const MIME_TYPES = {
   ".ico": "image/x-icon",
   ".txt": "text/plain; charset=utf-8",
   ".md": "text/markdown; charset=utf-8",
+  ".ttf": "font/ttf",
+  ".woff2": "font/woff2",
+  ".woff": "font/woff",
 };
 
 function sendJson(res, status, payload, extraHeaders = {}) {

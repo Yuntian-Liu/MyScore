@@ -3120,18 +3120,22 @@ document.addEventListener('DOMContentLoaded', updatePetMood);
                 var ver = document.getElementById('splash-version');
                 if (ver) ver.textContent = 'V' + APP_VERSION;
 
-                var dismissed = false;
-                function dismissSplash() {
-                    if (dismissed || !splash.parentNode) return;
-                    dismissed = true;
-                    splash.classList.add('fade-out');
-                    setTimeout(function() { splash.remove(); }, 800);
-                }
+                // 等待 Great Vibes 字体加载完成后再启动动画
+                var fontReady = document.fonts ? document.fonts.load("96px 'Great Vibes'") : Promise.resolve();
+                fontReady.catch(function() {}).then(function() {
+                    var dismissed = false;
+                    function dismissSplash() {
+                        if (dismissed || !splash.parentNode) return;
+                        dismissed = true;
+                        splash.classList.add('fade-out');
+                        setTimeout(function() { splash.remove(); }, 800);
+                    }
 
-                var skipBtn = document.getElementById('splash-skip');
-                if (skipBtn) skipBtn.addEventListener('click', dismissSplash);
+                    var skipBtn = document.getElementById('splash-skip');
+                    if (skipBtn) skipBtn.addEventListener('click', dismissSplash);
 
-                setTimeout(dismissSplash, 4000);
+                    setTimeout(dismissSplash, 4000);
+                });
             })();
 
             // ==================== 内测感谢 Banner ====================

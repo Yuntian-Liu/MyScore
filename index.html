@@ -13,6 +13,8 @@
 </head>
 <body>
     <!-- 开屏动画 -->
+    <!-- 隐藏元素：强制浏览器预加载 Great Vibes 字体 -->
+    <div style="font-family:'Great Vibes',cursive;position:absolute;left:-9999px;visibility:hidden;" aria-hidden="true">My Score</div>
     <div id="splash-screen">
         <!-- Siri 风格流体光球背景 -->
         <div class="splash-orbs">
@@ -63,7 +65,7 @@
                     </defs>
                     <!-- 描边层：渐变线条画出文字 -->
                     <text x="500" y="180" text-anchor="middle"
-                          font-family="'Great Vibes', cursive" font-size="180"
+                          font-family="Great Vibes, cursive" font-size="180"
                           fill="none" stroke="url(#stroke-grad)" stroke-width="4"
                           stroke-linecap="round" stroke-linejoin="round"
                           class="splash-stroke">
@@ -71,7 +73,7 @@
                     </text>
                     <!-- 填充层：呼吸渐变淡入 -->
                     <text x="500" y="180" text-anchor="middle"
-                          font-family="'Great Vibes', cursive" font-size="180"
+                          font-family="Great Vibes, cursive" font-size="180"
                           fill="url(#fill-grad)" class="splash-fill">
                         My Score
                     </text>
