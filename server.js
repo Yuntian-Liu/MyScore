@@ -220,13 +220,13 @@ async function serveStatic(req, res) {
   const ext = extname(filePath).toLowerCase();
   const contentType = MIME_TYPES[ext] || "application/octet-stream";
 
-  // Cache-Control by file type
+  // Cache-Control: fonts long cache, others revalidate
   const cacheRules = {
     ".woff2": "public, max-age=31536000, immutable",
     ".woff":  "public, max-age=31536000, immutable",
     ".ttf":   "public, max-age=31536000, immutable",
-    ".css":   "public, max-age=3600",
-    ".js":    "public, max-age=3600",
+    ".css":   "max-age=0, must-revalidate",
+    ".js":    "max-age=0, must-revalidate",
     ".html":  "no-cache",
     ".png":   "public, max-age=86400",
     ".jpg":   "public, max-age=86400",
@@ -237,7 +237,17 @@ async function serveStatic(req, res) {
   };
   const cacheControl = cacheRules[ext] || "no-cache";
 
-  const headers = { "Content-Type": contentType, "Cache-Control": cacheControl };
+  // 304 Not Modified: check If-Modified-Since
+  const fileStat = await stat(filePath);
+  const mtime = fileStat.mtime.toUTCString();
+  const ifModifiedSince = req.headers["if-modified-since"];
+  if (ifModifiedSince && new Date(ifModifiedSince).getTime() >= fileStat.mtime.getTime()) {
+    res.writeHead(304, { "Cache-Control": cacheControl, "Last-Modified": mtime });
+    res.end();
+    return;
+  }
+
+  const headers = { "Content-Type": contentType, "Cache-Control": cacheControl, "Last-Modified": mtime };
 
   // gzip for text-based files
   const gzipTypes = [".html", ".css", ".js", ".json", ".svg", ".md", ".txt"];
