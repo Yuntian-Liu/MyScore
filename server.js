@@ -1,6 +1,7 @@
 import { createReadStream, existsSync } from "node:fs";
 import { stat } from "node:fs/promises";
 import { createServer } from "node:http";
+import { createGzip } from "node:zlib";
 import { extname, join, normalize, resolve, sep } from "node:path";
 import { CORS_HEADERS, requestAiComment } from "./lib/aiComment.js";
 import { initDb, saveUserData, getUserData, findUser, findUserByUid, updateUserProfile, maskEmail } from "./lib/db.js";
@@ -218,14 +219,47 @@ async function serveStatic(req, res) {
 
   const ext = extname(filePath).toLowerCase();
   const contentType = MIME_TYPES[ext] || "application/octet-stream";
-  res.writeHead(200, { "Content-Type": contentType });
+
+  // Cache-Control by file type
+  const cacheRules = {
+    ".woff2": "public, max-age=31536000, immutable",
+    ".woff":  "public, max-age=31536000, immutable",
+    ".ttf":   "public, max-age=31536000, immutable",
+    ".css":   "public, max-age=3600",
+    ".js":    "public, max-age=3600",
+    ".html":  "no-cache",
+    ".png":   "public, max-age=86400",
+    ".jpg":   "public, max-age=86400",
+    ".jpeg":  "public, max-age=86400",
+    ".webp":  "public, max-age=86400",
+    ".svg":   "public, max-age=86400",
+    ".ico":   "public, max-age=86400",
+  };
+  const cacheControl = cacheRules[ext] || "no-cache";
+
+  const headers = { "Content-Type": contentType, "Cache-Control": cacheControl };
+
+  // gzip for text-based files
+  const gzipTypes = [".html", ".css", ".js", ".json", ".svg", ".md", ".txt"];
+  const acceptGzip = gzipTypes.includes(ext) && (req.headers["accept-encoding"] || "").includes("gzip");
+
+  if (acceptGzip) {
+    headers["Content-Encoding"] = "gzip";
+  }
+
+  res.writeHead(200, headers);
 
   if (req.method === "HEAD") {
     res.end();
     return;
   }
 
-  createReadStream(filePath).pipe(res);
+  const stream = createReadStream(filePath);
+  if (acceptGzip) {
+    stream.pipe(createGzip()).pipe(res);
+  } else {
+    stream.pipe(res);
+  }
 }
 
 async function handleAuthRequest(req, res, path) {
