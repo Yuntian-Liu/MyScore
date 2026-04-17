@@ -735,30 +735,41 @@
     </footer>
     </div>
 
- <div id="desktop-pet" onclick="pokeTeacher()" style="position: fixed; bottom: 2rem; right: 2rem; z-index: 999; cursor: pointer; transition: transform 0.2s ease;">
+ <div id="desktop-pet" style="position: fixed; bottom: 2rem; right: 2rem; z-index: 999; cursor: grab; user-select: none; touch-action: none; transition: transform 0.2s ease;">
+    <button id="pet-close-btn" type="button" aria-label="关闭桌宠" style="
+        position: absolute; top: -6px; right: -6px; z-index: 1001;
+        width: 22px; height: 22px; border-radius: 50%;
+        background: rgba(0,0,0,0.12); border: 1.5px solid rgba(255,255,255,0.7);
+        color: #fff; font-size: 12px; line-height: 1;
+        cursor: pointer; display: none;
+        align-items: center; justify-content: center;
+        transition: background 0.15s;">&times;</button>
+    <div id="pet-scale-handle" style="
+        position: absolute; bottom: -4px; left: -4px;
+        width: 14px; height: 14px; cursor: nwse-resize; z-index: 1001;
+        opacity: 0; transition: opacity 0.2s;">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12 2L2 12M12 7L7 12" stroke="#999" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
     <div id="pet-bubble" style="
-        position: absolute; 
-        bottom: 110%; 
-        right: 0; 
-        width: 220px; 
-        background: white; 
-        padding: 1rem; 
+        position: absolute;
+        bottom: 110%;
+        right: 0;
+        width: 220px; background: white; padding: 1rem;
         border-radius: 16px 16px 0 16px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         border: 1.5px solid var(--primary);
         color: #374151;
         font-size: 0.9rem;
-        opacity: 0; 
-        visibility: hidden; 
+        opacity: 0; visibility: hidden;
         transition: all 0.3s ease;
         pointer-events: none;">
         今天背单词了吗？😡
     </div>
-    
     <div id="pet-avatar" style="font-size: 4.5rem; filter: drop-shadow(0 5px 15px rgba(16, 185, 129, 0.3)); user-select: none;">
         👨‍🏫
     </div>
 </div>
+<button class="pet-show-fab hidden" id="pet-show-fab" type="button" aria-label="显示桌宠"><span>👨‍🏫</span></button>
 <button class="changelog-fab" type="button" onclick="openInfoModal('changelog')" aria-label="查看版本日志">
     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M9 12h6m-6 4h6M8 4h8a2 2 0 012 2v12a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2z"/>

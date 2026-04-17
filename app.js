@@ -2668,8 +2668,8 @@ function getNonRepeatingQuoteIndex() {
 
 function pokeTeacher() {
     const bubble = document.getElementById('pet-bubble');
-    const avatar = document.getElementById('desktop-pet');
-    
+    const pet = document.getElementById('desktop-pet');
+
     // 短期不重复：优先避开最近出现过的语录
     const randomQuote = SASSY_QUOTES[getNonRepeatingQuoteIndex()];
     bubble.innerText = randomQuote;
@@ -2680,16 +2680,341 @@ function pokeTeacher() {
     bubble.style.transform = 'translateY(-10px)';
 
     // 头像抖动特效
-    avatar.style.transform = 'scale(0.9) rotate(-5deg)';
-    setTimeout(() => avatar.style.transform = 'scale(1) rotate(0)', 200);
+    pet.style.transform = 'scale(0.9) rotate(-5deg)';
+    setTimeout(function() { pet.style.transform = ''; }, 200);
 
     // 3秒后自动消失
     if (bubbleTimer) clearTimeout(bubbleTimer);
-    bubbleTimer = setTimeout(() => {
+    bubbleTimer = setTimeout(function() {
         bubble.style.opacity = '0';
         bubble.style.visibility = 'hidden';
         bubble.style.transform = 'translateY(0)';
     }, 3000);
+}
+
+// ==================== 桌宠拖动 / 缩放 / 吸附 / 关闭 ====================
+const PET_STORAGE_KEY = 'myscore_pet_state';
+const PET_DRAG_THRESHOLD = 5;
+const PET_SNAP_THRESHOLD = 20;
+const PET_SNAP_MARGIN = 8;
+const PET_MIN_SCALE = 0.5;
+const PET_MAX_SCALE = 1.8;
+
+var petDragState = null;
+var petScaleState = null;
+
+function getPetState() {
+    try { return JSON.parse(localStorage.getItem(PET_STORAGE_KEY)) || {}; }
+    catch(e) { return {}; }
+}
+
+function savePetState(patch) {
+    var prev = getPetState();
+    localStorage.setItem(PET_STORAGE_KEY, JSON.stringify(Object.assign({}, prev, patch)));
+}
+
+function initPetDraggable() {
+    var pet = document.getElementById('desktop-pet');
+    if (!pet) return;
+
+    var state = getPetState();
+
+    // Visibility
+    if (state.visible === false) {
+        pet.style.display = 'none';
+        var showFab = document.getElementById('pet-show-fab');
+        if (showFab) showFab.classList.remove('hidden');
+    }
+
+    // Position
+    if (typeof state.x === 'number' && typeof state.y === 'number') {
+        pet.style.right = 'auto';
+        pet.style.bottom = 'auto';
+        pet.style.left = state.x + 'px';
+        pet.style.top = state.y + 'px';
+        pet.classList.add('pet-positioned');
+    }
+
+    // Scale
+    var scale = typeof state.scale === 'number' ? state.scale : 1;
+    pet.querySelector('#pet-avatar').style.fontSize = (4.5 * scale) + 'rem';
+
+    // Bind drag events
+    pet.addEventListener('pointerdown', onPetPointerDown);
+    document.addEventListener('pointermove', onPetPointerMove);
+    document.addEventListener('pointerup', onPetPointerUp);
+
+    // Scale handle (desktop)
+    var scaleHandle = document.getElementById('pet-scale-handle');
+    if (scaleHandle) {
+        scaleHandle.addEventListener('pointerdown', onPetScaleStart);
+    }
+
+    // Close button
+    var closeBtn = document.getElementById('pet-close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            hideDesktopPet();
+        });
+    }
+
+    // Show close + scale handle on hover
+    pet.addEventListener('mouseenter', function() {
+        if (closeBtn) closeBtn.style.display = 'flex';
+        if (scaleHandle) scaleHandle.style.opacity = '1';
+    });
+    pet.addEventListener('mouseleave', function() {
+        if (closeBtn) closeBtn.style.display = 'none';
+        if (scaleHandle) scaleHandle.style.opacity = '0';
+    });
+
+    // Show FAB click
+    var showFab = document.getElementById('pet-show-fab');
+    if (showFab) {
+        showFab.addEventListener('click', showDesktopPet);
+    }
+
+    // Mobile pinch-to-zoom
+    var petPinchState = null;
+    pet.addEventListener('touchstart', function(e) {
+        if (e.touches.length === 2) {
+            e.preventDefault();
+            var dist = getTouchDistance(e.touches);
+            var currentScale = getPetState().scale || 1;
+            petPinchState = { startDist: dist, startScale: currentScale };
+        }
+    }, { passive: false });
+
+    pet.addEventListener('touchmove', function(e) {
+        if (!petPinchState || e.touches.length !== 2) return;
+        e.preventDefault();
+        var dist = getTouchDistance(e.touches);
+        var ratio = dist / petPinchState.startDist;
+        var newScale = Math.max(PET_MIN_SCALE, Math.min(PET_MAX_SCALE, petPinchState.startScale * ratio));
+        var avatar = document.getElementById('pet-avatar');
+        if (avatar) avatar.style.fontSize = (4.5 * newScale) + 'rem';
+    }, { passive: false });
+
+    pet.addEventListener('touchend', function() {
+        if (!petPinchState) return;
+        var avatar = document.getElementById('pet-avatar');
+        var fs = parseFloat(avatar.style.fontSize) || 4.5;
+        var finalScale = fs / 4.5;
+        savePetState({ scale: finalScale });
+        petPinchState = null;
+    });
+
+    // Window resize: clamp to viewport
+    window.addEventListener('resize', function() {
+        if (!pet || pet.style.display === 'none') return;
+        if (!pet.classList.contains('pet-positioned')) return;
+        clampPetToViewport();
+    });
+}
+
+function onPetPointerDown(e) {
+    if (e.target.closest('#pet-close-btn') || e.target.closest('#pet-scale-handle')) return;
+
+    var pet = document.getElementById('desktop-pet');
+    var rect = pet.getBoundingClientRect();
+
+    petDragState = {
+        startX: e.clientX,
+        startY: e.clientY,
+        offsetX: e.clientX - rect.left,
+        offsetY: e.clientY - rect.top,
+        moved: false
+    };
+
+    pet.classList.add('dragging');
+    pet.style.cursor = 'grabbing';
+    pet.setPointerCapture(e.pointerId);
+    e.preventDefault();
+}
+
+function onPetPointerMove(e) {
+    if (!petDragState) return;
+
+    var dx = e.clientX - petDragState.startX;
+    var dy = e.clientY - petDragState.startY;
+
+    if (!petDragState.moved && (Math.abs(dx) > PET_DRAG_THRESHOLD || Math.abs(dy) > PET_DRAG_THRESHOLD)) {
+        petDragState.moved = true;
+    }
+
+    if (!petDragState.moved) return;
+
+    var pet = document.getElementById('desktop-pet');
+    var w = pet.offsetWidth;
+    var h = pet.offsetHeight;
+    var newLeft = Math.max(0, Math.min(window.innerWidth - w, e.clientX - petDragState.offsetX));
+    var newTop = Math.max(0, Math.min(window.innerHeight - h, e.clientY - petDragState.offsetY));
+
+    pet.style.right = 'auto';
+    pet.style.bottom = 'auto';
+    pet.style.left = newLeft + 'px';
+    pet.style.top = newTop + 'px';
+    pet.classList.add('pet-positioned');
+
+    updateBubbleDirection(newLeft);
+}
+
+function onPetPointerUp(e) {
+    if (!petDragState) return;
+
+    var pet = document.getElementById('desktop-pet');
+    pet.classList.remove('dragging');
+    pet.style.cursor = 'grab';
+
+    if (!petDragState.moved) {
+        pokeTeacher();
+        petDragState = null;
+        return;
+    }
+
+    snapPetToEdge();
+    petDragState = null;
+}
+
+function snapPetToEdge() {
+    var pet = document.getElementById('desktop-pet');
+    var rect = pet.getBoundingClientRect();
+    var vw = window.innerWidth;
+    var vh = window.innerHeight;
+
+    var distLeft = rect.left;
+    var distRight = vw - rect.right;
+    var distTop = rect.top;
+    var distBottom = vh - rect.bottom;
+
+    var snapped = false;
+    var finalLeft = rect.left;
+    var finalTop = rect.top;
+
+    // Left/right snapping
+    if (distLeft < PET_SNAP_THRESHOLD) {
+        finalLeft = PET_SNAP_MARGIN;
+        snapped = true;
+    } else if (distRight < PET_SNAP_THRESHOLD) {
+        finalLeft = vw - rect.width - PET_SNAP_MARGIN;
+        snapped = true;
+    }
+
+    // Top/bottom: toast only
+    if (distTop < PET_SNAP_THRESHOLD || distBottom < PET_SNAP_THRESHOLD) {
+        showAiToast('桌宠只支持左右边缘吸附哦~');
+    }
+
+    if (snapped) {
+        pet.style.transition = 'left 0.3s cubic-bezier(0.22,1,0.36,1), top 0.3s cubic-bezier(0.22,1,0.36,1), transform 0.2s ease';
+        pet.style.left = finalLeft + 'px';
+        pet.style.top = finalTop + 'px';
+        updateBubbleDirection(finalLeft);
+        setTimeout(function() {
+            pet.style.transition = 'transform 0.2s ease';
+        }, 350);
+    }
+
+    // Save position
+    var saveRect = snapped ? { left: finalLeft, top: finalTop } : { left: rect.left, top: rect.top };
+    savePetState({ x: saveRect.left, y: saveRect.top });
+}
+
+function updateBubbleDirection(petLeft) {
+    var bubble = document.getElementById('pet-bubble');
+    if (!bubble) return;
+    var pet = document.getElementById('desktop-pet');
+    var vw = window.innerWidth;
+    var petCenter = petLeft + pet.offsetWidth / 2;
+
+    if (petCenter < vw / 2) {
+        bubble.style.left = '0';
+        bubble.style.right = 'auto';
+        bubble.style.borderRadius = '16px 16px 16px 0';
+    } else {
+        bubble.style.right = '0';
+        bubble.style.left = 'auto';
+        bubble.style.borderRadius = '16px 16px 0 16px';
+    }
+}
+
+function onPetScaleStart(e) {
+    e.stopPropagation();
+    e.preventDefault();
+
+    var currentScale = getPetState().scale || 1;
+
+    petScaleState = {
+        startX: e.clientX,
+        startY: e.clientY,
+        startScale: currentScale
+    };
+
+    document.addEventListener('pointermove', onPetScaleMove);
+    document.addEventListener('pointerup', onPetScaleEnd);
+}
+
+function onPetScaleMove(e) {
+    if (!petScaleState) return;
+
+    var delta = (petScaleState.startX - e.clientX) + (e.clientY - petScaleState.startY);
+    var scaleFactor = delta / 100;
+    var newScale = Math.max(PET_MIN_SCALE, Math.min(PET_MAX_SCALE, petScaleState.startScale + scaleFactor));
+
+    var avatar = document.getElementById('pet-avatar');
+    if (avatar) avatar.style.fontSize = (4.5 * newScale) + 'rem';
+}
+
+function onPetScaleEnd() {
+    if (!petScaleState) return;
+
+    var avatar = document.getElementById('pet-avatar');
+    var fs = parseFloat(avatar.style.fontSize) || 4.5;
+    var finalScale = fs / 4.5;
+    savePetState({ scale: finalScale });
+
+    petScaleState = null;
+    document.removeEventListener('pointermove', onPetScaleMove);
+    document.removeEventListener('pointerup', onPetScaleEnd);
+}
+
+function hideDesktopPet() {
+    var pet = document.getElementById('desktop-pet');
+    if (pet) pet.style.display = 'none';
+    var showFab = document.getElementById('pet-show-fab');
+    if (showFab) showFab.classList.remove('hidden');
+    savePetState({ visible: false });
+}
+
+function showDesktopPet() {
+    var pet = document.getElementById('desktop-pet');
+    if (pet) pet.style.display = '';
+    var showFab = document.getElementById('pet-show-fab');
+    if (showFab) showFab.classList.add('hidden');
+    savePetState({ visible: true });
+}
+
+function clampPetToViewport() {
+    var pet = document.getElementById('desktop-pet');
+    if (!pet || pet.style.display === 'none') return;
+    var w = pet.offsetWidth;
+    var h = pet.offsetHeight;
+    var left = parseFloat(pet.style.left) || 0;
+    var top = parseFloat(pet.style.top) || 0;
+    left = Math.max(0, Math.min(window.innerWidth - w, left));
+    top = Math.max(0, Math.min(window.innerHeight - h, top));
+    pet.style.left = left + 'px';
+    pet.style.top = top + 'px';
+    pet.style.right = 'auto';
+    pet.style.bottom = 'auto';
+    updateBubbleDirection(left);
+}
+
+function getTouchDistance(touches) {
+    var dx = touches[0].clientX - touches[1].clientX;
+    var dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
 }
 // ==================== 版本日志与使用文档 ====================
 const APP_VERSION = '5.0.0-beta';
@@ -2715,6 +3040,7 @@ const CHANGELOG_PLACEHOLDER = `
       <li><strong>扣分制计分</strong>：自定义考试新增第五种计分类型「扣分制」——从满分扣除</li>
       <li><strong>输入实时校验</strong>：超范围成绩立即红框提示，保存前自动拦截</li>
       <li><strong>分享卡记录选择</strong>：导出报告时可选择具体哪次成绩记录</li>
+      <li><strong>桌宠增强</strong>：支持自由拖动、缩放、左右边缘吸附、关闭与重新打开，状态自动记忆</li>
     </ul>
   </div>
   <div class="changelog-section">
@@ -3310,6 +3636,7 @@ document.addEventListener('keydown', function (event) {
 });
 // 页面加载完成后，顺便初始化一下心情
 document.addEventListener('DOMContentLoaded', updatePetMood);
+document.addEventListener('DOMContentLoaded', initPetDraggable);
         // ==================== 初始化 ====================
         document.addEventListener('DOMContentLoaded', function () {
             // ==================== 开屏动画 ====================
