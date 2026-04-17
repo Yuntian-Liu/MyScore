@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="myscore-comment-endpoint" content="/api/comment">
-    <title>MyScore V4.2.0-beta - AI 智能成绩单 | 碳碳四键的个人开发应用实践</title>
+    <title>MyScore V5.0.0-beta - AI 智能成绩单 | 碳碳四键的个人开发应用实践</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -224,7 +224,7 @@
 
     <div id="reply-input-area" style="display:none; margin-top: 0.5rem; animation: fadeIn 0.3s ease;">
         <div style="display: flex; gap: 0.5rem;">
-            <input type="text" id="user-rebuttal" placeholder="输入你想回应的话..." style="flex: 1; border: 1px solid rgba(81,63,44,0.14); border-radius: 0.9rem; padding: 0.65rem 0.8rem; outline: none; font-size: 0.92rem; background: rgba(255,251,245,0.94);">
+            <input type="text" id="user-rebuttal" autocomplete="off" placeholder="输入你想回应的话..." style="flex: 1; border: 1px solid rgba(81,63,44,0.14); border-radius: 0.9rem; padding: 0.65rem 0.8rem; outline: none; font-size: 0.92rem; background: rgba(255,251,245,0.94);">
             <button onclick="sendRebuttal()" style="background: #1f6a52; color: white; border: none; padding: 0.65rem 1rem; border-radius: 0.9rem; cursor: pointer; font-size: 0.9rem; font-weight:700;">发送</button>
         </div>
     </div>
@@ -378,8 +378,8 @@
                     </div>
                     <div style="margin-bottom: 1rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                            <label style="font-weight: 500;">科目设置</label>
-                            <button type="button" onclick="addSubject()" style="color: #10b981; background: none; border: none; cursor: pointer; font-weight: 500;">+ 添加科目</button>
+                            <label style="font-weight: 500;">题型设置</label>
+                            <button type="button" onclick="addSubject()" style="color: #10b981; background: none; border: none; cursor: pointer; font-weight: 500;">+ 添加题型</button>
                         </div>
                         <div id="subjects-list"></div>
                     </div>
@@ -605,8 +605,8 @@
                         </svg>
                     </span>
                     <div>
-                        <div class="footer-title">MyScore V4.2.0-beta</div>
-                        <div class="footer-desc">碳碳四键的个人开发实践项目 · 把成绩记录、趋势和陪学反馈收进一个更顺手的仪表盘。</div>
+                        <div class="footer-title">MyScore V5.0.0-beta</div>
+                        <div class="footer-desc">碳碳四键的个人开发实践项目<br>把成绩记录、趋势和陪学反馈收进一个更顺手的仪表盘</div>
                     </div>
                 </div>
 
@@ -622,7 +622,7 @@
                         <span class="footer-pill-icon" style="background:#fff0e8;color:#e26d4a;">
                             <svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3.2v13.6M3.2 10h13.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                         </span>
-                        <span><strong>版本</strong> V4.2.0-beta</span>
+                        <span><strong>版本</strong> V5.0.0-beta</span>
                     </span>
 
                     <a class="footer-link-pill" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
@@ -790,7 +790,7 @@
             <button class="tutuer-quick-btn" type="button" onclick="clearTutuerHistory()">清空对话</button>
         </div>
         <div class="tutuer-input-row">
-            <textarea id="tutuer-input" class="tutuer-input" placeholder="和突突er说点什么..." onkeydown="handleTutuerInputKeydown(event)"></textarea>
+            <textarea id="tutuer-input" class="tutuer-input" autocomplete="off" placeholder="和突突er说点什么..." onkeydown="handleTutuerInputKeydown(event)"></textarea>
             <button id="tutuer-send-btn" class="btn-primary" type="button" onclick="sendTutuerMessage()" style="padding:0.65rem 1rem;">发送</button>
         </div>
     </div>
@@ -836,11 +836,16 @@
         </div>
         <div style="margin-bottom:1.5rem;">
             <label style="display:block;margin-bottom:0.5rem;font-weight:500;">选择考试类型</label>
-            <select id="report-exam-select" class="input" onchange="renderReportPreview()">
+            <select id="report-exam-select" class="input" onchange="onReportExamChange()">
                 <option value="all">全部考试类型</option>
             </select>
         </div>
-        <div style="margin-bottom:1.5rem;">
+        <div id="report-record-row" style="margin-bottom:1.5rem;display:none;">
+            <label style="display:block;margin-bottom:0.5rem;font-weight:500;">选择记录</label>
+            <select id="report-record-select" class="input" onchange="renderReportPreview()">
+            </select>
+        </div>
+        <div id="report-range-row" style="margin-bottom:1.5rem;">
             <label style="display:block;margin-bottom:0.5rem;font-weight:500;">报告范围</label>
             <select id="report-range" class="input" onchange="renderReportPreview()">
                 <option value="10">最近10条记录</option>

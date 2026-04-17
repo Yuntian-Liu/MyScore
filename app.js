@@ -841,8 +841,8 @@
                         { name: '长篇阅读', score: 7.1, max: 10 },
                         { name: '仔细阅读', score: 14.2, max: 10 }
                     ], dec: 0 },
-                    { id: 'writing', name: '写作', short: '写', color: '#f59e0b', type: 'formula', min: 0, max: 15, mult: 7.1, dec: 0 },
-                    { id: 'translation', name: '翻译', short: '译', color: '#ef4444', type: 'formula', min: 0, max: 15, mult: 7.1, dec: 0 }
+                    { id: 'writing', name: '写作', short: '写', color: '#f59e0b', type: 'formula', min: 0, max: 15, mult: 212/30, dec: 0 },
+                    { id: 'translation', name: '翻译', short: '译', color: '#ef4444', type: 'formula', min: 0, max: 15, mult: 212/30, dec: 0 }
                 ]
             },
             cet6: {
@@ -863,8 +863,8 @@
                         { name: '长篇阅读', score: 7.1, max: 10 },
                         { name: '仔细阅读', score: 14.2, max: 10 }
                     ], dec: 0 },
-                    { id: 'writing', name: '写作', short: '写', color: '#f59e0b', type: 'formula', min: 0, max: 15, mult: 7.1, dec: 0 },
-                    { id: 'translation', name: '翻译', short: '译', color: '#ef4444', type: 'formula', min: 0, max: 15, mult: 7.1, dec: 0 }
+                    { id: 'writing', name: '写作', short: '写', color: '#f59e0b', type: 'formula', min: 0, max: 15, mult: 212/30, dec: 0 },
+                    { id: 'translation', name: '翻译', short: '译', color: '#ef4444', type: 'formula', min: 0, max: 15, mult: 212/30, dec: 0 }
                 ]
             }
         };
@@ -1463,11 +1463,11 @@ if (isLoggedIn()) {
                     { label: '写作和翻译', data: sorted.map(r => (r.scores.writing || 0) + (r.scores.translation || 0)), borderColor: '#c35f3d', borderWidth: 2, tension: 0.3, pointRadius: 4 }
                 ];
             } else {
-                // 自定义考试 - 显示总分和各科目
+                // 自定义考试 - 显示总分和各题型
                 datasets = [
                     { label: '总分', data: sorted.map(r => r.total), borderColor: '#275b56', backgroundColor: 'rgba(39, 91, 86, 0.12)', borderWidth: 3, fill: true, tension: 0.3, pointRadius: 5 }
                 ];
-                // 添加各科目数据
+                // 添加各题型数据
                 for (const s of exam.subjects) {
                     datasets.push({
                         label: s.name,
@@ -1579,16 +1579,16 @@ if (isLoggedIn()) {
                 if (s.type === 'ielts-writing') {
                     html += '<div style="margin-bottom:1rem;">';
                     html += '<label style="display:block;margin-bottom:0.5rem;font-size:0.875rem;color:#b45309;font-weight:500;">总分 (0-9，步长0.5)</label>';
-                    html += '<input type="number" id="sub-' + s.id + '" min="0" max="9" step="0.5" class="input" placeholder="输入总分" oninput="updateTotalPreview()">';
+                    html += '<input type="number" id="sub-' + s.id + '" min="0" max="9" step="0.5" class="input" placeholder="输入总分" oninput="updateTotalPreview();validateScoreInput(this)">';
                     html += '</div>';
                     html += '<div style="border-top:2px solid #fcd34d;padding-top:1rem;margin-top:1rem;">';
                     html += '<div style="margin-bottom:1rem;">';
                     html += '<label style="display:block;margin-bottom:0.5rem;font-size:0.875rem;color:#b45309;">Task 1 (小作文)</label>';
-                    html += '<input type="number" id="task1-' + s.id + '" min="0" max="9" step="0.5" class="input" placeholder="Task1 分数" oninput="onTaskInput(1, this.value)">';
+                    html += '<input type="number" id="task1-' + s.id + '" min="0" max="9" step="0.5" class="input" placeholder="Task1 分数" oninput="validateScoreInput(this);onTaskInput(1, this.value)">';
                     html += '</div>';
                     html += '<div style="margin-bottom:1rem;">';
                     html += '<label style="display:block;margin-bottom:0.5rem;font-size:0.875rem;color:#b45309;">Task 2 (大作文)</label>';
-                    html += '<input type="number" id="task2-' + s.id + '" min="0" max="9" step="0.5" class="input" placeholder="Task2 分数" oninput="onTaskInput(2, this.value)">';
+                    html += '<input type="number" id="task2-' + s.id + '" min="0" max="9" step="0.5" class="input" placeholder="Task2 分数" oninput="validateScoreInput(this);onTaskInput(2, this.value)">';
                     html += '</div>';
                     html += '<div style="background:rgba(255,255,255,0.7);border:1.5px solid #fcd34d;border-radius:12px;padding:1rem;">';
                     html += '<div style="font-size:0.875rem;color:#b45309;font-weight:500;">自动计算 (Task2×2 + Task1) ÷ 3</div>';
@@ -1597,10 +1597,10 @@ if (isLoggedIn()) {
                     html += '</div>';
                 }
                 else if (s.type === 'direct') {
-                    html += '<input type="number" id="sub-' + s.id + '" min="' + s.min + '" max="' + s.max + '" step="' + (s.step || 1) + '" class="input" placeholder="' + s.min + '-' + s.max + '" oninput="updateTotalPreview()">';
+                    html += '<input type="number" id="sub-' + s.id + '" min="' + s.min + '" max="' + s.max + '" step="' + (s.step || 1) + '" class="input" placeholder="' + s.min + '-' + s.max + '" oninput="updateTotalPreview();validateScoreInput(this)">';
                 }
                 else if (s.type === 'lookup') {
-                    html += '<input type="number" id="sub-' + s.id + '" min="' + s.min + '" max="' + s.max + '" class="input" placeholder="正确题数 (' + s.min + '-' + s.max + ')" oninput="updateLookup(this, \'' + s.id + '\')">';
+                    html += '<input type="number" id="sub-' + s.id + '" min="' + s.min + '" max="' + s.max + '" class="input" placeholder="正确题数 (' + s.min + '-' + s.max + ')" oninput="validateScoreInput(this);updateLookup(this, \'' + s.id + '\')">';
                     html += '<div style="margin-top:0.75rem;padding:0.75rem;background:' + s.color + '15;border-radius:10px;border:1.5px solid ' + s.color + '30;">';
                     html += '<span style="color:' + s.color + ';font-weight:500;">折算分: </span>';
                     html += '<strong id="calc-' + s.id + '" style="color:' + s.color + ';font-size:1.25rem;">-</strong>';
@@ -1609,7 +1609,7 @@ if (isLoggedIn()) {
                 else if (s.type === 'sections') {
                     html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;margin-bottom:0.75rem;">';
                     for (const sec of (s.sections || [])) {
-                        html += '<div><label style="display:block;font-size:0.75rem;color:#6b7280;margin-bottom:0.25rem;">' + sec.name + ' (' + sec.score + '分/题)</label><input type="number" id="sub-' + s.id + '-' + sec.name + '" min="0" max="' + sec.max + '" class="input" placeholder="0-' + sec.max + '" oninput="updateSections(this, \'' + s.id + '\')"></div>';
+                        html += '<div><label style="display:block;font-size:0.75rem;color:#6b7280;margin-bottom:0.25rem;">' + sec.name + ' — 输入答对题数（每题' + sec.score + '分）</label><input type="number" id="sub-' + s.id + '-' + sec.name + '" min="0" max="' + sec.max + '" class="input" placeholder="答对 0-' + sec.max + ' 题" oninput="validateScoreInput(this);updateSections(this, \'' + s.id + '\')"></div>';
                     }
                     html += '</div>';
                     html += '<div style="padding:0.75rem;background:' + s.color + '15;border-radius:10px;border:1.5px solid ' + s.color + '30;">';
@@ -1618,10 +1618,10 @@ if (isLoggedIn()) {
                     html += '</div>';
                 }
                 else if (s.type === 'subquestions') {
-                    html += '<div style="margin-bottom:0.75rem;"><label style="font-size:0.875rem;color:#6b7280;">各小题得分：</label></div>';
+                    html += '<div style="margin-bottom:0.75rem;"><label style="font-size:0.875rem;color:#6b7280;">各题目组得分：</label></div>';
                     html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;margin-bottom:0.75rem;">';
                     for (const sq of (s.subquestions || [])) {
-                        html += '<div><label style="display:block;font-size:0.75rem;color:#6b7280;margin-bottom:0.25rem;">' + sq.name + ' (满分' + sq.max + ')</label><input type="number" id="sub-' + s.id + '-' + sq.name + '" min="0" max="' + sq.max + '" class="input" placeholder="0-' + sq.max + '" oninput="updateSubQuestions(this, \'' + s.id + '\')"></div>';
+                        html += '<div><label style="display:block;font-size:0.75rem;color:#6b7280;margin-bottom:0.25rem;">' + sq.name + ' (满分' + sq.max + ')</label><input type="number" id="sub-' + s.id + '-' + sq.name + '" min="0" max="' + sq.max + '" class="input" placeholder="0-' + sq.max + '" oninput="validateScoreInput(this);updateSubQuestions(this, \'' + s.id + '\')"></div>';
                     }
                     html += '</div>';
                     html += '<div style="padding:0.75rem;background:' + s.color + '15;border-radius:10px;border:1.5px solid ' + s.color + '30;">';
@@ -1631,10 +1631,24 @@ if (isLoggedIn()) {
                 }
                 else if (s.type === 'formula') {
                     var formulaMult = s.mult || 1;
-                    html += '<input type="number" id="sub-' + s.id + '" min="' + s.min + '" max="' + s.max + '" step="0.5" class="input" placeholder="原始分 (' + s.min + '-' + s.max + ')" oninput="updateFormula(this, \'' + s.id + '\', ' + formulaMult + ')">';
+                    var formulaMultDisplay = Math.round(formulaMult * 100) / 100;
+                    html += '<input type="number" id="sub-' + s.id + '" min="' + s.min + '" max="' + s.max + '" step="0.5" class="input" placeholder="输入原始分 (' + s.min + '-' + s.max + ')" oninput="validateScoreInput(this);updateFormula(this, \'' + s.id + '\', ' + formulaMult + ')">';
                     html += '<div style="margin-top:0.75rem;padding:0.75rem;background:' + s.color + '15;border-radius:10px;border:1.5px solid ' + s.color + '30;">';
-                    html += '<span style="color:' + s.color + ';font-weight:500;">折算分 (×' + formulaMult + '): </span>';
+                    html += '<span style="color:' + s.color + ';font-weight:500;">折算分 (×' + formulaMultDisplay + '): </span>';
                     html += '<strong id="calc-' + s.id + '" style="color:' + s.color + ';font-size:1.25rem;">-</strong>';
+                    html += '</div>';
+                }
+                else if (s.type === 'deduction') {
+                    var dedMax = s.max || 100;
+                    html += '<div style="margin-bottom:0.5rem;padding:0.5rem 0.75rem;background:' + s.color + '10;border-radius:8px;font-size:0.85rem;color:' + s.color + ';font-weight:600;">满分：' + dedMax + ' 分</div>';
+                    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.75rem;margin-bottom:0.75rem;">';
+                    for (const d of (s.deductions || [])) {
+                        html += '<div><label style="display:block;font-size:0.75rem;color:#6b7280;margin-bottom:0.25rem;">' + d.name + ' — 输入扣分（最多' + (d.points || dedMax) + '分）</label><input type="number" id="sub-' + s.id + '-' + d.name + '" min="0" max="' + (d.points || dedMax) + '" step="0.5" class="input" placeholder="扣几分" oninput="validateScoreInput(this);updateDeduction(this, \'' + s.id + '\', ' + dedMax + ')"></div>';
+                    }
+                    html += '</div>';
+                    html += '<div style="padding:0.75rem;background:' + s.color + '15;border-radius:10px;border:1.5px solid ' + s.color + '30;">';
+                    html += '<span style="color:' + s.color + ';font-weight:500;">最终得分: </span>';
+                    html += '<strong id="calc-' + s.id + '" style="color:' + s.color + ';font-size:1.25rem;">' + dedMax + '</strong>';
                     html += '</div>';
                 }
 
@@ -1654,6 +1668,59 @@ if (isLoggedIn()) {
 
             document.getElementById('entry-form-container').innerHTML = html;
             document.getElementById('score-date').value = new Date().toISOString().split('T')[0];
+
+            // 为所有有 max 的 number input 自动注入 slider
+            document.querySelectorAll('#entry-form-container input[type="number"]').forEach(function(input) {
+                var max = input.max;
+                if (!max || max === '' || input.step === 'any') return; // deduction 等无上限的不加 slider
+                var min = input.min || '0';
+                var step = input.step || '1';
+                var id = input.id;
+                var wrap = document.createElement('div');
+                wrap.className = 'score-slider-wrap';
+                // 从 subject-box 的 colored bg 推断颜色
+                var box = input.closest('.subject-box');
+                var sliderColor = '#2e6b79';
+                if (box) {
+                    var badge = box.querySelector('[style*="background"]');
+                    if (badge) {
+                        var bgStyle = badge.getAttribute('style') || '';
+                        var match = bgStyle.match(/background:\s*(#[0-9a-fA-F]{6})/);
+                        if (match) sliderColor = match[1];
+                    }
+                }
+                wrap.style.setProperty('--slider-color', sliderColor);
+
+                var row = document.createElement('div');
+                row.style.cssText = 'display:flex;align-items:center;gap:0.75rem;';
+
+                var range = document.createElement('input');
+                range.type = 'range';
+                range.id = 'range-' + id;
+                range.min = min;
+                range.max = max;
+                range.step = step;
+                range.value = input.value || min;
+                range.className = 'score-range';
+                range.setAttribute('oninput', "syncSliderToInput(this,'" + id + "')");
+
+                var valSpan = document.createElement('span');
+                valSpan.id = 'rangeval-' + id;
+                valSpan.className = 'score-range-val';
+                valSpan.textContent = input.value || '-';
+
+                row.appendChild(range);
+                row.appendChild(valSpan);
+                wrap.appendChild(row);
+                wrap.insertAdjacentHTML('beforeend', buildSliderMarks(parseFloat(min), parseFloat(max)));
+
+                input.style.maxWidth = '120px';
+                input.style.marginTop = '0.35rem';
+                input.parentNode.insertBefore(wrap, input);
+                wrap.appendChild(input);
+
+                updateSliderVisual(range);
+            });
         }
 
         function toggleAcc(header) {
@@ -1716,7 +1783,41 @@ if (isLoggedIn()) {
             const raw = parseFloat(el.value) || 0;
             const m = parseFloat(mult) || 1;
             const calcEl = document.getElementById('calc-' + subId);
-            if (calcEl) calcEl.textContent = roundUp(raw * m);
+            if (calcEl) calcEl.textContent = Math.round(raw * m);
+            updateTotalPreview();
+        }
+
+        function updateDeduction(el, subId, maxScore) {
+            var totalDeducted = 0;
+            var subject = null;
+            // Find the subject by subId to get all deduction inputs
+            var exam = allExams()[currentExam];
+            if (exam) {
+                subject = exam.subjects.find(function(s) { return s.id === subId; });
+            }
+            if (subject && subject.deductions) {
+                for (var k = 0; k < subject.deductions.length; k++) {
+                    var inputEl = document.getElementById('sub-' + subId + '-' + subject.deductions[k].name);
+                    if (inputEl) totalDeducted += parseFloat(inputEl.value) || 0;
+                }
+            }
+            var finalScore = Math.max(0, (maxScore || 100) - totalDeducted);
+            var calcEl = document.getElementById('calc-' + subId);
+            if (calcEl) calcEl.textContent = finalScore;
+            // 总扣分超额提示
+            var overTip = document.getElementById('ded-over-' + subId);
+            if (totalDeducted > (maxScore || 100)) {
+                if (!overTip) {
+                    overTip = document.createElement('div');
+                    overTip.id = 'ded-over-' + subId;
+                    overTip.className = 'input-error-msg';
+                    overTip.style.marginTop = '0.5rem';
+                    overTip.textContent = '总扣分已超过满分，最终得分为 0';
+                    if (calcEl) calcEl.parentNode.appendChild(overTip);
+                }
+            } else if (overTip) {
+                overTip.remove();
+            }
             updateTotalPreview();
         }
 
@@ -1738,6 +1839,85 @@ if (isLoggedIn()) {
             updateTotalPreview();
         }
 
+        function validateScoreInput(el) {
+            var min = parseFloat(el.min);
+            var max = parseFloat(el.max);
+            var val = parseFloat(el.value);
+            var next = el.nextElementSibling;
+            if (isNaN(val) || el.value === '') {
+                el.classList.remove('input-error');
+                if (next && next.classList.contains('input-error-msg')) next.remove();
+                syncInputToSlider(el);
+                return true;
+            }
+            var outOfRange = false;
+            var msg = '';
+            if (!isNaN(min) && val < min) { outOfRange = true; msg = '不能低于 ' + min; }
+            if (!isNaN(max) && val > max) { outOfRange = true; msg = '不能超过 ' + max; }
+            if (outOfRange) {
+                el.classList.add('input-error');
+                if (!next || !next.classList.contains('input-error-msg')) {
+                    var tip = document.createElement('div');
+                    tip.className = 'input-error-msg';
+                    tip.textContent = msg;
+                    el.parentNode.insertBefore(tip, el.nextSibling);
+                } else {
+                    next.textContent = msg;
+                }
+                return false;
+            } else {
+                el.classList.remove('input-error');
+                if (next && next.classList.contains('input-error-msg')) next.remove();
+                syncInputToSlider(el);
+                return true;
+            }
+        }
+
+        function syncSliderToInput(rangeEl, inputId) {
+            var input = document.getElementById(inputId);
+            if (input) {
+                input.value = rangeEl.value;
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            updateSliderVisual(rangeEl);
+        }
+
+        function syncInputToSlider(inputEl) {
+            var slider = document.getElementById('range-' + inputEl.id);
+            if (slider) {
+                slider.value = inputEl.value;
+                updateSliderVisual(slider);
+            }
+            // 更新值显示
+            var valSpan = document.getElementById('rangeval-' + inputEl.id);
+            if (valSpan) valSpan.textContent = inputEl.value || '-';
+        }
+
+        function updateSliderVisual(rangeEl) {
+            var min = parseFloat(rangeEl.min) || 0;
+            var max = parseFloat(rangeEl.max) || 100;
+            var val = parseFloat(rangeEl.value) || 0;
+            var pct = Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
+            var color = getComputedStyle(rangeEl).getPropertyValue('--slider-color').trim() || '#2e6b79';
+            rangeEl.style.background = 'linear-gradient(to right, ' + color + ' ' + pct + '%, rgba(84,99,125,0.08) ' + pct + '%)';
+            // 更新值显示
+            var inputId = rangeEl.id.replace('range-', '');
+            var valSpan = document.getElementById('rangeval-' + inputId);
+            if (valSpan) valSpan.textContent = rangeEl.value || '-';
+        }
+
+        function buildSliderMarks(min, max) {
+            var count = 5;
+            var html = '<div class="score-range-marks">';
+            for (var i = 0; i < count; i++) {
+                var val = min + (max - min) * i / (count - 1);
+                // 如果 step 是整数且值不是整数，跳过非整数刻度
+                html += '<span>' + (Number.isInteger(min) && Number.isInteger(max) ? Math.round(val) : val.toFixed(1)) + '</span>';
+            }
+            html += '</div>';
+            return html;
+        }
+
         function updateTotalPreview() {
             if (!currentExam) return;
             const exam = allExams()[currentExam];
@@ -1754,6 +1934,8 @@ if (isLoggedIn()) {
                 } else if (s.type === 'sections' || s.type === 'subquestions') {
                     sc = parseFloat(document.getElementById('calc-' + s.id)?.textContent) || 0;
                 } else if (s.type === 'formula') {
+                    sc = parseFloat(document.getElementById('calc-' + s.id)?.textContent) || 0;
+                } else if (s.type === 'deduction') {
                     sc = parseFloat(document.getElementById('calc-' + s.id)?.textContent) || 0;
                 }
                 scores.push(sc);
@@ -1782,6 +1964,14 @@ if (isLoggedIn()) {
                 return;
             }
 
+            // 检查是否有超范围的输入
+            var invalidInputs = document.querySelectorAll('#entry-form-container .input-error');
+            if (invalidInputs.length) {
+                showAiToast('请修正标红的输入项，数值超出允许范围');
+                invalidInputs[0].focus();
+                return;
+            }
+
             for (const s of exam.subjects) {
                 var rawVal;
                 if (s.type === 'ielts-writing') {
@@ -1793,6 +1983,8 @@ if (isLoggedIn()) {
                 } else if (s.type === 'sections' || s.type === 'subquestions') {
                     rawVal = parseFloat(document.getElementById('calc-' + s.id)?.textContent);
                 } else if (s.type === 'formula') {
+                    rawVal = parseFloat(document.getElementById('calc-' + s.id)?.textContent);
+                } else if (s.type === 'deduction') {
                     rawVal = parseFloat(document.getElementById('calc-' + s.id)?.textContent);
                 }
                 // 拒绝 NaN 和非有限值
@@ -1875,7 +2067,7 @@ if (isLoggedIn()) {
         function renderSubList() {
             const container = document.getElementById('subjects-list');
             if (!customSubs.length) {
-                container.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:1rem;">点击上方按钮添加科目</p>';
+                container.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:1rem;">点击上方按钮添加题型</p>';
                 return;
             }
             let html = '';
@@ -1883,53 +2075,71 @@ if (isLoggedIn()) {
                 const s = customSubs[i];
                 html += '<div style="padding:1rem;background:#f9fafb;border-radius:12px;margin-bottom:0.75rem;border:1.5px solid #e5e7eb;">';
                 html += '<div style="display:grid;grid-template-columns:1fr 80px 40px;gap:0.5rem;margin-bottom:0.5rem;">';
-                html += '<input type="text" placeholder="科目名称" value="' + escapeAttr(s.name) + '" onchange="customSubs[' + i + '].name=this.value" class="input">';
+                html += '<input type="text" placeholder="题型名称" value="' + escapeAttr(s.name) + '" onchange="customSubs[' + i + '].name=this.value" class="input">';
                 html += '<input type="text" placeholder="简称" value="' + escapeAttr(s.short) + '" onchange="customSubs[' + i + '].short=this.value" class="input">';
                 html += '<input type="color" value="' + s.color + '" onchange="customSubs[' + i + '].color=this.value" style="width:40px;height:40px;border:none;border-radius:0.5rem;cursor:pointer;">';
                 html += '</div>';
-                html += '<select onchange="customSubs[' + i + '].type=this.value;if(this.value===\'formula\'){if(!customSubs[' + i + '].mult)customSubs[' + i + '].mult=1;if(!customSubs[' + i + '].max)customSubs[' + i + '].max=100;if(customSubs[' + i + '].min==null)customSubs[' + i + '].min=0;}renderSubList()" class="input" style="margin-bottom:0.5rem;">';
-                html += '<option value="direct" ' + (s.type === 'direct' ? 'selected' : '') + '>直接输入分数</option>';
-                html += '<option value="subquestions" ' + (s.type === 'subquestions' ? 'selected' : '') + '>多小题计分</option>';
-                html += '<option value="sections" ' + (s.type === 'sections' ? 'selected' : '') + '>分部分计分</option>';
-                html += '<option value="formula" ' + (s.type === 'formula' ? 'selected' : '') + '>公式计算</option>';
+                html += '<select onchange="customSubs[' + i + '].type=this.value;if(this.value===\'formula\'){if(!customSubs[' + i + '].mult)customSubs[' + i + '].mult=1;if(!customSubs[' + i + '].max)customSubs[' + i + '].max=100;if(customSubs[' + i + '].min==null)customSubs[' + i + '].min=0;}renderSubList()" class="input" style="margin-bottom:0.25rem;">';
+                html += '<option value="direct" ' + (s.type === 'direct' ? 'selected' : '') + '>直接打分</option>';
+                html += '<option value="subquestions" ' + (s.type === 'subquestions' ? 'selected' : '') + '>按题组求和</option>';
+                html += '<option value="sections" ' + (s.type === 'sections' ? 'selected' : '') + '>按答对题数算</option>';
+                html += '<option value="formula" ' + (s.type === 'formula' ? 'selected' : '') + '>按系数折算</option>';
+                html += '<option value="deduction" ' + (s.type === 'deduction' ? 'selected' : '') + '>从满分扣分</option>';
                 html += '</select>';
+                var typeDescMap = { direct: '老师给什么分就填什么分', subquestions: '多组题目分别打分，自动算总分', sections: '每部分答对几题 × 每题分值，再合计', formula: '输入原始分，自动乘以系数换算', deduction: '从满分开始，逐项扣除，自动算最终得分' };
+                html += '<p style="font-size:0.75rem;color:#9ca3af;margin:0 0 0.5rem;">' + (typeDescMap[s.type] || '') + '</p>';
 
                 if (s.type === 'direct') {
-                    html += '<div style="display:flex;gap:0.5rem;"><input type="number" placeholder="最小值" value="' + s.min + '" onchange="customSubs[' + i + '].min=parseFloat(this.value)" class="input"><input type="number" placeholder="最大值" value="' + s.max + '" onchange="customSubs[' + i + '].max=parseFloat(this.value)" class="input"></div>';
+                    html += '<div style="display:flex;gap:0.5rem;"><div style="flex:1;"><label style="display:block;font-size:0.7rem;color:#9ca3af;margin-bottom:2px;">最小值</label><input type="number" placeholder="默认 0" ' + (s.min ? 'value="' + s.min + '"' : '') + ' onchange="customSubs[' + i + '].min=parseFloat(this.value)" class="input" style="width:100%;"></div><div style="flex:1;"><label style="display:block;font-size:0.7rem;color:#9ca3af;margin-bottom:2px;">满分</label><input type="number" placeholder="默认 100" ' + (s.max && s.max !== 100 ? 'value="' + s.max + '"' : '') + ' onchange="customSubs[' + i + '].max=parseFloat(this.value)" class="input" style="width:100%;"></div></div>';
                 } else if (s.type === 'subquestions') {
-                    if (!s.subquestions) s.subquestions = [{ name: '小题1', max: 10 }];
+                    if (!s.subquestions) s.subquestions = [{ name: '', max: '' }];
                     html += '<div id="subqs-' + i + '">';
                     for (let j = 0; j < s.subquestions.length; j++) {
                         const sq = s.subquestions[j];
-                        html += '<div style="display:flex;gap:0.5rem;margin-bottom:0.25rem;"><input type="text" placeholder="小题名称" value="' + escapeAttr(sq.name) + '" onchange="customSubs[' + i + '].subquestions[' + j + '].name=this.value" class="input" style="flex:1;"><input type="number" placeholder="满分" value="' + sq.max + '" onchange="customSubs[' + i + '].subquestions[' + j + '].max=parseFloat(this.value)" class="input" style="width:80px;"></div>';
+                        html += '<div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;padding:0.5rem;background:#fff;border-radius:8px;border:1px solid #e5e7eb;"><div style="flex:1;"><label style="display:block;font-size:0.7rem;color:#9ca3af;margin-bottom:2px;">题目组名称</label><input type="text" placeholder="如：听力理解" value="' + escapeAttr(sq.name) + '" onchange="customSubs[' + i + '].subquestions[' + j + '].name=this.value" class="input" style="width:100%;"></div><div style="flex:1;"><label style="display:block;font-size:0.7rem;color:#9ca3af;margin-bottom:2px;">该组满分</label><input type="number" placeholder="如：30" ' + (sq.max ? 'value="' + sq.max + '"' : '') + ' onchange="customSubs[' + i + '].subquestions[' + j + '].max=parseFloat(this.value)" class="input" style="width:100%;"></div></div>';
                     }
-                    html += '</div><button type="button" onclick="addSubQuestion(' + i + ')" style="color:#10b981;background:none;border:none;cursor:pointer;font-size:0.875rem;">+ 添加小题</button>';
+                    html += '</div><button type="button" onclick="addSubQuestion(' + i + ')" style="color:#10b981;background:none;border:none;cursor:pointer;font-size:0.875rem;">+ 添加题目组</button>';
                 } else if (s.type === 'formula') {
-                    html += '<div style="display:flex;gap:0.5rem;"><input type="number" placeholder="原始分最大值" value="' + (s.max || 100) + '" onchange="customSubs[' + i + '].max=parseFloat(this.value)" class="input"><input type="number" placeholder="乘数" value="' + (s.mult || 1) + '" onchange="customSubs[' + i + '].mult=parseFloat(this.value)" class="input"></div>';
+                    html += '<div style="display:flex;gap:0.5rem;"><div style="flex:1;"><label style="display:block;font-size:0.7rem;color:#9ca3af;margin-bottom:2px;">满分（原始分）</label><input type="number" placeholder="默认 100" ' + (s.max && s.max !== 100 ? 'value="' + s.max + '"' : '') + ' onchange="customSubs[' + i + '].max=parseFloat(this.value)" class="input" style="width:100%;"></div><div style="flex:1;"><label style="display:block;font-size:0.7rem;color:#9ca3af;margin-bottom:2px;">换算系数</label><input type="number" step="any" placeholder="如：1.5" ' + (s.mult && s.mult !== 1 ? 'value="' + s.mult + '"' : '') + ' onchange="customSubs[' + i + '].mult=parseFloat(this.value)" class="input" style="width:100%;"></div></div>';
                 } else if (s.type === 'sections') {
-                    if (!s.sections) s.sections = [{ name: '部分1', score: 1, max: 10 }];
+                    if (!s.sections) s.sections = [{ name: '', score: '', max: '' }];
                     html += '<div id="secs-' + i + '">';
                     for (let j = 0; j < s.sections.length; j++) {
                         const sec = s.sections[j];
-                        html += '<div style="display:flex;gap:0.5rem;margin-bottom:0.25rem;"><input type="text" placeholder="名称" value="' + escapeAttr(sec.name) + '" onchange="customSubs[' + i + '].sections[' + j + '].name=this.value" class="input" style="flex:1;"><input type="number" placeholder="分值" value="' + sec.score + '" onchange="customSubs[' + i + '].sections[' + j + '].score=parseFloat(this.value)" class="input" style="width:80px;"><input type="number" placeholder="最大题数" value="' + sec.max + '" onchange="customSubs[' + i + '].sections[' + j + '].max=parseInt(this.value)" class="input" style="width:80px;"></div>';
+                        html += '<div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;padding:0.5rem;background:#fff;border-radius:8px;border:1px solid #e5e7eb;"><div style="flex:1;"><label style="display:block;font-size:0.7rem;color:#9ca3af;margin-bottom:2px;">部分名称</label><input type="text" placeholder="如：选择题" value="' + escapeAttr(sec.name) + '" onchange="customSubs[' + i + '].sections[' + j + '].name=this.value" class="input" style="width:100%;"></div><div style="flex:1;"><label style="display:block;font-size:0.7rem;color:#9ca3af;margin-bottom:2px;">每题分值</label><input type="number" placeholder="如：2" ' + (sec.score ? 'value="' + sec.score + '"' : '') + ' onchange="customSubs[' + i + '].sections[' + j + '].score=parseFloat(this.value)" class="input" style="width:100%;"></div><div style="flex:1;"><label style="display:block;font-size:0.7rem;color:#9ca3af;margin-bottom:2px;">共几题</label><input type="number" placeholder="如：20" ' + (sec.max ? 'value="' + sec.max + '"' : '') + ' onchange="customSubs[' + i + '].sections[' + j + '].max=parseInt(this.value)" class="input" style="width:100%;"></div></div>';
                     }
                     html += '</div><button type="button" onclick="addSec(' + i + ')" style="color:#10b981;background:none;border:none;cursor:pointer;font-size:0.875rem;">+ 添加部分</button>';
+                } else if (s.type === 'deduction') {
+                    if (!s.deductions) s.deductions = [{ name: '', points: '' }];
+                    html += '<div style="flex:1;max-width:50%;margin-bottom:0.5rem;"><label style="display:block;font-size:0.7rem;color:#9ca3af;margin-bottom:2px;">满分</label><input type="number" placeholder="默认 100" ' + (s.max && s.max !== 100 ? 'value="' + s.max + '"' : '') + ' onchange="customSubs[' + i + '].max=parseFloat(this.value)" class="input" style="width:100%;"></div>';
+                    html += '<div id="ded-' + i + '">';
+                    for (let j = 0; j < s.deductions.length; j++) {
+                        const d = s.deductions[j];
+                        html += '<div style="display:flex;gap:0.5rem;margin-bottom:0.5rem;padding:0.5rem;background:#fff;border-radius:8px;border:1px solid #e5e7eb;"><div style="flex:1;"><label style="display:block;font-size:0.7rem;color:#9ca3af;margin-bottom:2px;">扣分项名称</label><input type="text" placeholder="如：粗心失误" value="' + escapeAttr(d.name) + '" onchange="customSubs[' + i + '].deductions[' + j + '].name=this.value" class="input" style="width:100%;"></div><div style="flex:1;"><label style="display:block;font-size:0.7rem;color:#9ca3af;margin-bottom:2px;">该项最多扣几分</label><input type="number" step="any" placeholder="如：5" ' + (d.points ? 'value="' + d.points + '"' : '') + ' onchange="customSubs[' + i + '].deductions[' + j + '].points=parseFloat(this.value)" class="input" style="width:100%;"></div></div>';
+                    }
+                    html += '</div><button type="button" onclick="addDeduction(' + i + ')" style="color:#10b981;background:none;border:none;cursor:pointer;font-size:0.875rem;">+ 添加扣分项</button>';
                 }
 
-                html += '<button type="button" onclick="removeSub(' + i + ')" style="color:#ef4444;background:none;border:none;cursor:pointer;font-size:0.875rem;margin-top:0.5rem;">删除科目</button>';
+                html += '<button type="button" onclick="removeSub(' + i + ')" style="color:#ef4444;background:none;border:none;cursor:pointer;font-size:0.875rem;margin-top:0.5rem;">删除题型</button>';
                 html += '</div>';
             }
             container.innerHTML = html;
         }
 
         function addSec(idx) {
-            customSubs[idx].sections.push({ name: '', score: 1, max: 10 });
+            customSubs[idx].sections.push({ name: '', score: '', max: '' });
             renderSubList();
         }
 
         function addSubQuestion(idx) {
             if (!customSubs[idx].subquestions) customSubs[idx].subquestions = [];
-            customSubs[idx].subquestions.push({ name: '', max: 10 });
+            customSubs[idx].subquestions.push({ name: '', max: '' });
+            renderSubList();
+        }
+
+        function addDeduction(idx) {
+            if (!customSubs[idx].deductions) customSubs[idx].deductions = [];
+            customSubs[idx].deductions.push({ name: '', points: '' });
             renderSubList();
         }
 
@@ -1941,12 +2151,12 @@ if (isLoggedIn()) {
         function submitCreateForm(e) {
             e.preventDefault();
             if (!customSubs.length) {
-                alert('请至少添加一个科目！');
+                alert('请至少添加一个题型！');
                 return;
             }
             for (const s of customSubs) {
                 if (!s.name || !s.short) {
-                    alert('请填写所有科目的名称和简称！');
+                    alert('请填写所有题型的名称和简称！');
                     return;
                 }
             }
@@ -2482,7 +2692,7 @@ function pokeTeacher() {
     }, 3000);
 }
 // ==================== 版本日志与使用文档 ====================
-const APP_VERSION = '4.2.0-beta';
+const APP_VERSION = '5.0.0-beta';
 const CHANGELOG_STORAGE_KEY = 'myscore_changelog_seen_' + APP_VERSION;
 const CHANGELOG_PLACEHOLDER = `
 <div class="changelog-beta-banner">
@@ -2491,18 +2701,20 @@ const CHANGELOG_PLACEHOLDER = `
 </div>
 <div class="changelog-entry">
   <div class="changelog-header">
-    <span class="changelog-version">V4.2.0-beta</span>
+    <span class="changelog-version">V5.0.0-beta</span>
     <span class="changelog-date">2026-04-17</span>
   </div>
-  <div class="changelog-codename">Splash & Stability（开屏动画与稳健性增强）</div>
+  <div class="changelog-codename">Slider & Score（拖动条与成绩体验升级）</div>
   <div class="changelog-section">
     <div class="changelog-section-title">
       <span class="changelog-icon" style="background:linear-gradient(135deg,#4285f4,#f9ab00);">★</span>
       新增
     </div>
     <ul class="changelog-list">
-      <li><strong>开屏动画</strong>：Siri 风格流体光球背景 + Great Vibes 手写字体四色渐变描边动画 + Gemini 呼吸渐变填充，4 秒自动过渡，支持跳过</li>
-      <li><strong>云同步失败提示</strong>：推送/拉取云端数据失败时显示 Toast 通知用户</li>
+      <li><strong>拖动条输入</strong>：所有成绩输入新增 Slider 拖动条，支持拖动和数字输入双模式</li>
+      <li><strong>扣分制计分</strong>：自定义考试新增第五种计分类型「扣分制」——从满分扣除</li>
+      <li><strong>输入实时校验</strong>：超范围成绩立即红框提示，保存前自动拦截</li>
+      <li><strong>分享卡记录选择</strong>：导出报告时可选择具体哪次成绩记录</li>
     </ul>
   </div>
   <div class="changelog-section">
@@ -2511,16 +2723,8 @@ const CHANGELOG_PLACEHOLDER = `
       修复
     </div>
     <ul class="changelog-list">
-      <li>修复已登录状态清空记录误删云端数据的问题</li>
-      <li>修复注销后残留同步定时器可能触发空推送</li>
-      <li>修复无本地记录时登录成功后页面不刷新</li>
-      <li>修复无有效成绩时统计卡片显示 NaN</li>
-      <li>修复 Profile Card 浮在弹窗之上的层级错误</li>
-      <li>修复成绩提交无验证（NaN/负数/空日期/全零）</li>
-      <li>修复 localStorage 存储溢出导致应用崩溃</li>
-      <li>修复无效页面名导致页面切换崩溃</li>
-      <li>修复验证码输入框可输入非数字字符</li>
-      <li>修复退出登录后立即弹出模式选择的时机问题</li>
+      <li>修复四六级写作翻译分数转换偏差（总分对齐 710）</li>
+      <li>修复浏览器误识别聊天输入为登录表单的自动填充问题</li>
     </ul>
   </div>
   <div class="changelog-section">
@@ -2529,9 +2733,11 @@ const CHANGELOG_PLACEHOLDER = `
       优化
     </div>
     <ul class="changelog-list">
-      <li>CORS 默认策略改为拒绝未配置来源（安全加固）</li>
-      <li>登录同步期间阻止页面切换，防止数据竞态</li>
-      <li>AI API 请求增加 30 秒超时保护</li>
+      <li>自定义考试「科目」更名为「题型」，计分方式重命名并添加说明</li>
+      <li>计分方式配置字段添加标签和占位符引导</li>
+      <li>项目矩阵 UI 降权，融入页脚背景</li>
+      <li>公式法系数支持小数输入</li>
+      <li>报告导出流程优化</li>
     </ul>
   </div>
 </div>`;
@@ -2627,7 +2833,7 @@ const GUIDE_PLACEHOLDER = `
       <div class=”guide-step”>
         <div class=”guide-step-num”>2</div>
         <div>
-          <strong>添加科目</strong>：每个科目设置名称、简称、颜色，以及计分方式
+          <strong>添加题型</strong>：每个题型设置名称、简称、颜色，以及计分方式
         </div>
       </div>
       <div class=”guide-step”>
@@ -2719,7 +2925,7 @@ const GUIDE_SECTIONS = [
         <span class="guide-icon" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);">✨</span>
         自定义考试
       </div>
-      <p class="guide-desc">你可以创建任意类型的考试评分系统，如托福、GRE、期末考等。每个考试支持添加多个科目，每个科目有四种计分方式可选：</p>
+      <p class="guide-desc">你可以创建任意类型的考试评分系统，如托福、GRE、期末考等。每个考试支持添加多个题型，每个题型有五种计分方式可选：</p>
       <div class="guide-methods">
         <div class="guide-method"><span class="guide-method-badge">A</span><strong>直接输入</strong> — 直接填入最终成绩（如口语 7.5 分）</div>
         <div class="guide-method"><span class="guide-method-badge">B</span><strong>多小题计分</strong> — 分别填写各小题得分，自动求和</div>
@@ -2728,8 +2934,8 @@ const GUIDE_SECTIONS = [
       </div>
       <div class="guide-steps-list">
         <div class="guide-step"><div class="guide-step-num">1</div><div><strong>创建考试</strong>：点击顶部「自定义考试」→「+ 新建考试」→ 填写名称</div></div>
-        <div class="guide-step"><div class="guide-step-num">2</div><div><strong>添加科目</strong>：设置名称、简称、颜色，选择计分方式</div></div>
-        <div class="guide-step"><div class="guide-step-num">3</div><div><strong>录入成绩</strong>：选择考试 → 按科目输入分数 → 保存</div></div>
+        <div class="guide-step"><div class="guide-step-num">2</div><div><strong>添加题型</strong>：设置名称、简称、颜色，选择计分方式</div></div>
+        <div class="guide-step"><div class="guide-step-num">3</div><div><strong>录入成绩</strong>：选择考试 → 按题型输入分数 → 保存</div></div>
       </div>
     </div>`
   },
@@ -3142,9 +3348,9 @@ document.addEventListener('DOMContentLoaded', updatePetMood);
             var BETA_BANNER = {
                 enabled: true,
                 items: [
-                    'V4.2.0-beta 更新：',
-                    '新增开屏动画（Siri 风格流体光球 + 手写字体描边）',
-                    '修复云端误删、NaN 显示、弹窗层级等十余项稳健性问题',
+                    'V5.0.0-beta 更新：',
+                    '新增拖动条输入、扣分制计分、输入实时校验、分享卡记录选择',
+                    '修复四六级分数转换偏差、浏览器自动填充误识别',
                     '感谢 <span class="banner-name banner-name-red">大鲨鱼</span><span class="banner-name banner-name-blue">Osc</span><span class="banner-name banner-name-green">处方</span> 的反馈贡献'
                 ]
             };
@@ -3219,7 +3425,35 @@ function selectReportType(type, element) {
         card.classList.remove('active');
     });
     element.classList.add('active');
+    // 切换控件显隐
+    document.getElementById('report-record-row').style.display = type === 'sharecard' ? '' : 'none';
+    document.getElementById('report-range-row').style.display = type === 'scorecard' ? '' : 'none';
+    if (type === 'sharecard') populateRecordSelect();
     renderReportPreview();
+}
+
+function onReportExamChange() {
+    if (currentReportType === 'sharecard') populateRecordSelect();
+    renderReportPreview();
+}
+
+function populateRecordSelect() {
+    const examType = document.getElementById('report-exam-select').value;
+    const exams = allExams();
+    let records = getRecords();
+    if (examType !== 'all') {
+        records = records.filter(r => r.examType === examType);
+    }
+    records = [...records].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    const select = document.getElementById('report-record-select');
+    let options = '';
+    records.forEach(function(r, i) {
+        var examName = exams[r.examType] ? exams[r.examType].name : r.examType;
+        var scoreText = (r.total !== null && r.total !== undefined) ? (r.total.toFixed(1) + ' 分') : '';
+        options += '<option value="' + i + '">' + escapeHtml(r.date + ' · ' + examName + (scoreText ? ' · ' + scoreText : '')) + '</option>';
+    });
+    select.innerHTML = options || '<option value="0">暂无记录</option>';
 }
 
 function buildShareTrendData(records) {
@@ -3335,10 +3569,17 @@ function renderReportPreview() {
         html += `</div>`;
         container.innerHTML = html;
     } else {
-        const latest = records[0];
+        // 读取选中的记录
+        var recordSelect = document.getElementById('report-record-select');
+        var selectedIdx = recordSelect ? parseInt(recordSelect.value) : 0;
+        var allFiltered = getRecords();
+        if (examType !== 'all') allFiltered = allFiltered.filter(r => r.examType === examType);
+        allFiltered = [...allFiltered].sort((a, b) => new Date(b.date) - new Date(a.date));
+        if (isNaN(selectedIdx) || selectedIdx < 0 || selectedIdx >= allFiltered.length) selectedIdx = 0;
+        const latest = allFiltered[selectedIdx] || records[0];
         const exam = exams[latest.examType];
         const theme = getExamTheme(latest.examType);
-        const trendData = buildShareTrendData(records);
+        const trendData = buildShareTrendData(allFiltered);
         
         let html = `<div style="font-family:Manrope,sans-serif;">`;
         html += `<div style="background:linear-gradient(140deg,${theme.reportGradientStart},${theme.reportGradientEnd});border-radius:30px;padding:1.5rem 1.35rem 1.4rem;color:white;text-align:center;position:relative;overflow:hidden;min-height:235px;">`;
@@ -3410,7 +3651,13 @@ async function downloadReport() {
     if (currentReportType === 'scorecard') {
         await downloadScorecardImage(records);
     } else {
-        downloadShareCardDirect(records);
+        // 分享卡片：不用 range 切片，用完整记录列表（selectedIndex 对应完整列表）
+        var recordSelect = document.getElementById('report-record-select');
+        var selectedIdx = recordSelect ? parseInt(recordSelect.value) : 0;
+        var allRecords = getRecords();
+        if (examType !== 'all') allRecords = allRecords.filter(r => r.examType === examType);
+        allRecords = [...allRecords].sort((a, b) => new Date(b.date) - new Date(a.date));
+        downloadShareCardDirect(allRecords, selectedIdx);
     }
 }
 
@@ -3612,9 +3859,10 @@ function downloadScorecardImage(records) {
 }
 
 // 直接下载分享卡片（使用折线图）
-function downloadShareCardDirect(records) {
+function downloadShareCardDirect(records, selectedIndex) {
     const exams = allExams();
-    const latest = records[0];
+    const idx = (typeof selectedIndex === 'number' && selectedIndex >= 0 && selectedIndex < records.length) ? selectedIndex : 0;
+    const latest = records[idx];
     const type = latest.examType;
     const exam = exams[type] || { name: '考试', calcTotal: true, maxTotal: 100 };
     const theme = getExamTheme(type);

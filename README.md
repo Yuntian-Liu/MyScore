@@ -1,9 +1,9 @@
 ﻿<div align="center">
 
-# MyScore - AI 智能成绩管理系统 · V4.2.0-beta
+# MyScore - AI 智能成绩管理系统 · V5.0.0-beta
 
 <p>
-    <img src="https://img.shields.io/badge/v4.2.0--beta-Splash_Stability-7c3aed?style=flat-square&logo=rocket&logoColor=white" alt="Version">
+    <img src="https://img.shields.io/badge/v5.0.0--beta-Slider_Score-7c3aed?style=flat-square&logo=rocket&logoColor=white" alt="Version">
     <img src="https://img.shields.io/badge/Model-DeepSeek-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
     <img src="https://img.shields.io/badge/Deploy-Netlify_%2B_Zeabur-5468ff?style=flat-square&logo=vercel&logoColor=white" alt="Deploy">
     <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=flat-square" alt="License">
@@ -13,11 +13,19 @@
 
 </div>
 
-一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V4.2.0-beta**，新增开屏动画与全面稳健性增强——Siri 风格流体光球 + 手写字体描边动画，配合十余项 Bug 修复与安全加固。
+一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V5.0.0-beta**，新增拖动条输入、扣分制计分、输入实时校验与分享卡记录选择，配合多项修复与体验优化。
 
 ## 🔔 最新版本速览
 
-### V4.2.0-beta (Current)
+### V5.0.0-beta (Current)
+- ✅ **拖动条输入**：所有成绩输入新增 Slider 拖动条，支持拖动和数字输入双模式。
+- ✅ **扣分制计分**：自定义考试新增第五种计分类型「扣分制」——从满分扣除。
+- ✅ **输入实时校验**：超范围成绩立即红框提示，保存前自动拦截。
+- ✅ **分享卡记录选择**：导出报告时可选择具体哪次成绩记录。
+- ✅ **修复四六级分数转换**：写作翻译总分对齐 710。
+- ✅ **科目→题型**：自定义考试「科目」更名为「题型」，计分方式重命名并添加说明。
+
+### V4.2.0-beta
 - ✅ **开屏动画**：Siri 风格流体光球背景 + Great Vibes 手写字体四色渐变描边 + Gemini 呼吸渐变填充，4 秒自动过渡，支持跳过。
 - ✅ **云同步失败提示**：推送/拉取失败时 Toast 通知用户。
 - ✅ **全面稳健性修复**：修复云端误删、注销残留、NaN 显示、弹窗层级、成绩验证、存储溢出等十余项问题。
@@ -156,7 +164,7 @@
 
 #### 自定义考试
 - **完全自由**: 创建任意考试类型（如托福、GRE、期末考）
-- **四种计分**: 直接输入 / 多小题计分 / 分部分计分 / 公式计算
+- **四种计分**: 直接输入 / 多小题计分 / 分部分计分 / 公式计算 / 扣分制
 
 ### 📊 数据可视化 & 管理 (3.0.0 持续升级)
 - **趋势图表**: Chart.js 绘制精美成绩曲线
