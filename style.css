@@ -1,13 +1,12 @@
-        /* 自托管 Great Vibes 字体（避免国内无法访问 Google Fonts） */
+        /* 自托管 Great Vibes 字体 */
 @font-face {
     font-family: 'Great Vibes';
-    src: url('fonts/GreatVibes-Regular.ttf') format('truetype');
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
+    src: url('fonts/great-vibes-latin-400-normal.woff2') format('woff2');
+    font-weight: 400; font-style: normal; font-display: swap;
 }
 
 :root {
+    --splash-font: 'Great Vibes';
             --bg-main: #f7f5ff;
             --bg-soft: #eef7f5;
             --bg-card: rgba(255, 255, 255, 0.82);
@@ -2786,41 +2785,41 @@
 .orb {
     position: absolute;
     border-radius: 50%;
-    opacity: 0.6;
+    opacity: 0.4;
 }
 .orb-1 {
     width: 50vw; height: 50vw;
-    background: #e0eafc;
+    background: radial-gradient(circle, rgba(66,133,244,0.35), rgba(155,114,203,0.12));
     filter: blur(100px);
     top: -10%; left: -10%;
     animation: orbFloat1 10s ease-in-out infinite;
 }
 .orb-2 {
     width: 60vw; height: 60vw;
-    background: #f3e7e9;
+    background: radial-gradient(circle, rgba(217,101,112,0.3), rgba(249,171,0,0.1));
     filter: blur(100px);
     bottom: -15%; right: -10%;
     animation: orbFloat2 12s ease-in-out infinite;
 }
 .orb-3 {
     width: 40vw; height: 40vw;
-    background: #e3fdf5;
+    background: radial-gradient(circle, rgba(155,114,203,0.3), rgba(66,133,244,0.08));
     filter: blur(100px);
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     animation: orbFloat3 8s ease-in-out infinite;
 }
 @keyframes orbFloat1 {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(50px, 50px) scale(1.1); }
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.55; }
+    50% { transform: translate(60px, 50px) scale(1.12); opacity: 0.7; }
 }
 @keyframes orbFloat2 {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    50% { transform: translate(-60px, -60px) scale(1.2); }
+    0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.55; }
+    50% { transform: translate(-70px, -60px) scale(1.2); opacity: 0.65; }
 }
 @keyframes orbFloat3 {
-    0%, 100% { transform: translate(-50%, -50%) scale(1); }
-    50% { transform: translate(-40%, -40%) scale(1.15); }
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.55; }
+    50% { transform: translate(-40%, -40%) scale(1.15); opacity: 0.7; }
 }
 
 /* ---- Top Bar ---- */
@@ -2844,46 +2843,57 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    font-family: 'Manrope', sans-serif;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.15em;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
     color: #4285f4;
-    background: rgba(66, 133, 244, 0.1);
+    background: rgba(66, 133, 244, 0.08);
     padding: 6px 14px;
     border-radius: 99px;
-    border: 1px solid rgba(66, 133, 244, 0.2);
+    border: 1px solid rgba(66, 133, 244, 0.15);
     backdrop-filter: blur(8px);
 }
 .splash-version {
     font-family: 'Manrope', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    color: #a1a1a6;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+    color: #8b93a8;
     margin-left: 8px;
 }
 .splash-skip {
-    font-family: 'Manrope', sans-serif;
+    font-family: 'Noto Serif SC', 'Manrope', sans-serif;
     font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.04em;
     color: #5b6278;
-    background: rgba(255, 255, 255, 0.3);
-    border: 1.5px solid rgba(91, 98, 120, 0.2);
-    padding: 8px 22px;
+    background: rgba(255, 255, 255, 0.35);
+    border: none;
+    padding: 8px 24px;
     border-radius: 99px;
     cursor: pointer;
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
     transition: all 0.25s ease;
+}
+.splash-skip .skip-en {
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    color: #9ca3af;
+    margin-left: 4px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 .splash-skip:hover {
     background: rgba(255, 255, 255, 0.6);
-    border-color: rgba(91, 98, 120, 0.4);
+    color: #3b3f54;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 .splash-skip:active {
-    transform: scale(0.95);
+    transform: scale(0.96);
 }
 
 /* ---- Center Content ---- */
@@ -2896,6 +2906,7 @@
     margin-top: -5vh;
 }
 .splash-text-wrap {
+    position: relative;
     width: 90vw;
     max-width: 1000px;
     overflow: visible;
@@ -2907,49 +2918,59 @@
 
 /* Stroke animation: draw the text outline */
 .splash-stroke {
+    font-family: var(--splash-font), cursive;
     stroke-dasharray: 900;
     stroke-dashoffset: 900;
-    animation: splashDrawStroke 2.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
+    animation: splashDrawStroke 2.6s cubic-bezier(0.65, 0, 0.35, 1) 0.2s forwards;
 }
 @keyframes splashDrawStroke {
     0% { stroke-dashoffset: 900; opacity: 1; }
-    78% { stroke-dashoffset: 0; opacity: 1; }
-    100% { stroke-dashoffset: 0; opacity: 0.3; }
+    75% { stroke-dashoffset: 0; opacity: 1; }
+    100% { stroke-dashoffset: 0; opacity: 0.25; }
 }
 
-/* Fill animation: Gemini gradient fade in */
+/* Fill animation: Gemini gradient fade in with glow */
 .splash-fill {
+    font-family: var(--splash-font), cursive;
     opacity: 0;
     filter: blur(12px);
-    animation: splashFillIn 1.4s cubic-bezier(0.4, 0, 0.2, 1) 1.4s forwards;
+    animation: splashFillIn 1.2s cubic-bezier(0.22, 1, 0.36, 1) 1.2s forwards;
 }
 @keyframes splashFillIn {
     0% { opacity: 0; filter: blur(12px); }
+    60% { opacity: 0.9; filter: blur(2px); }
     100% { opacity: 1; filter: blur(0px); }
+}
+
+/* Glow shimmer after fill completes */
+.splash-text-wrap::after {
+    content: '';
+    position: absolute;
+    inset: -20%;
+    background: radial-gradient(ellipse at center, rgba(66,133,244,0.08), transparent 70%);
+    opacity: 0;
+    animation: splashGlow 2s ease-in-out 2s forwards;
+    pointer-events: none;
+}
+@keyframes splashGlow {
+    0% { opacity: 0; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 0; transform: scale(1); }
 }
 
 /* Slogan */
 .splash-slogan {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    font-family: 'Manrope', sans-serif;
+    font-family: 'Noto Serif SC', serif;
     font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.25em;
-    color: #5b6278;
-    text-transform: uppercase;
+    font-weight: 600;
+    line-height: 2;
+    color: #6b7280;
+    text-align: center;
+    max-width: 420px;
     margin-top: 0.5rem;
     opacity: 0;
     transform: translateY(15px);
     animation: splashFadeIn 1s ease 2.2s forwards;
-}
-.slogan-dot {
-    width: 5px; height: 5px;
-    background: linear-gradient(135deg, #4285f4, #ec4899);
-    border-radius: 50%;
-    opacity: 0.6;
-    box-shadow: 0 0 4px rgba(66, 133, 244, 0.3);
 }
 
 /* ---- Bottom Signature ---- */
@@ -2960,24 +2981,19 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.4rem;
     z-index: 20;
     opacity: 0;
     filter: blur(10px);
     animation: splashFadeInBlur 1.4s ease 2.6s forwards;
 }
-.splash-divider-line {
-    width: 80px;
-    height: 1.5px;
-    background: linear-gradient(90deg, transparent, #9ca3af, transparent);
-    opacity: 0.4;
-}
 .splash-signature {
-    font-family: 'Manrope', sans-serif;
+    font-family: 'Noto Serif SC', serif;
     font-size: 11px;
     font-weight: 600;
-    color: #8b93a8;
-    letter-spacing: 0.1em;
+    color: #9ca3af;
+    letter-spacing: 0.06em;
+    padding: 0 16px;
 }
 
 /* ---- Shared Keyframes ---- */
@@ -2991,12 +3007,12 @@
 /* ---- Mobile ---- */
 @media (max-width: 768px) {
     .splash-topbar { top: 1.5rem; left: 1.5rem; right: 1.5rem; }
-    .splash-badge { font-size: 9px; padding: 5px 10px; }
-    .splash-version { font-size: 10px; }
-    .splash-skip { font-size: 11px; padding: 6px 16px; }
+    .splash-badge { font-size: 10px; padding: 5px 10px; }
+    .splash-version { font-size: 11px; }
+    .splash-skip { font-size: 11px; padding: 6px 18px; }
+    .splash-skip .skip-en { font-size: 9px; }
     .splash-center { margin-top: -3vh; }
-    .splash-slogan { font-size: 10px; gap: 10px; letter-spacing: 0.2em; }
-    .slogan-dot { width: 4px; height: 4px; }
+    .splash-slogan { font-size: 11px; max-width: 320px; }
     .splash-bottom { bottom: 1.5rem; }
     .splash-signature { font-size: 10px; }
 }

@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="myscore-comment-endpoint" content="/api/comment">
     <title>MyScore V4.2.0-beta - AI 智能成绩单 | 碳碳四键的个人开发应用实践</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@600;700&family=Great+Vibes&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@600;700&family=Great+Vibes&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- 开屏动画 -->
     <!-- 隐藏元素：强制浏览器预加载 Great Vibes 字体 -->
-    <div style="font-family:'Great Vibes',cursive;position:absolute;left:-9999px;visibility:hidden;" aria-hidden="true">My Score</div>
+    <div style="font-family:var(--splash-font,'Great Vibes'),cursive;position:absolute;left:-9999px;visibility:hidden;" aria-hidden="true">MyScore</div>
     <div id="splash-screen">
         <!-- Siri 风格流体光球背景 -->
         <div class="splash-orbs">
@@ -27,12 +27,12 @@
         <div class="splash-topbar">
             <div class="splash-topbar-left">
                 <div class="splash-badge">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-                    AI SMART REPORT
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"/></svg>
+                    AI智能成绩单
                 </div>
                 <span class="splash-version" id="splash-version"></span>
             </div>
-            <button class="splash-skip" id="splash-skip">Skip</button>
+            <button class="splash-skip" id="splash-skip">跳过 <span class="skip-en">Skip</span></button>
         </div>
 
         <!-- 主内容 -->
@@ -65,34 +65,29 @@
                     </defs>
                     <!-- 描边层：渐变线条画出文字 -->
                     <text x="500" y="180" text-anchor="middle"
-                          font-family="Great Vibes, cursive" font-size="180"
+                          style="font-family:var(--splash-font,'Great Vibes'),cursive" font-size="180"
                           fill="none" stroke="url(#stroke-grad)" stroke-width="4"
                           stroke-linecap="round" stroke-linejoin="round"
                           class="splash-stroke">
-                        My Score
+                        MyScore
                     </text>
                     <!-- 填充层：呼吸渐变淡入 -->
                     <text x="500" y="180" text-anchor="middle"
-                          font-family="Great Vibes, cursive" font-size="180"
+                          style="font-family:var(--splash-font,'Great Vibes'),cursive" font-size="180"
                           fill="url(#fill-grad)" class="splash-fill">
-                        My Score
+                        MyScore
                     </text>
                 </svg>
             </div>
             <!-- Slogan -->
             <div class="splash-slogan">
-                <span>INTELLIGENT</span>
-                <span class="slogan-dot"></span>
-                <span>TRACKING</span>
-                <span class="slogan-dot"></span>
-                <span>SYSTEM</span>
+                从最近一次成绩开始，看清当下状态，<br>再决定下一步该记录、导出还是复盘。
             </div>
         </div>
 
         <!-- 底部签名 -->
         <div class="splash-bottom">
-            <div class="splash-divider-line"></div>
-            <span class="splash-signature">碳碳四键的个人开发实践项目</span>
+            <span class="splash-signature">碳碳四键的个人开发实践项目-1</span>
         </div>
     </div>
     <div id="app">

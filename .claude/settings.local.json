@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(node --check app.js)",
-      "Bash(python3)"
+      "Bash(python3)",
+      "Bash(cp \"node_modules/@fontsource/dancing-script/files/dancing-script-latin-400-normal.woff2\" \"fonts/\")",
+      "Bash(cp \"node_modules/@fontsource/dancing-script/files/dancing-script-latin-400-normal.woff\" \"fonts/\")",
+      "Bash(cp \"node_modules/@fontsource/dancing-script/files/dancing-script-latin-700-normal.woff2\" \"fonts/\")",
+      "Bash(cp \"node_modules/@fontsource/dancing-script/files/dancing-script-latin-700-normal.woff\" \"fonts/\")"
     ]
   }
 }
