@@ -2,7 +2,7 @@ node_modules/
 .env
 .env.local
 start-local.bat
-.env.local
+.qoder/
 .DS_Store
 Thumbs.db
 *.log
