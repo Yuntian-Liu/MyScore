@@ -1,6 +1,6 @@
 {
   "name": "myscore",
-  "version": "5.0.0-beta",
+  "version": "5.0.1-beta",
   "private": true,
   "type": "module",
   "engines": {

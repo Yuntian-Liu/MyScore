@@ -24,7 +24,7 @@ export default async (req) => {
     const config = {
       apiKey: Netlify.env.get("AI_API_KEY"),
       apiBaseUrl: Netlify.env.get("AI_BASE_URL") || "https://api.deepseek.com",
-      model: Netlify.env.get("AI_MODEL") || "deepseek-chat",
+      model: Netlify.env.get("AI_MODEL") || "deepseek-v4-flash",
     };
     const payload = await requestAiComment(body, config);
     return jsonResponse(payload);

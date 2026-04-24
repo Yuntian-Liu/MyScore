@@ -161,7 +161,7 @@ async function handleCommentApi(req, res, ip) {
     const config = {
       apiKey: process.env.AI_API_KEY,
       apiBaseUrl: process.env.AI_BASE_URL || "https://api.deepseek.com",
-      model: process.env.AI_MODEL || "deepseek-chat",
+      model: process.env.AI_MODEL || "deepseek-v4-flash",
     };
     const result = await requestAiComment(body, config);
     sendJson(res, 200, result, CORS_HEADERS);

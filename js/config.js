@@ -1,0 +1,419 @@
+// ==================== 全局常量与配置 ====================
+
+export const STORAGE = {
+    RECORDS: 'myscore_v51_records',
+    CUSTOM: 'myscore_v51_custom',
+    AUTH: 'myscore_auth',
+    USER_MODE: 'myscore_user_mode',
+    LOCAL_AI_USAGE: 'myscore_local_ai_usage'
+};
+
+export var TURNSTILE_SITE_KEY = '0x4AAAAAAC9X9WOjivjdJMJl';
+
+export const AVATAR_OPTIONS = [
+    { seed: 'adventurer', label: '冒险家' },
+    { seed: 'lorelei', label: '精灵' },
+    { seed: 'notionists', label: '手绘' },
+    { seed: 'croodles', label: '涂鸦' },
+    { seed: 'big-smile', label: '大笑' },
+    { seed: 'personas', label: '个性' },
+    { seed: 'micah', label: '扁平' },
+    { seed: 'bottts', label: '机器人' },
+    { seed: 'fun-emoji', label: '表情' },
+    { seed: 'avataaars', label: '插画' },
+    { seed: 'pixel-art', label: '像素' },
+    { seed: 'thumbs', label: '拇指' }
+];
+
+export const LOCAL_AI_DAILY_LIMIT = 5;
+
+export const AI_STYLES = {
+    storm: { icon: '⛈️', name: '风暴', desc: '犀利刻薄' },
+    sun:   { icon: '☀️', name: '暖阳', desc: '温暖鼓励' },
+    cold:  { icon: '❄️', name: '冷锋', desc: '理性分析' },
+    rain:  { icon: '🌧️', name: '阵雨', desc: '先损后帮' }
+};
+
+export const COMMENT_API_ENDPOINT = (() => {
+    const meta = document.querySelector('meta[name="myscore-comment-endpoint"]');
+    return meta && meta.content ? meta.content.trim() : '/api/comment';
+})();
+
+export const BUILTIN_EXAMS = {
+    ielts: {
+        id: 'ielts',
+        name: '雅思',
+        desc: 'IELTS Academic',
+        icon: '📋',
+        builtin: true,
+        calcTotal: true,
+        subjects: [
+            { id: 'listening', name: 'Listening', short: 'L', color: '#3b82f6', type: 'lookup', min: 0, max: 40, dec: 1 },
+            { id: 'reading', name: 'Reading', short: 'R', color: '#10b981', type: 'lookup', min: 0, max: 40, dec: 1 },
+            { id: 'writing', name: 'Writing', short: 'W', color: '#f59e0b', type: 'ielts-writing', min: 0, max: 9, step: 0.5, dec: 1, hasTasks: true },
+            { id: 'speaking', name: 'Speaking', short: 'S', color: '#8b5cf6', type: 'direct', min: 0, max: 9, step: 0.5, dec: 1 }
+        ]
+    },
+    cet4: {
+        id: 'cet4',
+        name: '四级',
+        desc: 'CET-4',
+        icon: '📚',
+        builtin: true,
+        calcTotal: true,
+        subjects: [
+            { id: 'listening', name: '听力', short: '听', color: '#3b82f6', type: 'sections', sections: [
+                { name: '短对话', score: 7.1, max: 8 },
+                { name: '长对话', score: 7.1, max: 7 },
+                { name: '短文', score: 14.2, max: 10 }
+            ], dec: 0 },
+            { id: 'reading', name: '阅读', short: '读', color: '#10b981', type: 'sections', sections: [
+                { name: '选词填空', score: 3.55, max: 10 },
+                { name: '长篇阅读', score: 7.1, max: 10 },
+                { name: '仔细阅读', score: 14.2, max: 10 }
+            ], dec: 0 },
+            { id: 'writing', name: '写作', short: '写', color: '#f59e0b', type: 'formula', min: 0, max: 15, mult: 212/30, dec: 0 },
+            { id: 'translation', name: '翻译', short: '译', color: '#ef4444', type: 'formula', min: 0, max: 15, mult: 212/30, dec: 0 }
+        ]
+    },
+    cet6: {
+        id: 'cet6',
+        name: '六级',
+        desc: 'CET-6',
+        icon: '🎓',
+        builtin: true,
+        calcTotal: true,
+        subjects: [
+            { id: 'listening', name: '听力', short: '听', color: '#3b82f6', type: 'sections', sections: [
+                { name: '长对话', score: 7.1, max: 8 },
+                { name: '听力篇章', score: 7.1, max: 7 },
+                { name: '讲座', score: 14.2, max: 10 }
+            ], dec: 0 },
+            { id: 'reading', name: '阅读', short: '读', color: '#10b981', type: 'sections', sections: [
+                { name: '选词填空', score: 3.55, max: 10 },
+                { name: '长篇阅读', score: 7.1, max: 10 },
+                { name: '仔细阅读', score: 14.2, max: 10 }
+            ], dec: 0 },
+            { id: 'writing', name: '写作', short: '写', color: '#f59e0b', type: 'formula', min: 0, max: 15, mult: 212/30, dec: 0 },
+            { id: 'translation', name: '翻译', short: '译', color: '#ef4444', type: 'formula', min: 0, max: 15, mult: 212/30, dec: 0 }
+        ]
+    }
+};
+
+export const EXAM_THEME_MAP = {
+    ielts: {
+        accent: '#5b7cff', strong: '#2f4fcb', soft: '#eef1ff',
+        softAlt: '#fff2ea', contrast: '#ffffff',
+        reportGradientStart: '#5b7cff', reportGradientEnd: '#ff8a63'
+    },
+    cet4: {
+        accent: '#23a17b', strong: '#16765c', soft: '#e9fbf3',
+        softAlt: '#fff0db', contrast: '#ffffff',
+        reportGradientStart: '#23a17b', reportGradientEnd: '#f4a63e'
+    },
+    cet6: {
+        accent: '#8d63ff', strong: '#6542c9', soft: '#f1edff',
+        softAlt: '#ffe9f3', contrast: '#ffffff',
+        reportGradientStart: '#7d61ff', reportGradientEnd: '#ff7fab'
+    }
+};
+
+export const FALLBACK_THEME_POOL = [
+    { accent: '#ff8b68', strong: '#d86343', soft: '#fff0e8', softAlt: '#fff8ef', contrast: '#ffffff', reportGradientStart: '#ff8b68', reportGradientEnd: '#ffb36a' },
+    { accent: '#48a7a0', strong: '#2f7a74', soft: '#e8f9f7', softAlt: '#eef9ff', contrast: '#ffffff', reportGradientStart: '#48a7a0', reportGradientEnd: '#7ac8f7' },
+    { accent: '#6b7cff', strong: '#4958cb', soft: '#edf0ff', softAlt: '#f7edff', contrast: '#ffffff', reportGradientStart: '#6b7cff', reportGradientEnd: '#b37cff' },
+    { accent: '#f08b36', strong: '#c36a1d', soft: '#fff2e5', softAlt: '#fff9ef', contrast: '#ffffff', reportGradientStart: '#f08b36', reportGradientEnd: '#ffbf66' }
+];
+
+export const IELTS_TABLES = {
+    listening: [
+        {min:39,max:40,s:9.0},{min:37,max:38,s:8.5},{min:35,max:36,s:8.0},{min:32,max:34,s:7.5},
+        {min:30,max:31,s:7.0},{min:26,max:29,s:6.5},{min:23,max:25,s:6.0},{min:18,max:22,s:5.5},
+        {min:16,max:17,s:5.0},{min:13,max:15,s:4.5},{min:10,max:12,s:4.0},{min:6,max:9,s:3.5},
+        {min:4,max:5,s:3.0},{min:3,max:3,s:2.5},{min:2,max:2,s:2.0},{min:1,max:1,s:1.0},{min:0,max:0,s:0.5}
+    ],
+    reading: [
+        {min:39,max:40,s:9.0},{min:37,max:38,s:8.5},{min:35,max:36,s:8.0},{min:33,max:34,s:7.5},
+        {min:30,max:32,s:7.0},{min:27,max:29,s:6.5},{min:23,max:26,s:6.0},{min:19,max:22,s:5.5},
+        {min:15,max:18,s:5.0},{min:13,max:14,s:4.5},{min:10,max:12,s:4.0},{min:8,max:9,s:3.5},
+        {min:6,max:7,s:3.0},{min:4,max:5,s:2.5},{min:3,max:3,s:2.5},{min:2,max:2,s:2.0},{min:1,max:1,s:1.0},{min:0,max:0,s:0.5}
+    ]
+};
+
+export const APP_VERSION = '5.0.1-beta';
+export const CHANGELOG_STORAGE_KEY = 'myscore_changelog_seen_' + APP_VERSION;
+
+export const PET_STORAGE_KEY = 'myscore_pet_state';
+export const PET_DRAG_THRESHOLD = 5;
+export const PET_SNAP_THRESHOLD = 20;
+export const PET_SNAP_MARGIN = 8;
+export const PET_MIN_SCALE = 0.5;
+export const PET_MAX_SCALE = 1.8;
+export const RECENT_QUOTES_WINDOW = 20;
+export const TUTUER_HISTORY_KEY = 'myscore_tutuer_history';
+
+export const SASSY_QUOTES = [
+    "看什么看？单词背完了吗？😡",
+    "你今天的复习时长如果是 0，我对你的评价也是 0。",
+    "这么闲？还有空戳我？去刷题！👉",
+    "上次那点分，你怎么睡得着觉的？",
+    "再戳我，我就把你的成绩发给你爸妈。📱",
+    "只有弱者才会在意别人的评价，强者都在刷题。📚",
+    "哟，这不是那位总分 5.5 的选手吗？😏",
+    "这就是你对待学习的态度？再戳一下试试？👊",
+    "你知道吗？你的成绩让我怀疑你是不是在梦游考试。😴",
+    "别看了，成绩不会自己变高，快去学习！📖",
+    "你离成功只差一个字：努力。",
+    "如果拖延是比赛，你已经是冠军了。🏆",
+    "你的目标是考第一？还是考倒数第一？🤔",
+    "别再摸鱼了，鱼都嫌你烦了。🐟",
+    "你知道吗？你的成绩让我想起了我的噩梦。😱",
+    "再不努力，你的未来会比今天更糟糕。",
+    "你是来学习的，还是来打酱油的？",
+    "成绩单不会撒谎，但你会。😏",
+    "你觉得自己很努力？那成绩呢？",
+    "别再找借口了，时间不会等你。⏳",
+    "你以为考高分靠运气？不，靠实力。💪",
+    "再戳我，我就把你的成绩贴在公告栏上。📋",
+    "你知道吗？你的成绩让我怀疑你是不是在考古。🦴",
+    "努力是免费的，但你选择了昂贵的懒惰。",
+    "你知道吗？你的成绩让我想起了我小时候的玩笑。",
+    "你是来考试的，还是来交朋友的？",
+    "如果学习是游戏，你已经卡关了。",
+    "你的未来取决于你今天的努力。",
+    "别再拖延了，时间不会为你停留。",
+    "你知道吗？你的成绩让我想起了我的黑历史。",
+    "你是来挑战极限的，还是来挑战底线的？",
+    "学习是场马拉松，而你却在起点睡着了。",
+    "你知道吗？你的成绩让我怀疑你是不是在玩躲猫猫。",
+    "别再找借口了，成功只属于那些努力的人。",
+    "你觉得自己很聪明？那为什么成绩单不这么认为？",
+    "你知道吗？你的成绩让我想起了我丢失的记忆。",
+    "别再摸鱼了，鱼都开始嫌弃你了。",
+    "今天点我三次了，背单词点过三次吗？😏",
+    "你和高分之间就差一个动作：开始。",
+    "我不是在骂你，我是在提前播报现实。",
+    "你这学习节奏，像开了省电模式。🔋",
+    "别把'明天开始'当口头禅了，明天都听烦了。",
+    "你现在的分数，像是在给未来挖坑。",
+    "刷短视频的手速这么快，刷题怎么就卡了？📱",
+    "你是来拿分的，不是来和拖延症谈恋爱的。",
+    "每次点我都很积极，做题要是也这么积极就好了。",
+    "这分数不是终点，但再躺就真到终点了。🛌",
+    "你现在这状态，连错题本都替你着急。😮‍💨",
+    "你不是不会，你只是一直没认真开始。",
+    "学得慢没关系，停着不动才是问题。",
+    "今天少找一个借口，明天就多一分底气。",
+    "别再等状态了，状态是做出来的。",
+    "你可以嘴硬，但成绩单只认分数。📄",
+    "你这波操作，像是在给低分做长期投资。",
+    "知识点都在排队等你，你却在原地发呆。",
+    "我劝你现在学，不然以后只能学会后悔。",
+    "别总说差一点，你差的是那一点点坚持。",
+    "你今天复习了吗，还是又在和时间赛跑并且输了？",
+    "考试不看心情，看准备。🎯",
+    "你要么现在吃学习的苦，要么之后吃现实的苦。",
+    "这不是天赋问题，是你执行力的问题。",
+    "我都替你记住目标了，你别先忘了。",
+    "再拖下去，计划表都要长灰了。🗂️",
+    "你以为在休息，其实是在给焦虑充值。⚠️",
+    "继续点我可以，但顺手点开题库更好。",
+    "你不是差，你是还没把自己用到位。",
+    "你的潜力很大，别把它只放在想象里。",
+    "今天认真一点，明天就不用慌一点。✅",
+    "如果努力有声音，你今天有点安静。",
+    "你离进步不远，前提是别后退。",
+    "再摸鱼我就默认你在给别人让名次了。🐟",
+    "你这分数像天气预报：阴天转努力。",
+    "我没有否定你，我只是否定你的偷懒。",
+    "别再研究玄学提分了，先把题做完。📝",
+    "要不这样，点我一次就去做一道题。",
+    "你不是缺方法，你是缺持续执行。",
+    "每次说马上开始，马上都快退休了。⌛",
+    "再给自己一次认真投入的机会吧。",
+    "高分不会突然出现，只会被一点点做出来。📈",
+    "你今天的认真程度，决定明天的从容程度。",
+    "继续努力，别让我夸你的机会一直缺席。👏",
+    "别怕慢，怕的是你一直不出发。",
+    "你这次要是稳住，后面会越来越轻松。",
+    "我看好你，但你得先动起来。🚀",
+    "现在开始还不晚，继续拖才晚。",
+    "再点一次之前，先去做三道题，成交？"
+];
+
+export const CHANGELOG_PLACEHOLDER = `
+<div class="changelog-beta-banner">
+  <span class="changelog-beta-badge">BETA</span>
+  <p>当前版本为<strong>内测版本</strong>，功能和体验仍在打磨中。如遇到闪退、数据异常或界面错位，请谅解——这些问题正在被优先修复中。欢迎通过任何渠道向我们反馈，你的意见将直接影响下一版的走向。</p>
+</div>
+<div class="changelog-entry">
+  <div class="changelog-header">
+    <span class="changelog-version">V5.0.1-beta</span>
+    <span class="changelog-date">2026-04-24</span>
+  </div>
+  <div class="changelog-codename">Modular & Model（模块化重构与模型升级）</div>
+  <div class="changelog-section">
+    <div class="changelog-section-title">
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#4285f4,#f9ab00);">★</span>
+      新增
+    </div>
+    <ul class="changelog-list">
+      <li><strong>模块化架构</strong>：单体 app.js（4396 行）拆分为 13 个 ES 模块，提升代码可维护性</li>
+      <li><strong>AI 模型升级</strong>：DeepSeek 模型从 deepseek-chat 升级至 deepseek-v4-flash</li>
+    </ul>
+  </div>
+  <div class="changelog-section">
+    <div class="changelog-section-title">
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#ef4444,#f97316);">!</span>
+      修复
+    </div>
+    <ul class="changelog-list">
+      <li>修复本地模式下模式选择弹窗无效（window.setUserMode 代理引用不存在的函数）</li>
+      <li>修复退出登录后 AI 功能模式选择弹窗永不触发（window._auth_justLoggedOut 未同步）</li>
+      <li>修复 start-local.bat 中文注释导致环境变量设置失败</li>
+    </ul>
+  </div>
+</div>
+<div class="changelog-entry">
+  <div class="changelog-header">
+    <span class="changelog-version">V5.0.0-beta</span>
+    <span class="changelog-date">2026-04-17</span>
+  </div>
+  <div class="changelog-codename">Slider & Score（拖动条与成绩体验升级）</div>
+  <div class="changelog-section">
+    <div class="changelog-section-title">
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#4285f4,#f9ab00);">★</span>
+      新增
+    </div>
+    <ul class="changelog-list">
+      <li><strong>拖动条输入</strong>：所有成绩输入新增 Slider 拖动条，支持拖动和数字输入双模式</li>
+      <li><strong>扣分制计分</strong>：自定义考试新增第五种计分类型「扣分制」——从满分扣除</li>
+      <li><strong>输入实时校验</strong>：超范围成绩立即红框提示，保存前自动拦截</li>
+      <li><strong>分享卡记录选择</strong>：导出报告时可选择具体哪次成绩记录</li>
+      <li><strong>桌宠增强</strong>：支持自由拖动、缩放、左右边缘吸附、关闭与重新打开，状态自动记忆</li>
+    </ul>
+  </div>
+  <div class="changelog-section">
+    <div class="changelog-section-title">
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#ef4444,#f97316);">!</span>
+      修复
+    </div>
+    <ul class="changelog-list">
+      <li>修复四六级写作翻译分数转换偏差（总分对齐 710）</li>
+      <li>修复浏览器误识别聊天输入为登录表单的自动填充问题</li>
+    </ul>
+  </div>
+  <div class="changelog-section">
+    <div class="changelog-section-title">
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#8b5cf6,#3b82f6);">~</span>
+      优化
+    </div>
+    <ul class="changelog-list">
+      <li>自定义考试「科目」更名为「题型」，计分方式重命名并添加说明</li>
+      <li>计分方式配置字段添加标签和占位符引导</li>
+      <li>项目矩阵 UI 降权，融入页脚背景</li>
+      <li>公式法系数支持小数输入</li>
+      <li>报告导出流程优化</li>
+    </ul>
+  </div>
+</div>`;
+
+export const GUIDE_SECTIONS = [
+  { id: 'guide-quick', label: '快速上手', content: `
+    <div class="guide-section" id="guide-quick">
+      <div class="guide-section-title">
+        <span class="guide-icon" style="background:linear-gradient(135deg,#10b981,#3b82f6);">🚀</span>
+        快速上手
+      </div>
+      <div class="guide-quick">
+        <div class="guide-quick-item"><span class="guide-num">1</span>选择考试类型 → 录入成绩 → 保存</div>
+        <div class="guide-quick-item"><span class="guide-num">2</span>保存后 AI 老师自动评价，觉得不对就点击「回嘴」</div>
+        <div class="guide-quick-item"><span class="guide-num">3</span>点击左下角按钮可唤起突突er伴学助手</div>
+        <div class="guide-quick-item"><span class="guide-num">4</span>注册账号后数据自动同步云端，换设备不丢失</div>
+      </div>
+    </div>
+    <div class="guide-section">
+      <div class="guide-section-title">
+        <span class="guide-icon" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">🤖</span>
+        AI 智能交互
+      </div>
+      <div class="guide-cards">
+        <div class="guide-card"><div class="guide-card-icon">⛈️</div><div class="guide-card-title">毒舌老师</div><div class="guide-card-desc">根据分数走势犀利评价，进步酸溜溜地夸，退步刻薄嘲讽</div></div>
+        <div class="guide-card"><div class="guide-card-icon">💬</div><div class="guide-card-title">回怼模式</div><div class="guide-card-desc">觉得老师说得不对？点击回嘴，和 AI 展开辩论</div></div>
+        <div class="guide-card"><div class="guide-card-icon">🐾</div><div class="guide-card-title">桌面宠物</div><div class="guide-card-desc">右下角 Emoji 老师随成绩变脸，可点击互动</div></div>
+        <div class="guide-card"><div class="guide-card-icon">🐱</div><div class="guide-card-title">突突er 伴学</div><div class="guide-card-desc">倾听、安抚、答疑、做计划，温柔回应你的学习困惑</div></div>
+      </div>
+      <p class="guide-hint">四种评价风格可一键切换：风暴 · 暖阳 · 冷锋 · 阵雨</p>
+    </div>`
+  },
+  { id: 'guide-exams', label: '考试类型', content: `
+    <div class="guide-section" id="guide-exams">
+      <div class="guide-section-title">
+        <span class="guide-icon" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);">📊</span>
+        内置考试
+      </div>
+      <div class="guide-exam-list">
+        <div class="guide-exam-item"><span class="guide-exam-icon">📋</span><div><strong>雅思 IELTS</strong><br>听力 / 阅读 / 写作（Task1+Task2）/ 口语，总分自动按雅思规则取整</div></div>
+        <div class="guide-exam-item"><span class="guide-exam-icon">📚</span><div><strong>四级 CET-4</strong><br>听力（短对话/长对话/短文加权）/ 阅读（三部分加权）/ 写作 / 翻译</div></div>
+        <div class="guide-exam-item"><span class="guide-exam-icon">🎓</span><div><strong>六级 CET-6</strong><br>结构与四级相同，分值与题型自动适配</div></div>
+      </div>
+    </div>
+    <div class="guide-section">
+      <div class="guide-section-title">
+        <span class="guide-icon" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);">✨</span>
+        自定义考试
+      </div>
+      <p class="guide-desc">你可以创建任意类型的考试评分系统，如托福、GRE、期末考等。每个考试支持添加多个题型，每个题型有五种计分方式可选：</p>
+      <div class="guide-methods">
+        <div class="guide-method"><span class="guide-method-badge">A</span><strong>直接输入</strong> — 直接填入最终成绩（如口语 7.5 分）</div>
+        <div class="guide-method"><span class="guide-method-badge">B</span><strong>多小题计分</strong> — 分别填写各小题得分，自动求和</div>
+        <div class="guide-method"><span class="guide-method-badge">C</span><strong>分部分计分</strong> — 各部分题数 × 每题分值，自动汇总</div>
+        <div class="guide-method"><span class="guide-method-badge">D</span><strong>公式计算</strong> — 原始分 × 系数 = 最终分数（如写作 × 7.1）</div>
+      </div>
+      <div class="guide-steps-list">
+        <div class="guide-step"><div class="guide-step-num">1</div><div><strong>创建考试</strong>：点击顶部「自定义考试」→「+ 新建考试」→ 填写名称</div></div>
+        <div class="guide-step"><div class="guide-step-num">2</div><div><strong>添加题型</strong>：设置名称、简称、颜色，选择计分方式</div></div>
+        <div class="guide-step"><div class="guide-step-num">3</div><div><strong>录入成绩</strong>：选择考试 → 按题型输入分数 → 保存</div></div>
+      </div>
+    </div>`
+  },
+  { id: 'guide-data', label: '数据与安全', content: `
+    <div class="guide-section" id="guide-data">
+      <div class="guide-section-title">
+        <span class="guide-icon" style="background:linear-gradient(135deg,#10b981,#059669);">🔒</span>
+        数据安全
+      </div>
+      <ul class="guide-list">
+        <li><strong>本地优先</strong>：未登录时数据仅保存在浏览器 localStorage</li>
+        <li><strong>云端同步</strong>：登录后数据自动上传，换设备登录自动拉取</li>
+        <li><strong>密码加密</strong>：scrypt 单向哈希，服务器无法查看明文密码</li>
+        <li><strong>传输加密</strong>：所有 API 通信走 HTTPS</li>
+      </ul>
+    </div>
+    <div class="guide-section">
+      <div class="guide-section-title">
+        <span class="guide-icon" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);">📁</span>
+        备份与恢复
+      </div>
+      <ul class="guide-list">
+        <li><strong>导出</strong>：点击「导出数据」下载 JSON 备份文件</li>
+        <li><strong>导入</strong>：点击「导入数据」选择备份文件，自动合并去重</li>
+        <li><strong>合并逻辑</strong>：导入不会覆盖现有记录，只补充缺失的</li>
+      </ul>
+    </div>`
+  }
+];
+
+export var USER_AGREEMENT_HTML = '<h3>一、服务描述</h3><p>MyScore（以下简称"本服务"）是一款成绩记录与管理工具，提供成绩录入、趋势分析、AI 评价反馈及云端数据同步等功能。本服务由碳碳四键（以下简称"我们"）开发并运营。</p><p>本服务目前处于内测阶段，功能和界面可能随时调整。我们保留随时修改、暂停或终止服务的权利。</p><h3>二、用户账号</h3><p>1. 您需要通过邮箱验证码注册账号以使用云端同步功能。未登录状态下，数据仅保存在浏览器本地存储中。</p><p>2. 您应妥善保管账号信息和密码，因账号信息泄露导致的损失由您自行承担。</p><p>3. 您不得将账号转让、出借给他人使用。违反此规定产生的一切后果由您自行承担。</p><p>4. 您承诺注册信息真实有效，如发现虚假信息，我们有权暂停或终止您的账号。</p><h3>三、用户行为规范</h3><p>1. 您承诺不利用本服务从事任何违反法律法规的活动。</p><p>2. 您不得通过技术手段干扰本服务的正常运行，包括但不限于攻击、爬虫、注入等行为。</p><p>3. 您不得批量注册账号或恶意占用系统资源（如高频发送验证码请求）。</p><p>4. 您在使用 AI 功能时，不得输入违反法律法规或公序良俗的内容。我们保留在发现违规内容时中断服务并封禁账号的权利。</p><h3>四、知识产权</h3><p>本服务的所有内容（包括但不限于界面设计、代码、文案、图标）均受知识产权法保护。未经我们书面许可，您不得复制、修改或分发相关内容。</p><p>您在本服务中录入的成绩数据，知识产权归您所有。</p><h3>五、AI 功能说明</h3><p>1. 本服务提供 AI 评价反馈和伴学助手功能，由第三方 AI 大模型（DeepSeek）驱动。</p><p>2. AI 生成的内容仅供参考，不构成任何学术建议、医学建议或专业意见。您应自行判断 AI 建议的合理性。</p><p>3. AI 模型可能产生不准确、不适当或过时的内容，我们不对 AI 生成内容的准确性、完整性承担保证责任。</p><p>4. AI 功能依赖第三方服务商的可用性，如服务商故障可能导致 AI 功能暂时不可用。</p><h3>六、服务可用性</h3><p>1. 我们将尽合理努力保障服务的持续可用，但不保证服务不出现中断、延迟或错误。</p><p>2. 因服务器维护、网络故障、第三方服务商故障等不可控因素导致的服务中断，我们不承担责任，但会尽快恢复。</p><p>3. 因不可抗力（如自然灾害、政策变化）导致的服务终止或数据丢失，我们不承担责任。</p><h3>七、免责声明</h3><p>1. 本服务按"现状"提供，我们不对其适用性、可靠性、及时性作任何明示或暗示的保证。</p><p>2. 因系统故障、自然灾害等原因导致的数据丢失，我们不承担责任，但会尽合理努力保障数据安全。</p><p>3. 您通过本服务获取的任何信息或 AI 建议，均需自行判断其适用性，我们不对由此产生的任何损失承担责任。</p><h3>八、协议变更</h3><p>我们有权在必要时修改本协议条款。变更后的协议将在本页面更新。继续使用本服务即视为同意变更后的条款。如您不同意变更内容，应立即停止使用本服务。</p><h3>九、适用法律</h3><p>本协议适用中华人民共和国法律。如发生争议，双方应友好协商解决；协商不成的，任一方有权向本服务运营主体所在地有管辖权的法院提起诉讼。</p>';
+
+export var PRIVACY_POLICY_HTML = '<h3>一、信息收集</h3><p>我们收集以下信息以提供服务：</p><p>1. <strong>账号信息</strong>：邮箱地址、昵称、头像选择。</p><p>2. <strong>成绩数据</strong>：您录入的考试成绩、自定义考试类型、目标分数。</p><p>3. <strong>使用记录</strong>：AI 评价对话历史（最近 30 条）。</p><p>我们不会收集您的真实姓名、身份证号、手机号等敏感信息。</p><h3>二、信息使用</h3><p>您的信息仅用于以下目的：</p><p>1. 提供云端数据同步服务，使您可以在不同设备上访问成绩数据。</p><p>2. 生成 AI 学习评价与陪学反馈。</p><p>3. 改善产品体验和服务质量。</p><p>我们不会将您的数据出售或分享给第三方。我们不会使用您的数据训练 AI 模型。</p><h3>三、信息存储</h3><p>1. 未登录状态下，所有数据存储在您的浏览器本地（localStorage）。</p><p>2. 登录后，数据同步至我们的服务器并加密存储。服务器部署在境外，由开发者自行运维管理。</p><p>3. 由于本服务包含 AI 对话功能，服务器部署于境外以确保 AI 服务的可用性和稳定性。所有数据由开发者直接管理，不经过任何第三方服务，数据安全可控。</p><h3>四、信息保护</h3><p>1. 密码采用单向哈希加密存储，我们无法查看您的明文密码。</p><p>2. 身份认证采用 JWT 令牌机制，有效期为 30 天。</p><p>3. 所有 API 通信采用 HTTPS 加密传输。</p><p>4. 数据存储使用持久卷，服务器重启或更新不会导致数据丢失。</p><h3>五、用户权利</h3><p>1. 您可以随时通过"导出数据"功能下载您的全部数据。</p><p>2. 您可以随时退出登录并清除本地数据。</p><p>3. 如需删除云端数据，请通过服务内的联系渠道联系我们，我们将在合理时间内处理。</p><p>4. 您有权拒绝我们收集非必要信息，但可能影响部分功能的使用。</p><h3>六、Cookie 与本地存储</h3><p>本服务使用浏览器 localStorage 存储数据，不使用第三方 Cookie，不加载任何第三方追踪脚本。localStorage 数据仅存在于您的设备上，我们无法远程访问。</p><h3>七、第三方服务</h3><p>本服务使用以下第三方服务：</p><p>1. <strong>DeepSeek API</strong>：用于生成 AI 学习评价。评价内容会发送至 DeepSeek 服务器处理，但我们不会将您的个人信息（如邮箱、昵称）一并发送。</p><p>2. <strong>Resend</strong>：用于发送注册验证码邮件。Resend 仅处理邮箱地址，不获取其他数据。</p><p>3. <strong>DiceBear</strong>：用于生成头像。头像由随机种子生成，不关联您的个人信息。</p><p>上述服务均有其自身的隐私政策，建议您查阅相关条款。</p><h3>八、数据保留与删除</h3><p>1. 您的账号数据会在服务运营期间持续保留。</p><p>2. 如果您希望删除账号及所有数据，请联系我们，我们将在核实身份后 7 个工作日内完成删除。</p><p>3. 服务停止运营时，我们会提前 30 天通知用户，并提供数据导出和删除的渠道。</p><h3>九、未成年人保护</h3><p>本服务主要面向学生群体。未满 14 周岁的用户在注册前应取得监护人的同意。我们不会针对性地收集未成年人的额外信息。</p><h3>十、政策更新</h3><p>本隐私政策可能在必要时更新。重大变更将通过站内通知告知您。继续使用本服务即视为同意更新后的政策。</p><p style="margin-top:1rem;color:#9ca3af;">最后更新：2026 年 4 月</p>';
+
+export const BETA_BANNER = {
+    enabled: true,
+    items: [
+        'V5.0.1-beta 更新：模块化架构重构、AI 模型升级、关键 Bug 修复',
+        '新增拖动条输入、扣分制计分、输入实时校验、分享卡记录选择',
+        '修复四六级分数转换偏差、浏览器自动填充误识别',
+        '感谢 <span class="banner-name banner-name-red">大鲨鱼</span><span class="banner-name banner-name-blue">Osc</span><span class="banner-name banner-name-green">处方</span> 的反馈贡献'
+    ]
+};

@@ -5,6 +5,21 @@ The format is based on [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [5.0.1-beta] - 2026-04-24
+
+**代号：Modular & Model（模块化重构与模型升级）**
+
+### Changed
+- 🔧 **模块化架构重构**：单体 `app.js`（4396 行）拆分为 13 个 ES 模块（main/config/utils/storage/auth/ai/dashboard/entry/custom/report/pet/tutuer/info），提升代码可维护性
+- 🔧 **AI 模型升级**：DeepSeek 模型从 `deepseek-chat` 升级至 `deepseek-v4-flash`
+
+### Fixed
+- 🔧 **本地模式选择弹窗无效**：`window.setUserMode` 代理引用不存在的 `window._authSetUserMode`，导致用户选择"本地模式"后实际不生效
+- 🔧 **退出登录后模式弹窗永不触发**：`window._auth_justLoggedOut` 未从模块变量同步到 window，导致退出后首次使用 AI 时不再弹出模式选择
+- 🔧 **start-local.bat 编码问题**：UTF-8 中文注释在 CMD(GBK) 下导致 `set AI_API_KEY` 不生效
+
+---
+
 ## [5.0.0-beta] - 2026-04-17
 
 **代号：Slider & Score（拖动条与成绩体验升级）**

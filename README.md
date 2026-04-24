@@ -1,9 +1,9 @@
 ﻿<div align="center">
 
-# MyScore - AI 智能成绩管理系统 · V5.0.0-beta
+# MyScore - AI 智能成绩管理系统 · V5.0.1-beta
 
 <p>
-    <img src="https://img.shields.io/badge/v5.0.0--beta-Slider_Score-7c3aed?style=flat-square&logo=rocket&logoColor=white" alt="Version">
+    <img src="https://img.shields.io/badge/v5.0.1--beta-Modular_Model-7c3aed?style=flat-square&logo=rocket&logoColor=white" alt="Version">
     <img src="https://img.shields.io/badge/Model-DeepSeek-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
     <img src="https://img.shields.io/badge/Deploy-Netlify_%2B_Zeabur-5468ff?style=flat-square&logo=vercel&logoColor=white" alt="Deploy">
     <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=flat-square" alt="License">
@@ -13,11 +13,18 @@
 
 </div>
 
-一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V5.0.0-beta**，新增拖动条输入、扣分制计分、输入实时校验与分享卡记录选择，配合多项修复与体验优化。
+一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V5.0.1-beta**，完成模块化架构重构与 AI 模型升级，配合关键 Bug 修复。
 
 ## 🔔 最新版本速览
 
-### V5.0.0-beta (Current)
+### V5.0.1-beta (Current)
+- 🔧 **模块化架构重构**：单体 `app.js`（4396 行）拆分为 13 个 ES 模块，提升代码可维护性。
+- 🔧 **AI 模型升级**：DeepSeek 模型从 `deepseek-chat` 升级至 `deepseek-v4-flash`。
+- 🔧 **修复本地模式选择弹窗无效**：用户选择"本地模式"后实际不生效。
+- 🔧 **修复退出登录后模式弹窗永不触发**：退出后首次使用 AI 时不再弹出模式选择。
+- 🔧 **修复 start-local.bat 编码问题**：中文注释导致环境变量设置失败。
+
+### V5.0.0-beta
 - ✅ **拖动条输入**：所有成绩输入新增 Slider 拖动条，支持拖动和数字输入双模式。
 - ✅ **扣分制计分**：自定义考试新增第五种计分类型「扣分制」——从满分扣除。
 - ✅ **输入实时校验**：超范围成绩立即红框提示，保存前自动拦截。
