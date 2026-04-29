@@ -332,7 +332,7 @@ export const CHANGELOG_CURRENT = `
     </div>
     <ul class="changelog-list">
       <li>设置页面重构 — 固定尺寸弹窗，子页面无跳转切换</li>
-      <li>Profile Card/Panel 优化 — 头像放大，设置入口替代编辑资料</li>
+      <li>Profile Panel 优化 — 移除悬浮卡片，点击头像展开完整面板，头像放大，设置入口替代编辑资料</li>
       <li>Chevron 图标 — 「关于」区域导航箭头替换为 SVG chevron + hover 动画</li>
       <li>使用指南更新 — 补充快捷工具箱使用说明</li>
     </ul>

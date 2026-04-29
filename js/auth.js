@@ -12,7 +12,6 @@ var turnstileWidgetId = null;
 var turnstileReady = false;
 var turnstileScriptLoaded = false;
 
-var profileCardTimer = null;
 var profilePanelOpen = false;
 var hoverCooldown = false;
 
@@ -311,8 +310,6 @@ function forceLogout() {
     localStorage.removeItem(STORAGE.USER_MODE);
     currentUser = null;
     updateLoginButton();
-    var card = document.getElementById('profile-card');
-    if (card) card.classList.add('hidden');
 }
 
 function confirmLogout() {
@@ -336,8 +333,6 @@ function confirmLogout() {
     currentUser = null;
     if (window._resetAiCache) window._resetAiCache();
     updateLoginButton();
-    var card = document.getElementById('profile-card');
-    if (card) card.classList.add('hidden');
     if (window.renderDashboard) window.renderDashboard();
 }
 
@@ -378,21 +373,7 @@ function updateLoginButton() {
         var _records = getRecords();
         var _examTypes = new Set(_records.map(function(r){return r.examType;})).size;
         area.innerHTML =
-            '<img class="nav-avatar" id="nav-avatar-img" src="' + getAvatarUrl(currentUser.avatarSeed, 32) + '" alt="avatar" onclick="toggleProfilePanel(event)" onmouseenter="showProfileCard()" onmouseleave="scheduleHideProfileCard()">' +
-            '<div class="profile-card hidden" id="profile-card" onmouseenter="cancelHideProfileCard()" onmouseleave="hideProfileCard()">' +
-                '<div class="profile-card-header">' +
-                    '<img class="profile-card-avatar" id="profile-card-avatar" src="' + getAvatarUrl(currentUser.avatarSeed, 64) + '" alt="">' +
-                    '<div class="profile-card-info">' +
-                        '<div class="profile-card-name"><span id="profile-card-nickname">' + escapeHtml(currentUser.nickname || '') + '</span>' + badges + '</div>' +
-                        '<div class="profile-card-uid">UID: ' + currentUser.uid + '</div>' +
-                    '</div>' +
-                '</div>' +
-                (currentUser.bio ? '<div class="profile-card-bio">' + escapeHtml(currentUser.bio) + '</div>' : '') +
-                '<div class="profile-card-actions">' +
-                    '<button class="profile-card-btn" onclick="openSettings()">设置</button>' +
-                    '<button class="profile-card-btn profile-card-btn-logout" onclick="logout()">退出登录</button>' +
-                '</div>' +
-            '</div>' +
+            '<img class="nav-avatar" id="nav-avatar-img" src="' + getAvatarUrl(currentUser.avatarSeed, 32) + '" alt="avatar" title="点击查看资料" onclick="toggleProfilePanel(event)">' +
             '<div class="profile-panel hidden" id="profile-panel">' +
                 '<div class="profile-panel-header">' +
                     '<img class="profile-panel-avatar" src="' + getAvatarUrl(currentUser.avatarSeed, 96) + '" alt="">' +
@@ -420,15 +401,10 @@ function updateLoginButton() {
     }
 }
 
-function showProfileCard() { if (profilePanelOpen || hoverCooldown) return; clearTimeout(profileCardTimer); var card = document.getElementById('profile-card'); if (card) card.classList.remove('hidden'); }
-function hideProfileCard() { var card = document.getElementById('profile-card'); if (card) card.classList.add('hidden'); }
-function scheduleHideProfileCard() { profileCardTimer = setTimeout(hideProfileCard, 200); }
-function cancelHideProfileCard() { clearTimeout(profileCardTimer); showProfileCard(); }
-
 function toggleProfilePanel(event) {
     event.stopPropagation();
     if (profilePanelOpen) { hideProfilePanel(); }
-    else { hideProfileCard(); var panel = document.getElementById('profile-panel'); if (panel) { panel.classList.remove('hidden'); profilePanelOpen = true; updateProfileStats(); } }
+    else { var panel = document.getElementById('profile-panel'); if (panel) { panel.classList.remove('hidden'); profilePanelOpen = true; updateProfileStats(); } }
 }
 function hideProfilePanel() {
     var panel = document.getElementById('profile-panel'); if (panel) panel.classList.add('hidden');
@@ -444,7 +420,7 @@ function updateProfileStats() {
 
 // ---- 编辑资料 ----
 function openEditProfileModal() {
-    hideProfileCard(); hideProfilePanel();
+    hideProfilePanel();
     var modal = document.getElementById('edit-profile-modal'); if (!modal) return;
     document.getElementById('edit-nickname').value = currentUser.nickname || '';
     document.getElementById('edit-bio').value = currentUser.bio || '';
@@ -599,10 +575,6 @@ window.updateSendCodeBtn = updateSendCodeBtn;
 window.logout = logout;
 window.cancelLogout = cancelLogout;
 window.confirmLogout = confirmLogout;
-window.showProfileCard = showProfileCard;
-window.hideProfileCard = hideProfileCard;
-window.scheduleHideProfileCard = scheduleHideProfileCard;
-window.cancelHideProfileCard = cancelHideProfileCard;
 window.toggleProfilePanel = toggleProfilePanel;
 window.hideProfilePanel = hideProfilePanel;
 window.openEditProfileModal = openEditProfileModal;

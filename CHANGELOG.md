@@ -17,7 +17,7 @@ The format is based on [Semantic Versioning](https://semver.org/).
 
 ### Changed
 - 🔄 **设置页面重构**：固定尺寸弹窗，子页面无跳转切换
-- 🔄 **Profile Card/Panel 优化**：头像放大，设置入口替代编辑资料
+- 🔄 **Profile Panel 优化**：移除悬浮卡片，点击头像展开完整面板，头像放大，设置入口替代编辑资料
 - 🔄 **Chevron 图标**：「关于」区域导航箭头替换为 SVG chevron + hover 动画
 - 🔄 **使用指南更新**：补充快捷工具箱使用说明
 

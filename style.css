@@ -2880,10 +2880,6 @@
                 height: 36px;
             }
 
-            .profile-card {
-                display: none !important;
-            }
-
             .profile-panel {
                 position: fixed;
                 top: auto;
@@ -3451,100 +3447,6 @@
     box-shadow: 0 2px 8px rgba(31, 106, 82, 0.2);
 }
 
-/* ==================== Profile Card ==================== */
-.profile-card {
-    position: absolute;
-    top: calc(100% + 10px);
-    right: -4px;
-    width: 260px;
-    background: rgba(255, 255, 255, 0.96);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
-    padding: 1.1rem;
-    z-index: 1000;
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    visibility: visible;
-    transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1),
-                transform 0.22s cubic-bezier(0.4, 0, 0.2, 1),
-                visibility 0.22s;
-}
-.profile-card.hidden {
-    opacity: 0;
-    transform: translateY(-8px) scale(0.96);
-    visibility: hidden;
-    pointer-events: none;
-}
-.profile-card-header {
-    display: flex;
-    align-items: center;
-    gap: 0.85rem;
-    margin-bottom: 0.85rem;
-}
-.profile-card-avatar {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    border: 2px solid rgba(31, 106, 82, 0.12);
-}
-.profile-card-info {
-    min-width: 0;
-}
-.profile-card-name {
-    font-weight: 700;
-    font-size: 0.95rem;
-    color: #111827;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-}
-.profile-card-uid {
-    font-size: 0.8rem;
-    color: #9ca3af;
-    margin-top: 0.15rem;
-}
-.profile-card-bio {
-    font-size: 0.85rem;
-    color: #6b7280;
-    line-height: 1.5;
-    padding: 0.6rem 0.75rem;
-    background: #f9fafb;
-    border-radius: 0.5rem;
-    margin-bottom: 0.75rem;
-}
-.profile-card-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-.profile-card-btn {
-    flex: 1;
-    padding: 0.5rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-    background: #fff;
-    color: #374151;
-    font-size: 0.82rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.profile-card-btn:hover {
-    background: #f3f4f6;
-    border-color: #d1d5db;
-}
-.profile-card-btn-logout {
-    color: #ef4444;
-    border-color: rgba(239, 68, 68, 0.2);
-}
-.profile-card-btn-logout:hover {
-    background: #fef2f2;
-    border-color: rgba(239, 68, 68, 0.3);
-}
-
 /* ==================== Profile Panel (click expand) ==================== */
 .profile-panel {
     position: absolute;
@@ -3594,7 +3496,8 @@
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    flex-wrap: wrap;
+    white-space: nowrap;
+    overflow: hidden;
 }
 .profile-panel-uid {
     font-size: 0.82rem;
