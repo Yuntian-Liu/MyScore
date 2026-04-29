@@ -1,5 +1,5 @@
 // ==================== 版本日志 / 使用指南 ====================
-import { APP_VERSION, CHANGELOG_STORAGE_KEY, CHANGELOG_PLACEHOLDER, GUIDE_SECTIONS } from './config.js';
+import { APP_VERSION, CHANGELOG_STORAGE_KEY, CHANGELOG_CURRENT, CHANGELOG_HISTORY, GUIDE_SECTIONS } from './config.js';
 
 function openInfoModal(type) {
     const modal = document.getElementById('info-modal');
@@ -14,7 +14,7 @@ function openInfoModal(type) {
     title.textContent = isChangelog ? ('版本日志 · V' + APP_VERSION) : 'MyScore 使用指南';
 
     if (isChangelog) {
-        body.innerHTML = CHANGELOG_PLACEHOLDER;
+        body.innerHTML = CHANGELOG_CURRENT + '<div style="text-align:center;margin-top:1.5rem;padding-top:1rem;border-top:1px solid rgba(84,99,125,0.1);"><button class="changelog-history-btn" onclick="showChangelogHistory()">查看历史版本</button></div>';
         sidebar.style.display = 'none';
         primary.style.display = 'inline-flex';
     } else {
@@ -37,6 +37,24 @@ function switchGuideSection(index) {
     sidebar.querySelectorAll('.guide-nav-btn').forEach(function(btn, i) {
         btn.classList.toggle('active', i === index);
     });
+    body.scrollTop = 0;
+}
+
+function showChangelogHistory() {
+    var body = document.getElementById('info-modal-body');
+    var title = document.getElementById('info-modal-title');
+    if (!body || !title) return;
+    title.textContent = '历史版本日志';
+    body.innerHTML = '<div style="text-align:center;margin-bottom:1.2rem;"><button class="changelog-history-btn" onclick="backToCurrentChangelog()">← 返回当前版本</button></div>' + CHANGELOG_HISTORY;
+    body.scrollTop = 0;
+}
+
+function backToCurrentChangelog() {
+    var body = document.getElementById('info-modal-body');
+    var title = document.getElementById('info-modal-title');
+    if (!body || !title) return;
+    title.textContent = '版本日志 · V' + APP_VERSION;
+    body.innerHTML = CHANGELOG_CURRENT + '<div style="text-align:center;margin-top:1.5rem;padding-top:1rem;border-top:1px solid rgba(84,99,125,0.1);"><button class="changelog-history-btn" onclick="showChangelogHistory()">查看历史版本</button></div>';
     body.scrollTop = 0;
 }
 
@@ -72,3 +90,5 @@ window.closeInfoModal = closeInfoModal;
 window.switchGuideSection = switchGuideSection;
 window.acknowledgeChangelog = acknowledgeChangelog;
 window.handleInfoModalOverlayClick = handleInfoModalOverlayClick;
+window.showChangelogHistory = showChangelogHistory;
+window.backToCurrentChangelog = backToCurrentChangelog;

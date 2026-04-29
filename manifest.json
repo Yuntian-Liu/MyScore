@@ -1,0 +1,18 @@
+{
+  "name": "MyScore AI 智能成绩管理",
+  "short_name": "MyScore",
+  "description": "AI 智能成绩管理系统 — 不止记录成绩，更陪伴你复习、答疑与成长",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f8faf9",
+  "theme_color": "#275b56",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "logo2.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

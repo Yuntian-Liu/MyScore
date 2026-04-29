@@ -326,6 +326,10 @@ function confirmLogout() {
     localStorage.removeItem('myscore_goals');
     localStorage.removeItem('myscore_ai_style');
     localStorage.removeItem('myscore_tutuer_history');
+    localStorage.removeItem(STORAGE.STREAK);
+    localStorage.removeItem(STORAGE.XP);
+    localStorage.removeItem(STORAGE.ACHIEVEMENTS);
+    localStorage.removeItem('myscore_ai_debated');
     localStorage.setItem(STORAGE.USER_MODE, 'local');
     _justLoggedOut = true;
     window._auth_justLoggedOut = true;
@@ -383,9 +387,9 @@ function updateLoginButton() {
                         '<div class="profile-card-uid">UID: ' + currentUser.uid + '</div>' +
                     '</div>' +
                 '</div>' +
-                '<div class="profile-card-bio">' + escapeHtml(currentUser.bio || '这个人很懒，什么都没写') + '</div>' +
+                (currentUser.bio ? '<div class="profile-card-bio">' + escapeHtml(currentUser.bio) + '</div>' : '') +
                 '<div class="profile-card-actions">' +
-                    '<button class="profile-card-btn" onclick="openEditProfileModal()">编辑资料</button>' +
+                    '<button class="profile-card-btn" onclick="openSettings()">设置</button>' +
                     '<button class="profile-card-btn profile-card-btn-logout" onclick="logout()">退出登录</button>' +
                 '</div>' +
             '</div>' +
@@ -394,16 +398,16 @@ function updateLoginButton() {
                     '<img class="profile-panel-avatar" src="' + getAvatarUrl(currentUser.avatarSeed, 96) + '" alt="">' +
                     '<div class="profile-panel-info">' +
                         '<div class="profile-panel-name">' + escapeHtml(currentUser.nickname || '') + badges + '</div>' +
+                        (currentUser.bio ? '<div class="profile-panel-bio">' + escapeHtml(currentUser.bio) + '</div>' : '') +
                         '<div class="profile-panel-uid">UID: ' + currentUser.uid + '</div>' +
                     '</div>' +
                 '</div>' +
                 '<div class="profile-panel-divider"></div>' +
-                (currentUser.bio ? '<div class="profile-panel-bio">' + escapeHtml(currentUser.bio) + '</div><div class="profile-panel-divider"></div>' : '') +
                 '<div class="profile-panel-detail"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:.45;"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/></svg><span>' + maskEmail(currentUser.email) + '</span></div>' +
                 '<div class="profile-panel-detail"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:.45;"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg><span id="profile-stats">' + _records.length + ' 条记录 · ' + _examTypes + ' 种考试</span></div>' +
                 '<div class="profile-panel-divider"></div>' +
                 '<div class="profile-panel-actions">' +
-                    '<button class="profile-panel-btn" onclick="openEditProfileModal()">编辑资料</button>' +
+                    '<button class="profile-panel-btn" onclick="openSettings()">设置</button>' +
                     '<button class="profile-panel-btn profile-panel-btn-logout" onclick="logout()">退出登录</button>' +
                 '</div>' +
             '</div>';
@@ -516,7 +520,10 @@ function gatherAllLocalStorage() {
         custom: readStorageJson(STORAGE.CUSTOM, {}),
         goals: readStorageJson('myscore_goals', {}),
         ai_style: localStorage.getItem('myscore_ai_style') || 'storm',
-        tutuer_history: readStorageJson('myscore_tutuer_history', [])
+        tutuer_history: readStorageJson('myscore_tutuer_history', []),
+        streak_data: readStorageJson(STORAGE.STREAK, {}),
+        xp_data: readStorageJson(STORAGE.XP, { total: 0, level: 1 }),
+        achievements: readStorageJson(STORAGE.ACHIEVEMENTS, [])
     };
 }
 
@@ -544,6 +551,36 @@ function mergeCloudData(cloudData) {
     if (cloudData.ai_style) {
         localStorage.setItem('myscore_ai_style', cloudData.ai_style);
         if (window._setCurrentAiStyle) window._setCurrentAiStyle(cloudData.ai_style);
+    }
+    // 合并游戏化数据：streak 取较大值，xp 取较大值，achievements 取并集
+    if (cloudData.streak_data && typeof cloudData.streak_data === 'object') {
+        try {
+            var localStreak = readStorageJson(STORAGE.STREAK, {});
+            if ((cloudData.streak_data.currentStreak || 0) > (localStreak.currentStreak || 0)) {
+                localStreak.currentStreak = cloudData.streak_data.currentStreak;
+            }
+            if ((cloudData.streak_data.longestStreak || 0) > (localStreak.longestStreak || 0)) {
+                localStreak.longestStreak = cloudData.streak_data.longestStreak;
+            }
+            localStorage.setItem(STORAGE.STREAK, JSON.stringify(localStreak));
+        } catch {}
+    }
+    if (cloudData.xp_data && typeof cloudData.xp_data === 'object') {
+        try {
+            var localXp = readStorageJson(STORAGE.XP, { total: 0, level: 1 });
+            if ((cloudData.xp_data.total || 0) > localXp.total) {
+                localStorage.setItem(STORAGE.XP, JSON.stringify(cloudData.xp_data));
+            }
+        } catch {}
+    }
+    if (cloudData.achievements && Array.isArray(cloudData.achievements)) {
+        try {
+            var localAch = readStorageJson(STORAGE.ACHIEVEMENTS, []);
+            cloudData.achievements.forEach(function (id) {
+                if (localAch.indexOf(id) === -1) localAch.push(id);
+            });
+            localStorage.setItem(STORAGE.ACHIEVEMENTS, JSON.stringify(localAch));
+        } catch {}
     }
     if (window.renderDashboard) window.renderDashboard();
 }

@@ -2,6 +2,7 @@
 import { APP_VERSION } from './config.js';
 import { escapeHtml, escapeAttr, getExamTheme, getExamBadgeMarkup, getReportTypeIconMarkup } from './utils.js';
 import { getRecords, allExams } from './storage.js';
+import { addXP } from './gamification.js';
 
 let currentReportType = 'scorecard';
 
@@ -265,6 +266,7 @@ async function downloadReport() {
 
     if (currentReportType === 'scorecard') {
         await downloadScorecardImage(records);
+        addXP('export');
     } else {
         var recordSelect = document.getElementById('report-record-select');
         var selectedIdx = recordSelect ? parseInt(recordSelect.value) : 0;
@@ -272,6 +274,7 @@ async function downloadReport() {
         if (examType !== 'all') allRecords = allRecords.filter(r => r.examType === examType);
         allRecords = [...allRecords].sort((a, b) => new Date(b.date) - new Date(a.date));
         downloadShareCardDirect(allRecords, selectedIdx);
+        addXP('export');
     }
 }
 

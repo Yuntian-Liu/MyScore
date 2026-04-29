@@ -3,12 +3,16 @@ import { STORAGE } from './config.js';
 import { escapeHtml, getExamTheme, getExamBadgeMarkup } from './utils.js';
 import { getRecords, saveRecords, allExams, buildArchiveHighlights } from './storage.js';
 import { isLoggedIn, getUserMode, _isSyncing } from './auth.js';
+import { addXP } from './gamification.js';
 import { fetchAIComment, renderAiComment, triggerLocalAiComment, showLocalAiHint, hideLocalAiHint, showModeChoiceModal, getAiCache, getGoal, currentAiStyle } from './ai.js';
 
 let mainChartInstance = null;
 
 export function renderDashboard() {
     if (typeof window.updatePetMood === 'function') window.updatePetMood();
+
+    // 每日首次查看仪表盘 XP（静默，不弹 toast）
+    addXP('dashboard', { silent: true });
 
     const records = getRecords();
     const exams = allExams();

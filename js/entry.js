@@ -1,6 +1,8 @@
 // ==================== 成绩录入 / 验证 / 滑块 ====================
 import { escapeHtml, escapeAttr, getExamTheme, getExamBadgeMarkup, showAiToast, calcIeltsOverall, calcWritingScore, lookup } from './utils.js';
 import { getRecords, saveRecords, allExams } from './storage.js';
+import { addXP, checkAchievements } from './gamification.js';
+import { logEvent } from './logger.js';
 
 let currentExam = null;
 let writingTask1 = null;
@@ -278,7 +280,16 @@ function submitScore(e) {
 
     const rec = { id: Date.now(), examType: currentExam, date: dateVal, scores: scores, total: total };
     const recs = getRecords(); recs.push(rec); saveRecords(recs);
-    alert('成绩保存成功！');
+    logEvent('score-save', { examType: currentExam, total: total });
+    // 未选模式时静默记录 XP，避免与模式选择弹窗冲突
+    if (localStorage.getItem('myscore_user_mode')) {
+        addXP('score');
+        checkAchievements();
+        showAiToast('成绩保存成功！');
+    } else {
+        addXP('score', { silent: true });
+        window._pendingSaveToast = true;
+    }
     if (window.showPage) window.showPage('dashboard');
 }
 

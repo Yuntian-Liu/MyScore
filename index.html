@@ -4,8 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="logo2.svg?v=1">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#275b56">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="logo2.svg">
     <meta name="myscore-comment-endpoint" content="/api/comment">
-    <title>MyScore V5.0.1-beta - AI 智能成绩单 | 碳碳四键的个人开发应用实践</title>
+    <title>MyScore V5.1.0-beta - AI 智能成绩单 | 碳碳四键的个人开发应用实践</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,6 +19,8 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- 离线横幅 -->
+    <div id="offline-banner" class="offline-banner hidden">📡 当前处于离线模式，部分功能受限</div>
     <!-- 开屏动画 -->
     <!-- 隐藏元素：强制浏览器预加载 Great Vibes 字体 -->
     <div style="font-family:var(--splash-font,'Great Vibes'),cursive;position:absolute;left:-9999px;visibility:hidden;" aria-hidden="true">MyScore</div>
@@ -591,6 +599,99 @@
             </div>
         </div>
 
+        <!-- ==================== 设置页面 ==================== -->
+        <div id="settings-modal" class="modal-overlay" onclick="closeSettingsOnBackdrop(event)">
+            <div class="modal-content settings-modal-content" onclick="event.stopPropagation()">
+                <div class="login-modal-header">
+                    <button id="settings-back-btn" class="settings-back-btn" onclick="settingsGoHome()" aria-label="返回">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+                    </button>
+                    <h2 class="settings-header-title" id="settings-header-title">设置</h2>
+                    <button onclick="closeSettings()" class="login-modal-close">&times;</button>
+                </div>
+
+                <!-- 主页 -->
+                <div id="settings-home" class="settings-page active">
+                    <!-- 个人资料 -->
+                    <div class="settings-section" id="settings-profile">
+                        <div class="settings-label">个人资料</div>
+                        <div class="settings-profile-header">
+                            <img class="settings-avatar" id="settings-avatar" onclick="openSettingsAvatarPicker()" src="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'/>" alt="">
+                            <div>
+                                <div class="settings-field">
+                                    <label for="settings-nickname">昵称</label>
+                                    <input type="text" id="settings-nickname" class="input" placeholder="昵称" maxlength="20">
+                                </div>
+                            </div>
+                        </div>
+                        <div id="settings-avatar-grid" style="display:none;"></div>
+                        <div class="settings-field">
+                            <label for="settings-bio">签名</label>
+                            <input type="text" id="settings-bio" class="input" placeholder="写一句话介绍自己吧" maxlength="50">
+                        </div>
+                        <div class="settings-info-row" style="cursor:default;">
+                            <span>UID</span><span id="settings-uid" style="color:var(--text-muted);font-family:monospace;">-</span>
+                        </div>
+                        <div class="settings-info-row" style="cursor:default;">
+                            <span>邮箱</span><span id="settings-email" style="color:var(--text-muted);font-size:0.85rem;">-</span>
+                        </div>
+                        <button class="btn-primary" onclick="saveSettingsProfile()" style="width:100%;margin-top:0.5rem;">保存资料</button>
+                    </div>
+
+                    <!-- 数据管理 -->
+                    <div class="settings-section">
+                        <div class="settings-label">数据管理</div>
+                        <div class="settings-btn-group">
+                            <button class="btn-secondary" onclick="exportData()">导出数据</button>
+                            <label class="btn-secondary settings-import-label">
+                                导入数据 <input type="file" accept=".json" onchange="importData(this)" style="display:none;">
+                            </label>
+                        </div>
+                        <button class="settings-danger-btn" onclick="clearAllData()" style="margin-top:0.75rem;">清除所有本地数据</button>
+                    </div>
+
+                    <!-- 关于 -->
+                    <div class="settings-section">
+                        <div class="settings-label">关于</div>
+                        <div class="settings-info-row" style="cursor:default;">
+                            <span>版本</span><span id="settings-version">-</span>
+                        </div>
+                        <div class="settings-info-row" style="cursor:default;">
+                            <span>开发者</span><span>碳碳四键</span>
+                        </div>
+                        <div class="settings-info-row" onclick="settingsNavigate('guide')">
+                            <span>使用指南</span>
+                            <svg class="settings-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+                        </div>
+                        <div class="settings-info-row" onclick="settingsNavigate('changelog')">
+                            <span>版本日志</span>
+                            <svg class="settings-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+                        </div>
+                        <div class="settings-info-row" onclick="settingsNavigate('agreement')">
+                            <span>用户协议</span>
+                            <svg class="settings-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+                        </div>
+                        <div class="settings-info-row" onclick="settingsNavigate('privacy')">
+                            <span>隐私政策</span>
+                            <svg class="settings-chevron" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>
+                        </div>
+                        <button class="btn-secondary" onclick="exportLogs()" style="width:100%;margin-top:0.5rem;">导出日志</button>
+                    </div>
+
+                    <!-- 版权 -->
+                    <div class="settings-copyright">
+                        MyScore © 碳碳四键, 2024~2026<br>All Rights Reserved
+                    </div>
+                </div>
+
+                <!-- 子页面 -->
+                <div id="settings-sub-guide" class="settings-page"></div>
+                <div id="settings-sub-changelog" class="settings-page"></div>
+                <div id="settings-sub-agreement" class="settings-page"></div>
+                <div id="settings-sub-privacy" class="settings-page"></div>
+            </div>
+        </div>
+
     <footer class="site-footer">
         <div class="footer-shell">
             <div class="footer-top">
@@ -606,7 +707,7 @@
                         </svg>
                     </span>
                     <div>
-                        <div class="footer-title">MyScore V5.0.1-beta</div>
+                        <div class="footer-title">MyScore V5.1.0-beta</div>
                         <div class="footer-desc">碳碳四键的个人开发实践项目<br>把成绩记录、趋势和陪学反馈收进一个更顺手的仪表盘</div>
                     </div>
                 </div>
@@ -623,7 +724,7 @@
                         <span class="footer-pill-icon" style="background:#fff0e8;color:#e26d4a;">
                             <svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 3.2v13.6M3.2 10h13.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
                         </span>
-                        <span><strong>版本</strong> V5.0.1-beta</span>
+                        <span><strong>版本</strong> V5.1.0-beta</span>
                     </span>
 
                     <a class="footer-link-pill" href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
@@ -771,19 +872,25 @@
     </div>
 </div>
 <button class="pet-show-fab hidden" id="pet-show-fab" type="button" aria-label="显示桌宠"><span>👨‍🏫</span></button>
-<button class="changelog-fab" type="button" onclick="openInfoModal('changelog')" aria-label="查看版本日志">
-    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M9 12h6m-6 4h6M8 4h8a2 2 0 012 2v12a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2z"/>
-    </svg>
-    <span class="changelog-fab-label">版本日志</span>
-</button>
-<button class="tutuer-fab" type="button" onclick="toggleTutuerPanel()" aria-label="唤起突突er">
-    <span id="tutuer-fab-dot" class="tutuer-fab-dot hidden"></span>
-    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-    </svg>
-    <span class="tutuer-fab-label">唤起突突er</span>
-</button>
+<!-- 快捷工具箱 -->
+<div class="fab-toolbar" id="fab-toolbar">
+    <div class="fab-toolbar-items">
+        <button class="fab-toolbar-item" onclick="openSettings()" aria-label="设置">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </button>
+        <button class="fab-toolbar-item fab-toolbar-item-tutuer" onclick="toggleTutuerPanel()" aria-label="伴学助手">
+            <span id="tutuer-fab-dot" class="tutuer-fab-dot hidden"></span>
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </button>
+        <button class="fab-toolbar-item" onclick="openInfoModal('changelog')" aria-label="版本日志">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6M8 4h8a2 2 0 012 2v12a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2z"/></svg>
+        </button>
+    </div>
+    <button class="fab-toolbar-trigger" aria-label="快捷工具">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="5" r="2"/><circle cx="12" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="12" cy="19" r="2"/><circle cx="19" cy="19" r="2"/></svg>
+        <span class="fab-toolbar-trigger-label">快捷工具</span>
+    </button>
+</div>
 <section id="tutuer-panel" class="tutuer-panel hidden" aria-label="突突er伴学助手">
     <div class="tutuer-panel-header">
         <div>

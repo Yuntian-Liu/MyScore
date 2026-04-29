@@ -10,3 +10,6 @@ dist/
 .cache/
 .netlify/
 data/
+.idea/
+DEVELOPMENT_PLAN.md
+docs/

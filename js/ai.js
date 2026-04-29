@@ -1,8 +1,9 @@
 // ==================== AI 评论 / 风格 / 回嘴 / 目标追踪 ====================
 import { AI_STYLES, LOCAL_AI_DAILY_LIMIT, COMMENT_API_ENDPOINT } from './config.js';
 import { escapeHtml, showAiToast, postComment } from './utils.js';
-import { getRecords } from './storage.js';
-import { isLoggedIn, getUserMode, getLocalAiUsage, incrementLocalAiUsage, isLocalAiLimitReached, _justLoggedOut } from './auth.js';
+import { isLoggedIn, getUserMode, getLocalAiUsage, incrementLocalAiUsage, isLocalAiLimitReached } from './auth.js';
+import { addXP, checkAchievements } from './gamification.js';
+import { logEvent } from './logger.js';
 
 // AI 风格状态
 export let currentAiStyle = localStorage.getItem('myscore_ai_style') || 'storm';
@@ -38,6 +39,7 @@ export function setAiStyle(styleKey) {
         active.style.color = '#174f3d';
     }
     if (prevStyle !== styleKey && lastExamType && lastScore) {
+        addXP('style');
         if (aiStyleLocked || aiStyleCooldown) { showAiToast('您点得太快啦~ 老师还在赶来的路上'); return; }
         fetchAIComment(lastExamType, lastScore, lastHistory);
     }
@@ -71,7 +73,7 @@ export async function fetchAIComment(examType, currentScore, historyScores) {
             renderAiComment(box, data.comment);
             actions.style.display = 'flex';
         } else { box.innerHTML = '老师去吃饭了...'; }
-    } catch (err) { console.error(err); box.innerHTML = '老师断线了...'; }
+    } catch (err) { console.error(err); logEvent('ai-error', { examType, error: err.message }); box.innerHTML = '老师断线了...'; }
     finally { aiStyleLocked = false; aiStyleCooldown = true; setTimeout(function() { aiStyleCooldown = false; }, 3000); }
 }
 
@@ -123,6 +125,8 @@ async function sendRebuttal() {
             box.innerHTML = '<strong>😤 你：</strong> ' + escapeHtml(rebuttal) + '<br><br><strong>👩‍🏫 毒舌老师：</strong> ' + escapeHtml(data.comment);
             document.getElementById('ai-actions').style.display = 'flex';
             input.value = '';
+            addXP('rebuttal');
+            localStorage.setItem('myscore_ai_debated', '1');
         }
     } catch (err) { box.innerHTML += '<br>(老师被气得掉线了)'; }
 }
@@ -161,6 +165,7 @@ function confirmGoal() {
     var val = parseFloat(input.value.trim());
     if (isNaN(val) || val <= 0) { alert('请输入有效的正数'); return; }
     saveGoal(_goalExamType, val);
+    addXP('goal');
     document.getElementById('goal-overlay').style.display = 'none';
     _goalExamType = null;
     if (window.renderDashboard) window.renderDashboard();
@@ -230,6 +235,13 @@ function closeModeChoiceModal(choice) {
     if (choice === 'login') { window.openLoginModal(); }
     else if (choice === 'local') { if (window.setUserMode) window.setUserMode('local'); }
     if (choice && overlay._onChoice) overlay._onChoice(choice);
+    // 模式选择后补发游戏化通知
+    if (choice) { checkAchievements(); }
+    // 补发延迟的保存成功 toast
+    if (window._pendingSaveToast) {
+        window._pendingSaveToast = false;
+        setTimeout(function() { showAiToast('成绩保存成功！'); }, 600);
+    }
 }
 
 function showLocalAiLimitModal() {

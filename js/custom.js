@@ -2,6 +2,7 @@
 import { APP_VERSION } from './config.js';
 import { escapeHtml, escapeAttr, getExamTheme, getExamBadgeMarkup } from './utils.js';
 import { getRecords, saveRecords, getCustom, saveCustom } from './storage.js';
+import { addXP } from './gamification.js';
 
 let customSubs = [];
 
@@ -107,6 +108,7 @@ function submitCreateForm(e) {
     for (const s of customSubs) { if (!s.name || !s.short) { alert('请填写所有题型的名称和简称！'); return; } }
     const exam = { id: 'custom_' + Date.now(), name: document.getElementById('new-exam-name').value, desc: document.getElementById('new-exam-desc').value, icon: '📝', builtin: false, calcTotal: true, subjects: customSubs };
     const custom = getCustom(); custom[exam.id] = exam; saveCustom(custom);
+    addXP('custom');
     closeCreateModal(); renderCustomList(); alert('考试类型创建成功！');
 }
 

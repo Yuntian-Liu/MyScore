@@ -7,8 +7,11 @@ import { renderDashboard } from './dashboard.js';
 import { maybeShowChangelogOnFirstOpen } from './info.js';
 import { loadTutuerHistory, renderTutuerMessages, setTutuerUnread, bindTutuerViewportEvents } from './tutuer.js';
 import { updatePetMood, initPetDraggable } from './pet.js';
+import { updateStreak, checkAchievements } from './gamification.js';
 
 // 导入 side-effect 模块（它们自注册 window 函数）
+import { logEvent } from './logger.js';
+import './settings.js';
 import './ai.js';
 import './report.js';
 
@@ -27,7 +30,7 @@ function showPage(p) {
     else if (p === 'entry') {
         resetEntryState();
         renderExamSelector();
-        document.getElementById('entry-form-container').innerHTML = '<div class="empty-state"><svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom:1rem;"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg><p style="color:#6b7280;margin-bottom:1rem;">还没有成绩记录</p><button onclick="showPage(\'entry\')" style="color:#10b981;font-weight:600;background:none;border:none;cursor:pointer;">开始录入 →</button></div>';
+        document.getElementById('entry-form-container').innerHTML = '<div class="empty-state"><svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom:1rem;"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg><p style="color:#9ca3af;">请选择考试类型开始录入</p></div>';
     }
     else if (p === 'custom') renderCustomList();
 }
@@ -35,6 +38,8 @@ window.showPage = showPage;
 
 // ==================== 初始化 ====================
 document.addEventListener('DOMContentLoaded', function () {
+    // 记录启动事件
+    logEvent('app', { version: APP_VERSION, online: navigator.onLine });
     // ==================== 开屏动画 ====================
     (function initSplash() {
         var splash = document.getElementById('splash-screen');
@@ -88,6 +93,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     renderBetaBanner();
     restoreSession();
+    updateStreak();
+    // 首次使用（未选模式）时延迟成就检查，避免与模式选择弹窗冲突
+    var userMode = localStorage.getItem('myscore_user_mode');
+    if (userMode) checkAchievements();
     renderDashboard();
     maybeShowChangelogOnFirstOpen();
     loadTutuerHistory();
@@ -96,4 +105,40 @@ document.addEventListener('DOMContentLoaded', function () {
     bindTutuerViewportEvents();
     updatePetMood();
     initPetDraggable();
+
+    // ==================== 快捷工具箱 移动端适配 ====================
+    (function initFabToolbar() {
+        var toolbar = document.getElementById('fab-toolbar');
+        if (!toolbar) return;
+        var trigger = toolbar.querySelector('.fab-toolbar-trigger');
+        if (trigger) {
+            trigger.addEventListener('click', function(e) {
+                if ('ontouchstart' in window) {
+                    e.preventDefault();
+                    toolbar.classList.toggle('expanded');
+                }
+            });
+        }
+        document.addEventListener('click', function(e) {
+            if (!toolbar.contains(e.target)) {
+                toolbar.classList.remove('expanded');
+            }
+        });
+    })();
+
+    // ==================== Service Worker 注册 ====================
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(function(){});
+    }
+
+    // ==================== 在线/离线状态监听 ====================
+    function updateOnlineStatus() {
+        var banner = document.getElementById('offline-banner');
+        if (!banner) return;
+        if (navigator.onLine) { banner.classList.add('hidden'); }
+        else { banner.classList.remove('hidden'); }
+    }
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    updateOnlineStatus();
 });
