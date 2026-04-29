@@ -60,7 +60,7 @@ export async function fetchAIComment(examType, currentScore, historyScores) {
     container.style.display = 'block';
     actions.style.display = 'none';
     replyArea.style.display = 'none';
-    box.innerHTML = '🤖 毒舌老师正在推眼镜分析你的成绩...';
+    box.innerHTML = '🤖 ' + AI_STYLES[currentAiStyle].teacherName + '正在推眼镜分析你的成绩...';
     box.style.background = 'rgba(221,238,231,0.72)';
     box.style.color = '#174f3d';
     box.style.borderColor = 'rgba(31,106,82,0.14)';
@@ -70,18 +70,23 @@ export async function fetchAIComment(examType, currentScore, historyScores) {
         const data = await postComment({ examType, currentScore, historyScores, style: currentAiStyle });
         if (data.comment) {
             lastAiComment = data.comment;
-            renderAiComment(box, data.comment);
+            renderAiComment(box, data.comment, currentAiStyle);
             actions.style.display = 'flex';
+            var comment = data.comment;
+            var truncated = !/[。！？.!?\n\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]$/u.test(comment.trim());
+            logEvent('ai-comment', { examType, style: currentAiStyle, length: comment.length, truncated: truncated, duration: data._duration });
         } else { box.innerHTML = '老师去吃饭了...'; }
-    } catch (err) { console.error(err); logEvent('ai-error', { examType, error: err.message }); box.innerHTML = '老师断线了...'; }
+    } catch (err) { console.error(err); logEvent('ai-error', { examType, status: err.status || 0, duration: err.duration, error: err.message }); box.innerHTML = '老师断线了...'; }
     finally { aiStyleLocked = false; aiStyleCooldown = true; setTimeout(function() { aiStyleCooldown = false; }, 3000); }
 }
 
-export function renderAiComment(box, rawComment) {
+export function renderAiComment(box, rawComment, style) {
+    var styleKey = style || currentAiStyle;
+    var teacherName = (AI_STYLES[styleKey] || AI_STYLES.storm).teacherName;
     var parts = rawComment.split('|||');
     var mainComment = parts[0] ? parts[0].trim() : rawComment;
     var suggestion = parts[1] ? parts[1].trim() : '';
-    var html = '<strong>👩‍🏫 毒舌老师：</strong> ' + escapeHtml(mainComment);
+    var html = '<strong>👩‍🏫 ' + teacherName + '：</strong> ' + escapeHtml(mainComment);
     if (suggestion) {
         var sugId = 'sug-' + Date.now();
         html += '<br><span onclick="toggleSuggestion(\'' + sugId + '\')" style="display:inline-block; margin-top:0.4rem; font-size:0.82rem; color:#1f6a52; cursor:pointer; font-weight:600;" class="sug-toggle">展开建议 ▾</span>';
@@ -110,7 +115,7 @@ async function sendRebuttal() {
     const rebuttal = input.value.trim();
     if (!rebuttal) return;
     const box = document.getElementById('ai-comment-box');
-    box.innerHTML = '<strong>😤 你：</strong> ' + escapeHtml(rebuttal) + '<br><hr style="margin:8px 0; border:0; border-top:1px dashed #a7f3d0">🤖 老师正在思考怎么怼回来...';
+    box.innerHTML = '<strong>😤 你：</strong> ' + escapeHtml(rebuttal) + '<br><hr style="margin:8px 0; border:0; border-top:1px dashed #a7f3d0">🤖 ' + AI_STYLES[currentAiStyle].thinkingText;
     box.style.background = 'rgba(243,224,207,0.82)';
     box.style.color = '#8e5520';
     box.style.borderColor = 'rgba(188,108,37,0.24)';
@@ -122,13 +127,14 @@ async function sendRebuttal() {
         });
         if (data.comment) {
             lastAiComment = data.comment;
-            box.innerHTML = '<strong>😤 你：</strong> ' + escapeHtml(rebuttal) + '<br><br><strong>👩‍🏫 毒舌老师：</strong> ' + escapeHtml(data.comment);
+            box.innerHTML = '<strong>😤 你：</strong> ' + escapeHtml(rebuttal) + '<br><br><strong>👩‍🏫 ' + AI_STYLES[currentAiStyle].teacherName + '：</strong> ' + escapeHtml(data.comment);
             document.getElementById('ai-actions').style.display = 'flex';
             input.value = '';
             addXP('rebuttal');
             localStorage.setItem('myscore_ai_debated', '1');
+            logEvent('ai-rebuttal', { examType: lastExamType, style: currentAiStyle, length: data.comment.length, duration: data._duration });
         }
-    } catch (err) { box.innerHTML += '<br>(老师被气得掉线了)'; }
+    } catch (err) { console.error(err); logEvent('ai-error', { examType: lastExamType, type: 'rebuttal', status: err.status || 0, duration: err.duration, error: err.message }); box.innerHTML += '<br>(老师被气得掉线了)'; }
 }
 
 // ---- 目标追踪 ----

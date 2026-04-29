@@ -88,10 +88,10 @@ export const AVATAR_OPTIONS = [
 export const LOCAL_AI_DAILY_LIMIT = 5;
 
 export const AI_STYLES = {
-    storm: { icon: '⛈️', name: '风暴', desc: '犀利刻薄' },
-    sun:   { icon: '☀️', name: '暖阳', desc: '温暖鼓励' },
-    cold:  { icon: '❄️', name: '冷锋', desc: '理性分析' },
-    rain:  { icon: '🌧️', name: '阵雨', desc: '先损后帮' }
+    storm: { icon: '⛈️', name: '风暴', desc: '犀利刻薄', teacherName: '毒舌老师', actionLabel: '回嘴', thinkingText: '正在思考怎么怼回来...' },
+    sun:   { icon: '☀️', name: '暖阳', desc: '温暖鼓励', teacherName: '暖阳老师', actionLabel: '回应', thinkingText: '正在思考怎么回复你...' },
+    cold:  { icon: '❄️', name: '冷锋', desc: '理性分析', teacherName: '冷老师',   actionLabel: '反驳', thinkingText: '正在分析你的观点...' },
+    rain:  { icon: '🌧️', name: '阵雨', desc: '先损后帮', teacherName: '雨老师',   actionLabel: '反驳', thinkingText: '正在想怎么接招...' }
 };
 
 export const COMMENT_API_ENDPOINT = (() => {
@@ -335,6 +335,17 @@ export const CHANGELOG_CURRENT = `
       <li>Profile Card/Panel 优化 — 头像放大，设置入口替代编辑资料</li>
       <li>Chevron 图标 — 「关于」区域导航箭头替换为 SVG chevron + hover 动画</li>
       <li>使用指南更新 — 补充快捷工具箱使用说明</li>
+    </ul>
+  </div>
+  <div class="changelog-section">
+    <div class="changelog-section-title">
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#ef4444,#f97316);">!</span>
+      修复
+    </div>
+    <ul class="changelog-list">
+      <li>AI 老师风格化命名 — 切换风格后老师名称、思考文案、回嘴措辞动态匹配</li>
+      <li>AI max_tokens 截断 — 初始评价/回嘴/伴学助手 token 上限调高，防止输出截断</li>
+      <li>AI 日志增强 — 前端新增评论长度、截断检测、请求耗时、HTTP 状态码记录</li>
     </ul>
   </div>
 </div>`;

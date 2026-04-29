@@ -26,6 +26,11 @@ The format is based on [Semantic Versioning](https://semver.org/).
 - 🗑️ **重复样式清理**：删除 `style.css` 中重复的媒体查询块
 - 🗑️ **数据修正**：修复 CHANGELOG 中 XP 上限数据不一致（100 → 50）
 
+### Fixed
+- 🔧 **AI 老师风格化命名**：切换风格后老师名称、思考文案、回嘴措辞动态匹配（毒舌老师/暖阳老师/冷老师/雨老师），不再一律显示"毒舌老师"
+- 🔧 **AI max_tokens 截断**：初始评价 180→280、回嘴 150→220、伴学助手 220→350，防止输出被意外截断
+- 🔧 **AI 日志增强**：前端日志新增 `ai-comment`/`ai-rebuttal`/`ai-error` 事件，记录评论长度、截断检测、请求耗时、HTTP 状态码；`postComment` 错误对象携带 status 和 duration
+
 ---
 
 ## [5.0.1-beta] - 2026-04-24

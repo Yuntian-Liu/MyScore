@@ -135,6 +135,7 @@ export async function postComment(payload) {
     }
     var controller = new AbortController();
     var timeoutId = setTimeout(function() { controller.abort(); }, 30000);
+    var startTime = Date.now();
     try {
         const res = await fetch(COMMENT_API_ENDPOINT, {
             method: 'POST',
@@ -148,17 +149,30 @@ export async function postComment(payload) {
             data = await res.json();
         } catch (error) {
             if (!res.ok) {
-                throw new Error('AI 服务返回了不可解析的响应');
+                var err = new Error('AI 服务返回了不可解析的响应');
+                err.status = res.status;
+                err.duration = Date.now() - startTime;
+                throw err;
             }
         }
 
         if (!res.ok) {
-            throw new Error(data.error || ('AI 请求失败（' + res.status + '）'));
+            var err = new Error(data.error || ('AI 请求失败（' + res.status + '）'));
+            err.status = res.status;
+            err.duration = Date.now() - startTime;
+            throw err;
         }
 
+        data._duration = Date.now() - startTime;
         return data;
     } catch (e) {
-        if (e.name === 'AbortError') throw new Error('AI 请求超时，请稍后再试');
+        if (e.name === 'AbortError') {
+            var err = new Error('AI 请求超时，请稍后再试');
+            err.status = 0;
+            err.duration = Date.now() - startTime;
+            throw err;
+        }
+        if (!e.duration) e.duration = Date.now() - startTime;
         throw e;
     } finally {
         clearTimeout(timeoutId);
