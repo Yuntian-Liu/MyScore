@@ -1546,170 +1546,29 @@
             gap: 0.65rem;
         }
 
-        .footer-matrix {
-            margin: 0.2rem 0 1rem;
-            padding: 0.85rem 0.9rem;
-            border-radius: 20px;
-            background: transparent;
-            border: 1px solid rgba(92, 104, 138, 0.06);
-            box-shadow: none;
-        }
-
-        .footer-matrix-head {
+        .footer-projects {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .footer-matrix-kicker {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            padding: 0.38rem 0.72rem;
-            border-radius: 999px;
-            background: rgba(91, 124, 255, 0.1);
-            color: #5568dc;
-            font-size: 0.74rem;
-            font-weight: 700;
-            letter-spacing: 0.02em;
-            margin-bottom: 0.55rem;
-        }
-
-        .footer-matrix-title {
-            font-size: 0.88rem;
-            font-weight: 700;
-            color: var(--primary-ink);
-            margin-bottom: 0.12rem;
-        }
-
-        .footer-matrix-desc {
-            font-size: 0.78rem;
-            color: #7a8197;
-            max-width: 680px;
-        }
-
-        .footer-matrix-note {
-            font-size: 0.74rem;
-            color: #8b90a3;
-            white-space: nowrap;
-        }
-
-        .footer-matrix-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            flex-wrap: wrap;
             gap: 0.65rem;
-        }
-
-        .matrix-card {
-            position: relative;
-            display: block;
-            padding: 0.6rem 0.7rem;
-            border-radius: 14px;
-            text-decoration: none;
-            color: inherit;
-            overflow: hidden;
-            min-height: 0;
-            border: 1px solid rgba(92, 104, 138, 0.08);
-            box-shadow: 0 2px 8px -4px rgba(66, 75, 102, 0.12);
-            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-        }
-
-        .matrix-card::after {
-            display: none;
-        }
-
-        .matrix-card:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px -6px rgba(66, 75, 102, 0.18);
-        }
-
-        .matrix-card.current {
-            border-color: rgba(41, 111, 103, 0.15);
-            box-shadow: 0 2px 8px -4px rgba(41, 111, 103, 0.1);
-        }
-
-        .matrix-card-shell {
-            position: relative;
-            z-index: 1;
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            align-items: center;
-            gap: 0.55rem;
-        }
-
-        .matrix-card-head {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 0;
-            flex-shrink: 0;
-        }
-
-        .matrix-card-icon {
-            width: 2rem;
-            height: 2rem;
-            border-radius: 12px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            box-shadow: 0 4px 10px -6px rgba(66, 75, 102, 0.2);
-            flex-shrink: 0;
-        }
-
-        .matrix-card-icon svg {
-            display: block;
-        }
-
-        .matrix-card-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.28rem 0.52rem;
-            border-radius: 999px;
-            font-size: 0.66rem;
-            font-weight: 700;
-            background: rgba(255,255,255,0.72);
-            color: #55606f;
-            border: 1px solid rgba(92,104,138,0.08);
-        }
-
-        .matrix-card-main {
-            min-width: 0;
-            flex: 1;
-        }
-
-        .matrix-card-name {
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: #223047;
-            margin-bottom: 0.08rem;
-        }
-
-        .matrix-card-text {
-            font-size: 0.72rem;
-            line-height: 1.45;
-            color: #626c84;
-            margin-bottom: 0;
-        }
-
-        .matrix-card-foot {
-            display: flex;
             justify-content: flex-end;
-            align-items: center;
-            gap: 0.45rem;
-            font-size: 0.72rem;
-            color: #5f6b82;
-            flex-shrink: 0;
         }
 
-        .matrix-card-link {
+        .footer-meta-center {
             display: inline-flex;
             align-items: center;
-            gap: 0.38rem;
-            font-weight: 700;
-            color: #32435f;
+            gap: 0.35rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 99px;
+            background: rgba(0, 0, 0, 0.03);
+            font-size: 0.75rem;
+            color: #8b90a3;
+        }
+        .footer-meta-center a {
+            color: #8b90a3;
+            text-decoration: none;
+        }
+        .footer-meta-center a:hover {
+            color: #5b6278;
         }
 
         .footer-pill,
@@ -1768,13 +1627,6 @@
             border-top: 1px solid rgba(92, 104, 138, 0.1);
             color: #7a8197;
             font-size: 0.82rem;
-        }
-
-        .footer-meta-copy {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.6rem 1rem;
-            align-items: center;
         }
 
         .beta-banner {
@@ -2646,8 +2498,14 @@
                 align-items: flex-start;
             }
 
-            .footer-pills {
+            .footer-projects {
                 justify-content: flex-start;
+            }
+            .footer-meta {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 0.5rem;
             }
 
             .footer-pill,
@@ -2656,48 +2514,6 @@
                 justify-content: flex-start;
             }
 
-            .footer-meta {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .footer-matrix {
-                padding: 0.9rem;
-                border-radius: 14px;
-            }
-
-            .footer-matrix-head {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .footer-matrix-note {
-                white-space: normal;
-            }
-
-            .footer-matrix-grid {
-                grid-template-columns: 1fr;
-                gap: 0.5rem;
-            }
-
-            .matrix-card {
-                min-height: 0;
-            }
-
-            .matrix-card-shell {
-                grid-template-columns: auto 1fr;
-                align-items: flex-start;
-            }
-
-            .matrix-card-main {
-                width: 100%;
-            }
-
-            .matrix-card-foot {
-                width: 100%;
-                justify-content: space-between;
-                grid-column: 1 / -1;
-            }
 
             .brand-meta {
                 font-size: 0.67rem;
