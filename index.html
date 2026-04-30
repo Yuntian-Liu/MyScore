@@ -106,7 +106,7 @@
                 <div class="topbar">
                     <div class="brand-lockup">
                         <div class="brand-mark">
-                            <img src="logo2.svg" alt="MyScore" width="38" height="38">
+                            <img src="logo2.svg" alt="MyScore" width="54" height="54">
                         </div>
                         <div class="brand-text">
                             <h1 class="brand-title">MyScore</h1>
@@ -198,135 +198,55 @@
                     </div>
                 </section>
 
-                <div class="dashboard-grid">
-                <section class="card content-card">
+                <!-- 最近成绩摘要 -->
+                <section class="card content-card recent-summary-card" id="recent-summary-section">
                     <div class="section-head">
                         <div>
                             <h2 class="section-title">最近一次结果</h2>
-                            <p class="section-caption">先看看最近一次考试考了什么、表现如何，再决定下一步要不要补录、回顾或继续聊聊。</p>
                         </div>
                     </div>
-                   <div id="ai-container" style="display:none; margin-bottom: 1rem;">
-                   <div id="ai-style-bar" style="display: flex; gap: 0.4rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
-                     <button onclick="setAiStyle('storm')" id="style-storm" title="犀利刻薄" style="font-size: 0.78rem; padding: 0.35rem 0.75rem; border-radius: 99px; border: 1px solid rgba(31,106,82,0.2); background: rgba(31,106,82,0.12); color: #174f3d; cursor: pointer; font-weight: 700;">⛈️ 风暴</button>
-                     <button onclick="setAiStyle('sun')" id="style-sun" title="温暖鼓励" style="font-size: 0.78rem; padding: 0.35rem 0.75rem; border-radius: 99px; border: 1px solid rgba(81,63,44,0.12); background: rgba(255,251,245,0.95); color: #8e5520; cursor: pointer; font-weight: 700;">☀️ 暖阳</button>
-                     <button onclick="setAiStyle('cold')" id="style-cold" title="理性分析" style="font-size: 0.78rem; padding: 0.35rem 0.75rem; border-radius: 99px; border: 1px solid rgba(81,63,44,0.12); background: rgba(255,251,245,0.95); color: #8e5520; cursor: pointer; font-weight: 700;">❄️ 冷锋</button>
-                     <button onclick="setAiStyle('rain')" id="style-rain" title="先损后帮" style="font-size: 0.78rem; padding: 0.35rem 0.75rem; border-radius: 99px; border: 1px solid rgba(81,63,44,0.12); background: rgba(255,251,245,0.95); color: #8e5520; cursor: pointer; font-weight: 700;">🌧️ 阵雨</button>
-                   </div>
-                   <div id="ai-comment-box" style="background: rgba(221,238,231,0.72); border: 1px solid rgba(31,106,82,0.14); border-radius: 1rem; padding: 1rem; color: #174f3d; line-height: 1.7; font-size: 0.95rem; margin-bottom: 0.65rem; position: relative; box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);">
-                     🤖 亲爱的YTUNer请耐心等待~突突老师正在批改...
-                 </div>
-
-                 <div id="ai-actions" style="display:none; justify-content: flex-end; gap: 0.5rem;">
-                 <button onclick="showReplyInput()" style="font-size: 0.82rem; color: #174f3d; background: rgba(255,251,245,0.95); border: 1px solid rgba(31,106,82,0.16); padding: 0.42rem 0.9rem; border-radius: 99px; cursor: pointer; font-weight: 700;">继续聊聊</button>
-                 </div>
-
-    <div id="reply-input-area" style="display:none; margin-top: 0.5rem; animation: fadeIn 0.3s ease;">
-        <div style="display: flex; gap: 0.5rem;">
-            <input type="text" id="user-rebuttal" autocomplete="off" placeholder="输入你想回应的话..." style="flex: 1; border: 1px solid rgba(81,63,44,0.14); border-radius: 0.9rem; padding: 0.65rem 0.8rem; outline: none; font-size: 0.92rem; background: rgba(255,251,245,0.94);">
-            <button onclick="sendRebuttal()" style="background: #1f6a52; color: white; border: none; padding: 0.65rem 1rem; border-radius: 0.9rem; cursor: pointer; font-size: 0.9rem; font-weight:700;">发送</button>
-        </div>
-    </div>
-</div>
-<div id="local-ai-hint" style="display:none; text-align:center; font-size:0.8rem; color:#6b7280; padding:0.4rem 0; margin-bottom:0.5rem; background:rgba(99,102,241,0.05); border-radius:0.5rem;"></div>
-<div id="recent-score-content">
-    <div class="empty-state">
-        <svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 1rem;">
-            <path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-        <p style="color: #6b7280; margin-bottom: 1rem;">还没有成绩记录</p>
-        <button onclick="showPage('entry')" style="color: #10b981; font-weight: 600; background: none; border: none; cursor: pointer;">开始录入 →</button>
-    </div>
-</div>
-</section>
-
-                <section class="card content-card actions-card">
-                    <div class="section-head">
-                        <div>
-                            <h2 class="section-title">数据与报告</h2>
-                            <p class="section-caption">把报告、备份和恢复放在一起，方便你在不同设备和不同阶段之间切换。</p>
+                    <div id="recent-summary-content">
+                        <div class="empty-state">
+                            <svg width="64" height="64" fill="none" stroke="#d1d5db" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom:1rem;"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            <p style="color:#6b7280;margin-bottom:1rem;">还没有成绩记录</p>
+                            <button onclick="showPage('entry')" style="color:#10b981;font-weight:600;background:none;border:none;cursor:pointer;">开始录入 →</button>
                         </div>
                     </div>
-                    <div class="dashboard-actions">
-                        <div class="soft-block">
-                            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:0.9rem;">
-                                <div>
-                                    <h3 style="font-weight:700;font-size:1.05rem;margin-bottom:0.3rem;">导出报告</h3>
-                                    <p style="color:var(--text-secondary);font-size:0.92rem;line-height:1.7;">生成阶段性成绩单、分享卡片或复盘摘要。</p>
-                                </div>
-                                <div style="font-size:1.5rem;color:var(--accent);">↗</div>
-                            </div>
-                            <button class="btn-primary" onclick="openReportModal()" style="width:100%;">生成报告</button>
-                        </div>
-                        <div class="soft-block">
-                            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:0.9rem;">
-                                <div>
-                                    <h3 style="font-weight:700;font-size:1.05rem;margin-bottom:0.3rem;">导出与恢复</h3>
-                                    <p style="color:var(--text-secondary);font-size:0.92rem;line-height:1.7;">用备份保证你迁平台、换设备时不会丢数据。</p>
-                                </div>
-                                <div style="font-size:1.5rem;color:var(--primary);">⟲</div>
-                            </div>
-                            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0.75rem;">
-                                <button class="btn-secondary" onclick="exportData()" style="width:100%;">导出数据</button>
-                                <label class="btn-primary" style="display:block;text-align:center;cursor:pointer;">
-                                    导入备份
-                                    <input type="file" id="import-file" style="display:none;" accept=".json" onchange="importData(this)">
-                                </label>
-                            </div>
-                            <p style="font-size:0.88rem;color:var(--text-muted);margin-top:0.75rem;">共 <span id="record-count-side">0</span> 条记录</p>
-                        </div>
-                    </div>
-                </section>
-                </div>
-
-                <section class="card content-card" style="margin-bottom:2rem;">
-                    <div class="section-head">
-                        <div>
-                            <h2 class="section-title">趋势与分项</h2>
-                            <p class="section-caption">选择考试类型后，可以直接查看成绩变化和各分项波动，适合复盘阶段性表现。</p>
-                        </div>
-                    </div>
-                    <div id="dashboard-tabs" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; padding-bottom: 0.2rem;">
-                        <button class="tab-btn active" onclick="switchDashboardTab('overview', this)">概览</button>
-                    </div>
-                    <div id="tab-content-overview">
-                        <!-- 图表容器 -->
-                        <div id="charts-container" style="display: none;">
-                            <!-- 统计区域 -->
-                            <div id="stats-area"></div>
-                            <!-- 图表标题和画布 -->
-                            <div style="margin-bottom: 1.5rem;">
-                                <h3 style="font-weight: 700; font-size: 1.125rem; margin-bottom: 1rem;">📈 成绩趋势</h3>
-                                <div style="position: relative; height: 350px; background: white; border: 2px solid #e5e7eb; border-radius: 1rem; padding: 1rem;">
-                                    <canvas id="main-chart"></canvas>
-                                </div>
-                                <div id="chart-no-data" class="empty-state" style="display: none;">
-                                    <p style="color: #9ca3af;">暂无数据，请先录入成绩</p>
-                                </div>
-                            </div>
-                            <!-- 雷达图 -->
-                            <div id="radar-chart-wrapper" style="display:none; margin-bottom: 1.5rem;">
-                                <h3 style="font-weight:700; font-size:1.125rem; margin-bottom:1rem;">🎯 技能画像</h3>
-                                <div style="position:relative; height:350px; max-width:420px; margin:0 auto; background:white; border:2px solid #e5e7eb; border-radius:1rem; padding:1rem;">
-                                    <canvas id="radar-chart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="overview-empty" class="empty-state" style="padding: 2rem;">
-                            <p style="color: #9ca3af;">选择上方考试类型查看详细统计</p>
-                        </div>
+                    <div class="ai-preview" id="ai-preview" style="display:none;">
+                        <span class="ai-preview-icon">🤖</span>
+                        <span class="ai-preview-text" id="ai-preview-text"></span>
+                        <span class="ai-preview-link" onclick="openRecentDetail()">查看 →</span>
                     </div>
                 </section>
 
+                <!-- 考试类型概览 -->
                 <section class="card content-card">
                     <div class="section-head">
                         <div>
-                            <h2 class="section-title">历史记录</h2>
-                            <p class="section-caption">列表要更像“学习档案”，而不是简单的流水账。</p>
+                            <h2 class="section-title">考试概览</h2>
+                            <p class="section-caption">按考试类型查看趋势、技能画像和详细对比。</p>
                         </div>
-                        <button onclick="clearAllRecords()" style="color: #ef4444; background: none; border: none; cursor: pointer; font-weight: 500;">清空所有</button>
+                        <div class="section-head-actions">
+                            <button class="action-chip" onclick="openHistoryPanel()">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                历史记录
+                            </button>
+                            <button class="action-chip" onclick="openReportModal()">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                导出报告
+                            </button>
+                            <button class="action-chip" onclick="exportData()">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                                导出数据
+                            </button>
+                            <label class="action-chip" style="cursor:pointer;">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                导入备份
+                                <input type="file" id="import-file" style="display:none;" accept=".json" onchange="importData(this)">
+                            </label>
+                        </div>
                     </div>
-                    <div id="records-list"></div>
+                    <div id="exam-type-grid" class="exam-type-grid"></div>
                 </section>
             </div>
 
@@ -992,6 +912,42 @@
       <button onclick="confirmGoal()" style="padding:0.45rem 1rem;border:none;border-radius:8px;background:#1f6a52;color:#fff;font-size:0.88rem;cursor:pointer;font-weight:600;">确认</button>
     </div>
   </div>
+</div>
+
+<!-- ==================== Slide-over Panels ==================== -->
+
+<!-- Panel A: 考试类型详情 -->
+<div id="exam-detail-panel" class="slide-panel-overlay" onclick="if(event.target===this)closeSlidePanel('exam-detail-panel')">
+    <div class="slide-panel">
+        <div class="slide-panel-header">
+            <button class="slide-panel-back" onclick="closeSlidePanel('exam-detail-panel')">← 返回</button>
+            <h2 class="slide-panel-title" id="exam-detail-title"></h2>
+        </div>
+        <div class="slide-panel-body" id="exam-detail-body"></div>
+    </div>
+</div>
+
+<!-- Panel B: 最近成绩详情 -->
+<div id="recent-detail-panel" class="slide-panel-overlay" onclick="if(event.target===this)closeSlidePanel('recent-detail-panel')">
+    <div class="slide-panel">
+        <div class="slide-panel-header">
+            <button class="slide-panel-back" onclick="closeSlidePanel('recent-detail-panel')">← 返回</button>
+            <h2 class="slide-panel-title">成绩详情</h2>
+        </div>
+        <div class="slide-panel-body" id="recent-detail-body"></div>
+    </div>
+</div>
+
+<!-- Panel C: 历史记录 -->
+<div id="history-panel" class="slide-panel-overlay" onclick="if(event.target===this)closeSlidePanel('history-panel')">
+    <div class="slide-panel">
+        <div class="slide-panel-header">
+            <button class="slide-panel-back" onclick="closeSlidePanel('history-panel')">← 返回</button>
+            <h2 class="slide-panel-title">历史记录</h2>
+            <button class="slide-panel-action" onclick="clearAllRecords()" style="color:#ef4444;background:none;border:none;cursor:pointer;font-weight:500;font-size:0.85rem;">清空所有</button>
+        </div>
+        <div class="slide-panel-body" id="history-body"></div>
+    </div>
 </div>
 
 <script type="module" src="js/main.js"></script>

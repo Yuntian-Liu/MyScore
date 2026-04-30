@@ -27,7 +27,7 @@ export function setAiStyle(styleKey) {
     currentAiStyle = styleKey;
     localStorage.setItem('myscore_ai_style', styleKey);
     if (window.scheduleCloudSync) window.scheduleCloudSync();
-    document.querySelectorAll('#ai-style-bar button').forEach(function(btn) {
+    document.querySelectorAll('#panel-ai-style-bar button').forEach(function(btn) {
         btn.style.background = 'rgba(255,251,245,0.95)';
         btn.style.borderColor = 'rgba(81,63,44,0.12)';
         btn.style.color = '#8e5520';

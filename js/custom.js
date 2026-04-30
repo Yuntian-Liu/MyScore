@@ -49,8 +49,8 @@ function renderSubList() {
         const s = customSubs[i];
         html += '<div style="padding:1rem;background:#f9fafb;border-radius:12px;margin-bottom:0.75rem;border:1.5px solid #e5e7eb;">';
         html += '<div style="display:grid;grid-template-columns:1fr 80px 40px;gap:0.5rem;margin-bottom:0.5rem;">';
-        html += '<input type="text" placeholder="题型名称" value="' + escapeAttr(s.name) + '" onchange="customSubs[' + i + '].name=this.value" class="input">';
-        html += '<input type="text" placeholder="简称" value="' + escapeAttr(s.short) + '" onchange="customSubs[' + i + '].short=this.value" class="input">';
+        html += '<input type="text" placeholder="题型名称" value="' + escapeAttr(s.name) + '" oninput="customSubs[' + i + '].name=this.value" class="input">';
+        html += '<input type="text" placeholder="简称" value="' + escapeAttr(s.short) + '" oninput="customSubs[' + i + '].short=this.value" class="input">';
         html += '<input type="color" value="' + s.color + '" onchange="customSubs[' + i + '].color=this.value" style="width:40px;height:40px;border:none;border-radius:0.5rem;cursor:pointer;"></div>';
         html += '<select onchange="customSubs[' + i + '].type=this.value;if(this.value===\'formula\'){if(!customSubs[' + i + '].mult)customSubs[' + i + '].mult=1;if(!customSubs[' + i + '].max)customSubs[' + i + '].max=100;if(customSubs[' + i + '].min==null)customSubs[' + i + '].min=0;}renderSubList()" class="input" style="margin-bottom:0.25rem;">';
         html += '<option value="direct" ' + (s.type === 'direct' ? 'selected' : '') + '>直接打分</option>';
