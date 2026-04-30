@@ -5,6 +5,34 @@ The format is based on [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [5.2.0-beta] - 2026-05-01
+
+**代号：Profile & Polish（个人名片与体验打磨）**
+
+### Added
+- ✅ **个人名片功能**：Profile Panel 增强（XP 经验条 / 连续打卡 / 成就摘要 / 「查看名片」主按钮）；新增 Slide Panel 名片页（Hero Banner + 等级卡片 shimmer 动画 + 数据概览三列 + 成就墙 3×4 网格 + 经验来源明细）
+- ✅ **游戏化 UI 组件**：导航栏经验条（等级 + 进度 + XP 数字）、连续打卡胶囊（⚡/🔥 + 天数）、成就墙（Hero 卡底部徽章条，已解锁/未解锁状态，N/12 计数）
+- ✅ **AI 流式输出**：后端 SSE 流式代理（requestAiCommentStream + stream 路由）；前端 postCommentStream SSE 解析；AI 评论和伴学助手均支持流式，自动 fallback 非流式
+- ✅ **AI 流式输出 UX**：「正在思考...」动态省略号 + 打字机闪烁光标动效
+- ✅ **AI 评论截断检测**：记录 finish_reason 和 truncated 字段到前端日志
+- ✅ **Dashboard UI 重构**：最近成绩摘要卡片（总分 + 考试信息 + 目标进度 + 各科分数条）、考试类型概览网格化、Sparkline 迷你趋势线、Hero 归档区
+- ✅ **Slide Panel 二级面板**：考试类型详情面板、最近成绩详情面板、历史记录面板（右侧滑入，移动端底部抽屉）
+- ✅ **导入导出按钮整合**：导出报告 / 导出数据 / 导入备份整合至考试概览区右上角 action-chip 按钮组
+- ✅ **日志导出增强**：导出文件新增登录状态、Service Worker 状态、PWA 安装状态、成就解锁详情、AI 调用次数等诊断信息
+
+### Changed
+- 🔄 **Slide Panel 移动端适配**：全宽底部抽屉模式，修复内容偏窄和左侧溢出
+- 🔄 **考试类型卡片**：「查看详情」按钮固定右下角，有无折线图都对齐
+- 🔄 **Footer 简化**：删除 matrix 网格，改为 pill 链接
+- 🔄 **伴学助手流式输出**：支持流式逐字显示，体验更自然
+- 🔄 **使用文档更新**：补充个人名片、流式输出、游戏化 UI 说明
+
+### Fixed
+- 🔧 **SW 缓存未更新导致服务器 UI 崩溃**：Logo 渐变残留、XP 条/打卡/成绩数据异常（根因：sw.js 缓存名未更新，Cache First 策略加载旧版 CSS/JS）
+- 🔧 **个人名片 XP 显示负数**：用取模替代循环减法计算等级内经验
+
+---
+
 ## [5.1.0-beta] - 2026-04-29
 
 **代号：Settings & Toolbox（设置与工具箱）**

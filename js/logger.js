@@ -53,8 +53,28 @@ export function exportLogs() {
         'Version: V' + APP_VERSION + '\n' +
         'User Agent: ' + navigator.userAgent + '\n' +
         'Online: ' + navigator.onLine + '\n' +
-        'Time: ' + new Date().toISOString() + '\n' +
-        '---\n';
+        'Time: ' + new Date().toISOString() + '\n';
+
+    // 登录状态
+    try {
+        var auth = JSON.parse(localStorage.getItem('myscore_auth') || '{}');
+        header += 'Logged In: ' + (!!auth.token) + '\n';
+        if (auth.uid) header += 'UID: ' + auth.uid + '\n';
+    } catch (e) {
+        header += 'Logged In: parse_error\n';
+    }
+
+    // Service Worker 状态
+    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        header += 'SW Controller: active\n';
+    } else {
+        header += 'SW Controller: none\n';
+    }
+
+    // PWA 安装状态
+    header += 'PWA Standalone: ' + (window.matchMedia('(display-mode: standalone)').matches) + '\n';
+
+    header += '---\n';
 
     var body = logs.map(function(l) {
         var line = l.t + ' [' + l.level + ']';
@@ -74,7 +94,27 @@ export function exportLogs() {
     snapshot += 'Records: ' + (localStorage.getItem('myscore_v51_records') || '[]').length + ' chars\n';
     snapshot += 'Custom: ' + (localStorage.getItem('myscore_v51_custom') || '{}').length + ' chars\n';
 
-    var blob = new Blob([header + body + snapshot], { type: 'text/plain' });
+    // 成就解锁详情
+    var achSnap = '\n--- ACHIEVEMENTS ---\n';
+    try {
+        var ach = JSON.parse(localStorage.getItem('myscore_achievements') || '{}');
+        var unlocked = ach.unlocked || [];
+        achSnap += 'Unlocked (' + unlocked.length + '): ' + unlocked.join(', ') + '\n';
+    } catch (e) {
+        achSnap += 'Parse error\n';
+    }
+
+    // AI 调用次数（本地模式）
+    var aiSnap = '\n--- AI USAGE (LOCAL MODE) ---\n';
+    try {
+        var usage = JSON.parse(localStorage.getItem('myscore_local_ai_usage') || '{}');
+        var today = new Date().toISOString().slice(0, 10);
+        aiSnap += 'Today (' + today + '): ' + (usage[today] || 0) + ' calls\n';
+    } catch (e) {
+        aiSnap += 'Parse error\n';
+    }
+
+    var blob = new Blob([header + body + snapshot + achSnap + aiSnap], { type: 'text/plain' });
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;

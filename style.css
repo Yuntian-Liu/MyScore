@@ -4263,6 +4263,7 @@
     border: 1px solid rgba(84,99,125,0.08);
     border-radius: 18px;
     padding: 1.1rem;
+    padding-bottom: 2.4rem;
     padding-left: 1.3rem;
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -4322,6 +4323,9 @@
     color: #1f6a52;
     font-weight: 600;
     text-align: right;
+    position: absolute;
+    bottom: 1.1rem;
+    right: 1.3rem;
 }
 
 /* ==================== 快捷操作条 ==================== */
