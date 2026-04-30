@@ -753,4 +753,5 @@ window.clearAllRecords = clearAllRecords;
 window.openExamDetail = openExamDetail;
 window.openRecentDetail = openRecentDetail;
 window.openHistoryPanel = openHistoryPanel;
+window.openSlidePanel = openSlidePanel;
 window.closeSlidePanel = closeSlidePanel;

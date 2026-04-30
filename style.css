@@ -3424,6 +3424,305 @@
     border-color: rgba(239, 68, 68, 0.3);
 }
 
+/* Profile Panel: 查看名片按钮 */
+.profile-panel-btn-primary {
+    background: #275b56;
+    color: #fff;
+    border-color: #275b56;
+}
+.profile-panel-btn-primary:hover {
+    background: #1f6a52;
+    border-color: #1f6a52;
+}
+
+/* Profile Panel: XP 经验条 */
+.pp-xp-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.pp-xp-lv {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #275b56;
+    flex-shrink: 0;
+}
+.pp-xp-track {
+    flex: 1;
+    height: 4px;
+    background: rgba(39, 91, 86, 0.08);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.pp-xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6ee7b7, #34d399);
+    border-radius: 4px;
+    transition: width 0.6s ease;
+}
+.pp-xp-text {
+    font-size: 0.68rem;
+    color: #9ca3af;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* ==================== Profile Card Slide Panel ==================== */
+.pc-hero {
+    background: linear-gradient(135deg, #275b56, #1f6a52, #2e6b79);
+    padding: 2.5rem 2rem 2rem;
+    text-align: center;
+    margin: -1.5rem -1.5rem 0;
+    border-radius: 28px 0 0 0;
+}
+.pc-hero-avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    margin-bottom: 0.75rem;
+}
+.pc-hero-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+}
+.pc-hero-name .admin-badge,
+.pc-hero-name .beta-badge {
+    font-size: 0.6rem;
+    padding: 0.15rem 0.4rem;
+}
+.pc-hero-bio {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 0.35rem;
+    line-height: 1.5;
+}
+
+/* 等级卡片 */
+.pc-level-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 1.2rem;
+    margin: 1rem 0;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+.pc-level-num {
+    font-size: 2rem;
+    font-weight: 800;
+    color: #275b56;
+    margin-bottom: 0.6rem;
+}
+.pc-level-bar-track {
+    height: 8px;
+    background: rgba(39, 91, 86, 0.08);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+.pc-level-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6ee7b7, #34d399);
+    background-size: 200% 100%;
+    border-radius: 6px;
+    transition: width 0.6s ease;
+    animation: xp-shimmer 3s ease-in-out infinite;
+}
+@keyframes xp-shimmer {
+    0%, 100% { background-position: 0% 0%; }
+    50% { background-position: 100% 0%; }
+}
+.pc-level-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: #9ca3af;
+}
+
+/* 数据概览三列 */
+.pc-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.2rem;
+}
+.pc-stat-item {
+    background: #fff;
+    border-radius: 14px;
+    padding: 1rem 0.5rem;
+    text-align: center;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+.pc-stat-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.3rem;
+}
+.pc-stat-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: #275b56;
+    line-height: 1.2;
+}
+.pc-stat-label {
+    font-size: 0.78rem;
+    color: #9ca3af;
+    margin-top: 0.15rem;
+}
+
+/* 区块标题 */
+.pc-section-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 1rem 0 0.6rem;
+}
+
+/* 成就墙 */
+.pc-ach-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+}
+.pc-ach-item {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 0.85rem 0.5rem;
+    text-align: center;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    transition: transform 0.15s ease;
+    cursor: default;
+}
+.pc-ach-item:hover {
+    transform: translateY(-2px);
+}
+.pc-ach-done {
+    background: rgba(39, 91, 86, 0.08);
+    border-color: rgba(39, 91, 86, 0.12);
+}
+.pc-ach-icon {
+    font-size: 1.8rem;
+    margin-bottom: 0.3rem;
+}
+.pc-ach-item:not(.pc-ach-done) .pc-ach-icon {
+    opacity: 0.3;
+}
+.pc-ach-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+}
+.pc-ach-item:not(.pc-ach-done) .pc-ach-name {
+    color: #9ca3af;
+}
+
+/* 经验来源列表 */
+.pc-xp-list {
+    background: #fff;
+    border-radius: 14px;
+    padding: 0.6rem;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+.pc-xp-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.55rem 0.5rem;
+    border-radius: 8px;
+}
+.pc-xp-row:hover {
+    background: rgba(39, 91, 86, 0.03);
+}
+.pc-xp-row-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.pc-xp-tag {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #275b56;
+    min-width: 2.2em;
+}
+.pc-xp-desc {
+    font-size: 0.78rem;
+    color: #6b7280;
+}
+.pc-xp-row-right {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+}
+.pc-xp-val {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #34d399;
+}
+.pc-xp-note {
+    font-size: 0.65rem;
+    color: #d1d5db;
+    background: #f3f4f6;
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+}
+.pc-xp-cap {
+    text-align: center;
+    font-size: 0.72rem;
+    color: #d1d5db;
+    padding: 0.4rem 0 0.2rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
+    margin-top: 0.2rem;
+}
+
+/* 底部信息 */
+.pc-info-section {
+    margin-top: 0.5rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+.pc-info-row {
+    font-size: 0.82rem;
+    color: #9ca3af;
+    padding: 0.2rem 0;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .pc-hero {
+        padding: 2rem 1.2rem 1.5rem;
+    }
+    .pc-hero-avatar {
+        width: 80px;
+        height: 80px;
+    }
+    .pc-hero-name {
+        font-size: 1.15rem;
+    }
+    .pc-ach-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .pc-stats-grid {
+        gap: 0.5rem;
+    }
+    .pc-stat-item {
+        padding: 0.8rem 0.3rem;
+    }
+    .pc-stat-value {
+        font-size: 1.5rem;
+    }
+}
+
 /* ==================== Admin Badge ==================== */
 .admin-badge {
     display: inline-block;

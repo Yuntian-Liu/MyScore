@@ -1,5 +1,5 @@
 // ==================== 认证 / 用户管理 / 云同步 ====================
-import { STORAGE, TURNSTILE_SITE_KEY, AVATAR_OPTIONS, USER_AGREEMENT_HTML, PRIVACY_POLICY_HTML } from './config.js';
+import { STORAGE, TURNSTILE_SITE_KEY, AVATAR_OPTIONS, USER_AGREEMENT_HTML, PRIVACY_POLICY_HTML, XP_PER_LEVEL, ACHIEVEMENTS, XP_SOURCES, XP_DAILY_CAP } from './config.js';
 import { readStorageJson, escapeHtml, getAvatarUrl, showAiToast } from './utils.js';
 import { getRecords, saveRecords, getCustom, saveCustom } from './storage.js';
 
@@ -372,6 +372,19 @@ function updateLoginButton() {
                      (currentUser.isBeta ? '<span class="beta-badge">内测</span>' : '');
         var _records = getRecords();
         var _examTypes = new Set(_records.map(function(r){return r.examType;})).size;
+        // 游戏化摘要
+        var xpData = readStorageJson(STORAGE.XP, { total: 0, level: 1 });
+        var streakData = readStorageJson(STORAGE.STREAK, {});
+        var achData = readStorageJson(STORAGE.ACHIEVEMENTS, []);
+        var xpLevel = xpData.level || 1;
+        var xpTotal = xpData.total || 0;
+        var xpNeeded = XP_PER_LEVEL(xpLevel);
+        var xpInLevel = xpTotal;
+        for (var i = 1; i < xpLevel; i++) xpInLevel -= XP_PER_LEVEL(i);
+        var xpPct = Math.min(100, Math.round((xpInLevel / xpNeeded) * 100));
+        var streak = streakData.currentStreak || 0;
+        var achCount = Array.isArray(achData) ? achData.length : 0;
+        var achIcons = achCount > 0 ? ACHIEVEMENTS.filter(function(a) { return achData.indexOf(a.id) !== -1; }).slice(0, 3).map(function(a) { return a.icon; }).join('') : '';
         area.innerHTML =
             '<img class="nav-avatar" id="nav-avatar-img" src="' + getAvatarUrl(currentUser.avatarSeed, 32) + '" alt="avatar" title="点击查看资料" onclick="toggleProfilePanel(event)">' +
             '<div class="profile-panel hidden" id="profile-panel">' +
@@ -384,13 +397,23 @@ function updateLoginButton() {
                     '</div>' +
                 '</div>' +
                 '<div class="profile-panel-divider"></div>' +
+                // XP 经验条
+                '<div class="pp-xp-row" onclick="openProfileCard()" style="cursor:pointer;">' +
+                    '<span class="pp-xp-lv">Lv.' + xpLevel + '</span>' +
+                    '<div class="pp-xp-track"><div class="pp-xp-fill" style="width:' + xpPct + '%;"></div></div>' +
+                    '<span class="pp-xp-text">' + xpInLevel + '/' + xpNeeded + ' XP</span>' +
+                '</div>' +
+                '<div class="profile-panel-divider"></div>' +
                 '<div class="profile-panel-detail"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:.45;"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 7L2 7"/></svg><span>' + maskEmail(currentUser.email) + '</span></div>' +
                 '<div class="profile-panel-detail"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:.45;"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg><span id="profile-stats">' + _records.length + ' 条记录 · ' + _examTypes + ' 种考试</span></div>' +
+                (streak >= 1 ? '<div class="profile-panel-detail"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:#b45309;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H8l5-7v4h3l-5 7z"/></svg><span style="color:#b45309;">' + (streak >= 7 ? '🔥 ' : '⚡ ') + '连续打卡 ' + streak + ' 天</span></div>' : '') +
+                (achCount > 0 ? '<div class="profile-panel-detail"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:.45;"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 16.8l-6.2 4.5 2.4-7.4L2 9.4h7.6z"/></svg><span>' + achIcons + ' ' + achCount + '/12 成就</span></div>' : '') +
                 '<div class="profile-panel-divider"></div>' +
                 '<div class="profile-panel-actions">' +
+                    '<button class="profile-panel-btn profile-panel-btn-primary" onclick="openProfileCard()">查看名片</button>' +
                     '<button class="profile-panel-btn" onclick="openSettings()">设置</button>' +
-                    '<button class="profile-panel-btn profile-panel-btn-logout" onclick="logout()">退出登录</button>' +
                 '</div>' +
+                '<button class="profile-panel-btn profile-panel-btn-logout" style="width:100%;margin-top:0.4rem;" onclick="logout()">退出登录</button>' +
             '</div>';
     } else {
         area.innerHTML =
@@ -417,6 +440,96 @@ function updateProfileStats() {
     var records = getRecords(); var count = records.length; var types = new Set(records.map(function(r) { return r.examType; })).size;
     var el = document.getElementById('profile-stats'); if (el) el.textContent = count + ' 条记录 · ' + types + ' 种考试';
 }
+
+// ---- 个人名片 Slide Panel ----
+window.openProfileCard = function () {
+    hideProfilePanel();
+    setTimeout(function () {
+        renderProfileCardContent();
+        if (typeof window.openSlidePanel === 'function') {
+            window.openSlidePanel('profile-card-panel');
+        } else {
+            var el = document.getElementById('profile-card-panel');
+            if (el) el.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    }, 150);
+};
+
+function renderProfileCardContent() {
+    var body = document.getElementById('profile-card-body');
+    if (!body || !isLoggedIn()) return;
+    var user = getCurrentUser();
+    var records = getRecords();
+    var xpData = readStorageJson(STORAGE.XP, { total: 0, level: 1 });
+    var streakData = readStorageJson(STORAGE.STREAK, {});
+    var achData = readStorageJson(STORAGE.ACHIEVEMENTS, []);
+    var xpLevel = xpData.level || 1;
+    var xpTotal = xpData.total || 0;
+    var xpNeeded = XP_PER_LEVEL(xpLevel);
+    var xpInLevel = xpTotal;
+    for (var i = 1; i < xpLevel; i++) xpInLevel -= XP_PER_LEVEL(i);
+    if (xpInLevel < 0) xpInLevel = 0;
+    var xpPct = Math.min(100, Math.round((xpInLevel / xpNeeded) * 100));
+    var streak = streakData.currentStreak || 0;
+    var longestStreak = streakData.longestStreak || streak;
+    var achList = Array.isArray(achData) ? achData : [];
+    var badges = (user.isAdmin ? '<span class="admin-badge">管理员</span>' : '') +
+                 (user.isBeta ? '<span class="beta-badge">内测</span>' : '');
+    // === 区域1: Hero Banner ===
+    var html = '<div class="pc-hero">';
+    html += '<img class="pc-hero-avatar" src="' + getAvatarUrl(user.avatarSeed, 128) + '" alt="">';
+    html += '<div class="pc-hero-name">' + escapeHtml(user.nickname || '') + badges + '</div>';
+    if (user.bio) html += '<div class="pc-hero-bio">' + escapeHtml(user.bio) + '</div>';
+    html += '</div>';
+    // === 区域2: 等级卡片 ===
+    html += '<div class="pc-level-card">';
+    html += '<div class="pc-level-num">Lv.' + xpLevel + '</div>';
+    html += '<div class="pc-level-bar-track"><div class="pc-level-bar-fill" style="width:' + xpPct + '%;"></div></div>';
+    html += '<div class="pc-level-meta"><span>' + xpInLevel + ' / ' + xpNeeded + ' XP</span><span>累计 ' + xpTotal + ' XP</span></div>';
+    html += '</div>';
+    // === 区域3: 数据概览 ===
+    html += '<div class="pc-stats-grid">';
+    html += '<div class="pc-stat-item"><div class="pc-stat-icon">📝</div><div class="pc-stat-value">' + records.length + '</div><div class="pc-stat-label">总记录</div></div>';
+    html += '<div class="pc-stat-item"><div class="pc-stat-icon">' + (streak >= 7 ? '🔥' : '⚡') + '</div><div class="pc-stat-value">' + streak + '</div><div class="pc-stat-label">连续打卡' + (longestStreak > streak ? '<br><span style="font-size:0.7rem;color:#9ca3af;">最长 ' + longestStreak + ' 天</span>' : '') + '</div></div>';
+    html += '<div class="pc-stat-item"><div class="pc-stat-icon">🏅</div><div class="pc-stat-value">' + achList.length + '/12</div><div class="pc-stat-label">已解锁成就</div></div>';
+    html += '</div>';
+    // === 区域4: 成就墙 ===
+    html += '<div class="pc-section-title">成就</div>';
+    html += '<div class="pc-ach-grid">';
+    ACHIEVEMENTS.forEach(function (a) {
+        var done = achList.indexOf(a.id) !== -1;
+        html += '<div class="pc-ach-item' + (done ? ' pc-ach-done' : '') + '" title="' + escapeHtml(a.desc) + '">';
+        html += '<div class="pc-ach-icon">' + (done ? a.icon : '🔒') + '</div>';
+        html += '<div class="pc-ach-name">' + escapeHtml(a.name) + '</div>';
+        html += '</div>';
+    });
+    html += '</div>';
+    // === 区域5: 经验来源 ===
+    html += '<div class="pc-section-title">经验来源</div>';
+    html += '<div class="pc-xp-list">';
+    var sourceKeys = Object.keys(XP_SOURCES);
+    sourceKeys.forEach(function (key) {
+        var src = XP_SOURCES[key];
+        var tag = src.once ? '一次性' : (src.daily ? '每日递减' : '');
+        html += '<div class="pc-xp-row">';
+        html += '<div class="pc-xp-row-left"><span class="pc-xp-tag">' + escapeHtml(src.label) + '</span><span class="pc-xp-desc">' + escapeHtml(src.desc) + '</span></div>';
+        html += '<div class="pc-xp-row-right"><span class="pc-xp-val">+' + src.base + ' XP</span>' + (tag ? '<span class="pc-xp-note">' + tag + '</span>' : '') + '</div>';
+        html += '</div>';
+    });
+    html += '<div class="pc-xp-cap">每日上限 ' + XP_DAILY_CAP + ' XP</div>';
+    html += '</div>';
+    // === 底部信息 ===
+    html += '<div class="pc-info-section">';
+    html += '<div class="pc-info-row">UID: ' + user.uid + '</div>';
+    html += '<div class="pc-info-row">' + maskEmail(user.email) + '</div>';
+    html += '</div>';
+
+    body.innerHTML = html;
+}
+
+// dashboard.js 中的 openSlidePanel 需要挂到 window
+// 在 main.js 中做桥接
 
 // ---- 编辑资料 ----
 function openEditProfileModal() {

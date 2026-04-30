@@ -864,6 +864,17 @@
     </div>
 </div>
 
+<!-- Panel D: 个人名片 -->
+<div id="profile-card-panel" class="slide-panel-overlay" onclick="if(event.target===this)closeSlidePanel('profile-card-panel')">
+    <div class="slide-panel">
+        <div class="slide-panel-header">
+            <button class="slide-panel-back" onclick="closeSlidePanel('profile-card-panel')">← 返回</button>
+            <h2 class="slide-panel-title">个人名片</h2>
+        </div>
+        <div class="slide-panel-body" id="profile-card-body"></div>
+    </div>
+</div>
+
 <script type="module" src="js/main.js"></script>
 
 </body>
