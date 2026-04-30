@@ -480,6 +480,7 @@ function renderProfileCardContent() {
     var html = '<div class="pc-hero">';
     html += '<img class="pc-hero-avatar" src="' + getAvatarUrl(user.avatarSeed, 128) + '" alt="">';
     html += '<div class="pc-hero-name">' + escapeHtml(user.nickname || '') + badges + '</div>';
+    html += '<div class="pc-hero-meta"><span>UID ' + user.uid + '</span><span class="pc-hero-dot">·</span><span>' + maskEmail(user.email) + '</span></div>';
     if (user.bio) html += '<div class="pc-hero-bio">' + escapeHtml(user.bio) + '</div>';
     html += '</div>';
     // === 区域2: 等级卡片 ===
@@ -518,11 +519,6 @@ function renderProfileCardContent() {
         html += '</div>';
     });
     html += '<div class="pc-xp-cap">每日上限 ' + XP_DAILY_CAP + ' XP</div>';
-    html += '</div>';
-    // === 底部信息 ===
-    html += '<div class="pc-info-section">';
-    html += '<div class="pc-info-row">UID: ' + user.uid + '</div>';
-    html += '<div class="pc-info-row">' + maskEmail(user.email) + '</div>';
     html += '</div>';
 
     body.innerHTML = html;

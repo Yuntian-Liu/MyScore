@@ -3497,6 +3497,18 @@
     font-size: 0.6rem;
     padding: 0.15rem 0.4rem;
 }
+.pc-hero-meta {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.5);
+    margin-top: 0.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+}
+.pc-hero-dot {
+    opacity: 0.4;
+}
 .pc-hero-bio {
     font-size: 0.85rem;
     color: rgba(255, 255, 255, 0.7);
@@ -3683,18 +3695,6 @@
     padding: 0.4rem 0 0.2rem;
     border-top: 1px solid rgba(0, 0, 0, 0.04);
     margin-top: 0.2rem;
-}
-
-/* 底部信息 */
-.pc-info-section {
-    margin-top: 0.5rem;
-    padding-top: 0.8rem;
-    border-top: 1px solid rgba(0, 0, 0, 0.06);
-}
-.pc-info-row {
-    font-size: 0.82rem;
-    color: #9ca3af;
-    padding: 0.2rem 0;
 }
 
 /* 移动端适配 */
