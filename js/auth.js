@@ -379,8 +379,8 @@ function updateLoginButton() {
         var xpLevel = xpData.level || 1;
         var xpTotal = xpData.total || 0;
         var xpNeeded = XP_PER_LEVEL(xpLevel);
-        var xpInLevel = xpTotal;
-        for (var i = 1; i < xpLevel; i++) xpInLevel -= XP_PER_LEVEL(i);
+        var xpInLevel = xpNeeded > 0 ? xpTotal % xpNeeded : 0;
+        if (xpTotal >= xpNeeded && xpInLevel === 0) xpInLevel = xpNeeded;
         var xpPct = Math.min(100, Math.round((xpInLevel / xpNeeded) * 100));
         var streak = streakData.currentStreak || 0;
         var achCount = Array.isArray(achData) ? achData.length : 0;
@@ -467,9 +467,8 @@ function renderProfileCardContent() {
     var xpLevel = xpData.level || 1;
     var xpTotal = xpData.total || 0;
     var xpNeeded = XP_PER_LEVEL(xpLevel);
-    var xpInLevel = xpTotal;
-    for (var i = 1; i < xpLevel; i++) xpInLevel -= XP_PER_LEVEL(i);
-    if (xpInLevel < 0) xpInLevel = 0;
+    var xpInLevel = xpNeeded > 0 ? xpTotal % xpNeeded : 0;
+    if (xpTotal >= xpNeeded && xpInLevel === 0) xpInLevel = xpNeeded;
     var xpPct = Math.min(100, Math.round((xpInLevel / xpNeeded) * 100));
     var streak = streakData.currentStreak || 0;
     var longestStreak = streakData.longestStreak || streak;
