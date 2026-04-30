@@ -72,7 +72,7 @@ export async function fetchAIComment(examType, currentScore, historyScores) {
         try {
             var streamFullText = '';
             var streamStart = Date.now();
-            box.innerHTML = '<strong>🤖 ' + AI_STYLES[currentAiStyle].teacherName + '：</strong> <span id="ai-stream-text"></span>';
+            box.innerHTML = '<strong>🤖 ' + AI_STYLES[currentAiStyle].teacherName + '：</strong> <span class="ai-thinking-dots">正在思考</span><span id="ai-stream-text" style="display:none;"></span><span id="ai-cursor" class="ai-cursor" style="display:none;">|</span>';
             box.style.background = 'rgba(221,238,231,0.72)';
             box.style.color = '#174f3d';
             box.style.borderColor = 'rgba(31,106,82,0.14)';
@@ -80,10 +80,17 @@ export async function fetchAIComment(examType, currentScore, historyScores) {
             streamFullText = await postCommentStream(
                 { examType, currentScore, historyScores, style: currentAiStyle },
                 function onChunk(delta, full) {
+                    var thinking = box.querySelector('.ai-thinking-dots');
+                    if (thinking) thinking.style.display = 'none';
                     var span = document.getElementById('ai-stream-text');
-                    if (span) span.textContent = full;
+                    var cursor = document.getElementById('ai-cursor');
+                    if (span) { span.style.display = 'inline'; span.textContent = full; }
+                    if (cursor) cursor.style.display = 'inline';
                 }
             );
+            // 流结束后移除光标
+            var cursor = document.getElementById('ai-cursor');
+            if (cursor) cursor.style.display = 'none';
             streamOk = true;
 
             if (streamFullText) {
