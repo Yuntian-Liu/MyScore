@@ -1,5 +1,5 @@
 // ==================== 突突er 伴学助手 ====================
-import { readStorageJson, postComment } from './utils.js';
+import { readStorageJson, postComment, postCommentStream } from './utils.js';
 import { _justLoggedOut, profilePanelOpen, hideProfilePanel } from './auth.js';
 import { showModeChoiceModal } from './ai.js';
 
@@ -246,13 +246,37 @@ async function sendTutuerMessage() {
             return { role: m.role, content: m.content };
         });
 
-        const data = await postComment({
-            mode: 'companion',
-            userMessage: userText,
-            conversationHistory: history
-        });
-        const reply = data && data.comment ? data.comment : getTutuerFallbackReply(userText);
-        tutuerMessages.push({ role: 'assistant', content: reply });
+        // 优先流式
+        var reply = '';
+        try {
+            // 添加一个空的 assistant 消息占位，流式更新
+            tutuerMessages.push({ role: 'assistant', content: '' });
+            var streamIdx = tutuerMessages.length - 1;
+            renderTutuerMessages();
+
+            reply = await postCommentStream(
+                { mode: 'companion', userMessage: userText, conversationHistory: history },
+                function onChunk(delta, full) {
+                    tutuerMessages[streamIdx].content = full;
+                    renderTutuerMessages();
+                }
+            );
+            if (!reply) reply = getTutuerFallbackReply(userText);
+            tutuerMessages[streamIdx].content = reply;
+        } catch (streamErr) {
+            // 流式失败，fallback 非流式
+            // 移除占位的空消息
+            if (tutuerMessages.length && tutuerMessages[tutuerMessages.length - 1].role === 'assistant' && !tutuerMessages[tutuerMessages.length - 1].content) {
+                tutuerMessages.pop();
+            }
+            const data = await postComment({
+                mode: 'companion',
+                userMessage: userText,
+                conversationHistory: history
+            });
+            reply = data && data.comment ? data.comment : getTutuerFallbackReply(userText);
+            tutuerMessages.push({ role: 'assistant', content: reply });
+        }
     } catch (err) {
         tutuerMessages.push({ role: 'assistant', content: getTutuerFallbackReply(userText) });
     } finally {

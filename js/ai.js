@@ -1,6 +1,6 @@
 // ==================== AI 评论 / 风格 / 回嘴 / 目标追踪 ====================
 import { AI_STYLES, LOCAL_AI_DAILY_LIMIT, COMMENT_API_ENDPOINT } from './config.js';
-import { escapeHtml, showAiToast, postComment } from './utils.js';
+import { escapeHtml, showAiToast, postComment, postCommentStream } from './utils.js';
 import { isLoggedIn, getUserMode, getLocalAiUsage, incrementLocalAiUsage, isLocalAiLimitReached } from './auth.js';
 import { addXP, checkAchievements } from './gamification.js';
 import { logEvent } from './logger.js';
@@ -67,15 +67,46 @@ export async function fetchAIComment(examType, currentScore, historyScores) {
     setAiStyle(currentAiStyle);
 
     try {
-        const data = await postComment({ examType, currentScore, historyScores, style: currentAiStyle });
-        if (data.comment) {
-            lastAiComment = data.comment;
-            renderAiComment(box, data.comment, currentAiStyle);
-            actions.style.display = 'flex';
-            var comment = data.comment;
-            var truncated = !/[。！？.!?\n\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]$/u.test(comment.trim());
-            logEvent('ai-comment', { examType, style: currentAiStyle, length: comment.length, truncated: truncated, duration: data._duration });
-        } else { box.innerHTML = '老师去吃饭了...'; }
+        // 优先尝试流式输出
+        var streamOk = false;
+        try {
+            var streamFullText = '';
+            var streamStart = Date.now();
+            box.innerHTML = '<strong>🤖 ' + AI_STYLES[currentAiStyle].teacherName + '：</strong> <span id="ai-stream-text"></span>';
+            box.style.background = 'rgba(221,238,231,0.72)';
+            box.style.color = '#174f3d';
+            box.style.borderColor = 'rgba(31,106,82,0.14)';
+
+            streamFullText = await postCommentStream(
+                { examType, currentScore, historyScores, style: currentAiStyle },
+                function onChunk(delta, full) {
+                    var span = document.getElementById('ai-stream-text');
+                    if (span) span.textContent = full;
+                }
+            );
+            streamOk = true;
+
+            if (streamFullText) {
+                lastAiComment = streamFullText;
+                renderAiComment(box, streamFullText, currentAiStyle);
+                actions.style.display = 'flex';
+                var truncated = !/[。！？.!?\n\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]$/u.test(streamFullText.trim());
+                logEvent('ai-comment', { examType, style: currentAiStyle, length: streamFullText.length, truncated: truncated, duration: Date.now() - streamStart, stream: true });
+            } else { box.innerHTML = '老师去吃饭了...'; }
+        } catch (streamErr) {
+            // 流式失败，fallback 到非流式
+            if (!streamOk) {
+                var data = await postComment({ examType, currentScore, historyScores, style: currentAiStyle });
+                if (data.comment) {
+                    lastAiComment = data.comment;
+                    renderAiComment(box, data.comment, currentAiStyle);
+                    actions.style.display = 'flex';
+                    var comment = data.comment;
+                    var truncated = !/[。！？.!?\n\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]$/u.test(comment.trim());
+                    logEvent('ai-comment', { examType, style: currentAiStyle, length: comment.length, truncated: truncated, duration: data._duration, stream: false });
+                } else { box.innerHTML = '老师去吃饭了...'; }
+            }
+        }
     } catch (err) { console.error(err); logEvent('ai-error', { examType, status: err.status || 0, duration: err.duration, error: err.message }); box.innerHTML = '老师断线了...'; }
     finally { aiStyleLocked = false; aiStyleCooldown = true; setTimeout(function() { aiStyleCooldown = false; }, 3000); }
 }

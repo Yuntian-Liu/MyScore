@@ -1,18 +1,25 @@
 // ==================== 仪表盘 / 图表 / 历史记录 ====================
-import { STORAGE } from './config.js';
+import { STORAGE, ACHIEVEMENTS, XP_PER_LEVEL } from './config.js';
 import { escapeHtml, getExamTheme, getExamBadgeMarkup } from './utils.js';
 import { getRecords, saveRecords, allExams, buildArchiveHighlights } from './storage.js';
 import { isLoggedIn, getUserMode, _isSyncing } from './auth.js';
-import { addXP } from './gamification.js';
+import { addXP, getGamificationData } from './gamification.js';
 import { fetchAIComment, renderAiComment, triggerLocalAiComment, showLocalAiHint, hideLocalAiHint, showModeChoiceModal, getAiCache, getGoal, currentAiStyle } from './ai.js';
 
 let mainChartInstance = null;
+let radarChartInstance = null;
 
 export function renderDashboard() {
     if (typeof window.updatePetMood === 'function') window.updatePetMood();
 
     // 每日首次查看仪表盘 XP（静默，不弹 toast）
     addXP('dashboard', { silent: true });
+
+    // 游戏化 UI
+    var _gamData = getGamificationData();
+    renderXpBar(_gamData.xp);
+    renderStreakIndicator(_gamData.streak);
+    renderAchievementWall(_gamData.achievements);
 
     const records = getRecords();
     const exams = allExams();
@@ -187,7 +194,11 @@ function switchDashboardTab(tab, btnElement) {
     const chartsContainer = document.getElementById('charts-container');
     const overviewEmpty = document.getElementById('overview-empty');
 
-    if (tab === 'overview') { overviewEmpty.style.display = 'block'; chartsContainer.style.display = 'none'; return; }
+    if (tab === 'overview') {
+        overviewEmpty.style.display = 'block'; chartsContainer.style.display = 'none';
+        const rw = document.getElementById('radar-chart-wrapper'); if (rw) rw.style.display = 'none';
+        return;
+    }
 
     const exams = allExams();
     const exam = exams[tab];
@@ -219,6 +230,7 @@ function switchDashboardTab(tab, btnElement) {
 
     chartsContainer.style.display = 'block';
     renderMainChart(tab, recs, exam);
+    renderRadarChart(tab, recs, exam);
 }
 
 function renderMainChart(examType, records, exam) {
@@ -269,6 +281,147 @@ function renderMainChart(examType, records, exam) {
     });
 }
 
+function renderRadarChart(examType, records, exam) {
+    const wrapper = document.getElementById('radar-chart-wrapper');
+    const canvas = document.getElementById('radar-chart');
+    if (!wrapper || !canvas) return;
+    if (radarChartInstance) { radarChartInstance.destroy(); radarChartInstance = null; }
+
+    if (!records || !records.length || !exam || !exam.subjects || exam.subjects.length < 3) {
+        wrapper.style.display = 'none';
+        return;
+    }
+
+    wrapper.style.display = 'block';
+    const subjects = exam.subjects;
+    const latest = records[records.length - 1];
+
+    // Build axis labels and data
+    const labels = subjects.map(s => s.name || s.short);
+    const latestData = subjects.map(s => {
+        const raw = latest.scores ? latest.scores[s.id] : undefined;
+        if (raw === undefined || raw === null) return 0;
+        return Number(raw);
+    });
+
+    // Normalize to 0-100 for CET, keep 0-9 for IELTS, use % for custom
+    const isIelts = examType === 'ielts';
+    const normalizedData = subjects.map((s, i) => {
+        const val = latestData[i];
+        if (isIelts) return val;
+        // Calculate actual max score per subject type
+        var subjectMax;
+        if (s.type === 'sections') {
+            // sections: max = sum of (sec.max * sec.score)
+            subjectMax = (s.sections || []).reduce(function(sum, sec) { return sum + (sec.max || 0) * (sec.score || 0); }, 0);
+        } else if (s.type === 'formula') {
+            // formula: max = raw max * multiplier
+            subjectMax = (s.max || 0) * (s.mult || 1);
+        } else {
+            subjectMax = s.max || 100;
+        }
+        if (!subjectMax) subjectMax = 100;
+        return Math.round((val / subjectMax) * 1000) / 10; // percentage with 1 decimal
+    });
+
+    const theme = getExamTheme(examType) || { accent: '#275b56' };
+    const primaryColor = theme.accent || '#275b56';
+
+    const datasets = [{
+        label: '最近',
+        data: normalizedData,
+        backgroundColor: primaryColor + '25',
+        borderColor: primaryColor,
+        borderWidth: 2,
+        pointBackgroundColor: primaryColor,
+        pointRadius: 4,
+        pointHoverRadius: 6
+    }];
+
+    // Best record overlay
+    if (records.length >= 2) {
+        const totals = records.map(r => r.total || 0);
+        const bestIdx = totals.indexOf(Math.max(...totals));
+        const best = records[bestIdx];
+        const bestData = subjects.map((s, i) => {
+            const raw = best.scores ? best.scores[s.id] : undefined;
+            if (raw === undefined || raw === null) return 0;
+            const val = Number(raw);
+            if (isIelts) return val;
+            var subjectMax;
+            if (s.type === 'sections') { subjectMax = (s.sections || []).reduce(function(sum, sec) { return sum + (sec.max || 0) * (sec.score || 0); }, 0); }
+            else if (s.type === 'formula') { subjectMax = (s.max || 0) * (s.mult || 1); }
+            else { subjectMax = s.max || 100; }
+            if (!subjectMax) subjectMax = 100;
+            return Math.round((val / subjectMax) * 1000) / 10;
+        });
+        datasets.push({
+            label: '最佳',
+            data: bestData,
+            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            borderColor: '#f59e0b',
+            borderWidth: 1.5,
+            borderDash: [5, 5],
+            pointBackgroundColor: '#f59e0b',
+            pointRadius: 3,
+            pointHoverRadius: 5
+        });
+    }
+
+    // Average overlay (3+ records)
+    if (records.length >= 3) {
+        const avgData = subjects.map((s, i) => {
+            const vals = records.map(r => {
+                const raw = r.scores ? r.scores[s.id] : undefined;
+                if (raw === undefined || raw === null) return 0;
+                return Number(raw);
+            });
+            const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+            if (isIelts) return Math.round(avg * 10) / 10;
+            var subjectMax;
+            if (s.type === 'sections') { subjectMax = (s.sections || []).reduce(function(sum, sec) { return sum + (sec.max || 0) * (sec.score || 0); }, 0); }
+            else if (s.type === 'formula') { subjectMax = (s.max || 0) * (s.mult || 1); }
+            else { subjectMax = s.max || 100; }
+            if (!subjectMax) subjectMax = 100;
+            return Math.round((avg / subjectMax) * 1000) / 10;
+        });
+        datasets.push({
+            label: '平均',
+            data: avgData,
+            backgroundColor: 'rgba(107, 114, 128, 0.08)',
+            borderColor: '#9ca3af',
+            borderWidth: 1,
+            borderDash: [3, 3],
+            pointBackgroundColor: '#9ca3af',
+            pointRadius: 2,
+            pointHoverRadius: 4
+        });
+    }
+
+    const scaleMax = isIelts ? 9 : 100;
+    const ctx = canvas.getContext('2d');
+    radarChartInstance = new Chart(ctx, {
+        type: 'radar',
+        data: { labels, datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 12, font: { size: 12 } } }
+            },
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: scaleMax,
+                    ticks: { stepSize: isIelts ? 1 : 20, font: { size: 10 } },
+                    pointLabels: { font: { size: 12, weight: 'bold' }, color: '#374151' },
+                    grid: { color: 'rgba(0,0,0,0.06)' }
+                }
+            }
+        }
+    });
+}
+
 function deleteRecord(id) {
     if (!confirm('确定删除这条记录？')) return;
     saveRecords(getRecords().filter(r => r.id !== id));
@@ -280,6 +433,67 @@ function clearAllRecords() {
     localStorage.removeItem(STORAGE.RECORDS);
     if (!isLoggedIn()) { if (window.scheduleCloudSync) window.scheduleCloudSync(); }
     renderDashboard();
+}
+
+// ---- 游戏化 UI 渲染 ----
+
+function renderXpBar(xpData) {
+    var bar = document.getElementById('gam-xp-bar');
+    if (!bar) return;
+    var level = xpData.level || 1;
+    var total = xpData.total || 0;
+    var needed = XP_PER_LEVEL(level);
+    var pct = Math.min(100, Math.round((total / needed) * 100));
+    var levelEl = bar.querySelector('.gam-xp-level');
+    if (levelEl) levelEl.textContent = level;
+    var fill = bar.querySelector('.gam-xp-fill');
+    if (fill) fill.style.width = pct + '%';
+    var textEl = bar.querySelector('.gam-xp-text');
+    if (textEl) textEl.textContent = total + '/' + needed + ' XP';
+}
+
+function renderStreakIndicator(streakData) {
+    var el = document.getElementById('gam-streak');
+    if (!el) return;
+    var streak = streakData.currentStreak || 0;
+    if (streak < 1) { el.style.display = 'none'; return; }
+    var longest = streakData.longestStreak || streak;
+    var fire = streak >= 7 ? '🔥' : '⚡';
+    var text = fire + ' ' + streak + '天';
+    if (longest > streak) text += '（最长' + longest + '天）';
+    el.textContent = text;
+    el.style.display = 'inline-flex';
+}
+
+function renderAchievementWall(unlockedIds) {
+    var section = document.getElementById('gam-achievements');
+    var grid = document.getElementById('gam-ach-grid');
+    var countEl = document.getElementById('gam-ach-count');
+    if (!section || !grid) return;
+
+    var unlocked = unlockedIds || [];
+    if (unlocked.length === 0 && !ACHIEVEMENTS) { section.style.display = 'none'; return; }
+
+    section.style.display = '';
+    if (countEl) countEl.textContent = unlocked.length + '/' + ACHIEVEMENTS.length;
+
+    var html = '';
+    for (var i = 0; i < ACHIEVEMENTS.length; i++) {
+        var a = ACHIEVEMENTS[i];
+        var done = unlocked.indexOf(a.id) >= 0;
+        if (done) {
+            html += '<span class="gam-ach-badge gam-ach-done" title="' + escapeHtml(a.desc) + '">'
+                + '<span class="gam-ach-icon">' + a.icon + '</span>'
+                + escapeHtml(a.name)
+                + '</span>';
+        } else {
+            html += '<span class="gam-ach-badge gam-ach-locked" title="' + escapeHtml(a.desc) + '">'
+                + '<span class="gam-ach-icon">🔒</span>'
+                + escapeHtml(a.name)
+                + '</span>';
+        }
+    }
+    grid.innerHTML = html;
 }
 
 // ---- 挂载到 window ----

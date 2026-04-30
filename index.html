@@ -106,32 +106,35 @@
                 <div class="topbar">
                     <div class="brand-lockup">
                         <div class="brand-mark">
-                            <svg width="46" height="46" viewBox="0 0 64 64" fill="none" aria-hidden="true">
-                                <path d="M10 50H54" stroke="rgba(255,255,255,0.34)" stroke-width="5" stroke-linecap="round"/>
-                                <rect x="14" y="29" width="10" height="21" rx="5" fill="rgba(255,255,255,0.94)"/>
-                                <rect x="27" y="21" width="10" height="29" rx="5" fill="rgba(255,255,255,0.94)"/>
-                                <rect x="40" y="12" width="10" height="38" rx="5" fill="rgba(255,255,255,0.94)"/>
-                                <path d="M14 20L27 13L39 15L50 6" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-                                <circle cx="14" cy="20" r="3.2" fill="white"/>
-                                <circle cx="27" cy="13" r="3.2" fill="white"/>
-                                <circle cx="39" cy="15" r="3.2" fill="white"/>
-                                <circle cx="50" cy="6" r="3.2" fill="white"/>
-                            </svg>
+                            <img src="logo2.svg" alt="MyScore" width="38" height="38">
                         </div>
-                        <h1 class="brand-title">MyScore</h1>
+                        <div class="brand-text">
+                            <h1 class="brand-title">MyScore</h1>
+                            <p class="brand-subtitle">AI 成绩管理助手</p>
+                        </div>
                     </div>
-                    <nav class="nav-shell">
-                        <button class="nav-btn active" id="nav-dashboard" onclick="showPage('dashboard')">仪表盘</button>
-                        <button class="nav-btn" id="nav-entry" onclick="showPage('entry')">录入成绩</button>
-                        <button class="nav-btn" id="nav-custom" onclick="showPage('custom')">自定义考试</button>
-                        <button class="nav-btn doc-btn" type="button" onclick="openInfoModal('guide')">使用文档</button>
-                        <div class="nav-user-area" id="nav-user-area">
-                            <button class="nav-btn login-btn" id="nav-login" type="button" onclick="openLoginModal()">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                <span>登录</span>
-                            </button>
+                    <div class="nav-col">
+                        <div class="gam-meta-strip">
+                            <div id="gam-xp-bar" class="gam-xp-bar">
+                                <span class="gam-xp-label">Lv.<span class="gam-xp-level">1</span></span>
+                                <div class="gam-xp-track"><div class="gam-xp-fill"></div></div>
+                                <span class="gam-xp-text">0/80 XP</span>
+                            </div>
+                            <div id="gam-streak" class="gam-streak"></div>
                         </div>
-                    </nav>
+                        <nav class="nav-shell">
+                            <button class="nav-btn active" id="nav-dashboard" onclick="showPage('dashboard')">仪表盘</button>
+                            <button class="nav-btn" id="nav-entry" onclick="showPage('entry')">录入成绩</button>
+                            <button class="nav-btn" id="nav-custom" onclick="showPage('custom')">自定义考试</button>
+                            <button class="nav-btn doc-btn" type="button" onclick="openInfoModal('guide')">使用文档</button>
+                            <div class="nav-user-area" id="nav-user-area">
+                                <button class="nav-btn login-btn" id="nav-login" type="button" onclick="openLoginModal()">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:4px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                    <span>登录</span>
+                                </button>
+                            </div>
+                        </nav>
+                    </div>
                 </div>
             </div>
         </header>
@@ -188,6 +191,10 @@
                                 <div class="hero-side-row"><span>适合场景</span><strong>日常刷题 / 模考 / 正式考试</strong></div>
                             </div>
                         </aside>
+                    </div>
+                    <div id="gam-achievements" class="gam-ach-strip" style="display:none;">
+                        <span class="gam-ach-strip-label">🏅 成就 <span id="gam-ach-count"></span></span>
+                        <div id="gam-ach-grid" class="gam-ach-row"></div>
                     </div>
                 </section>
 
@@ -295,6 +302,13 @@
                                 </div>
                                 <div id="chart-no-data" class="empty-state" style="display: none;">
                                     <p style="color: #9ca3af;">暂无数据，请先录入成绩</p>
+                                </div>
+                            </div>
+                            <!-- 雷达图 -->
+                            <div id="radar-chart-wrapper" style="display:none; margin-bottom: 1.5rem;">
+                                <h3 style="font-weight:700; font-size:1.125rem; margin-bottom:1rem;">🎯 技能画像</h3>
+                                <div style="position:relative; height:350px; max-width:420px; margin:0 auto; background:white; border:2px solid #e5e7eb; border-radius:1rem; padding:1rem;">
+                                    <canvas id="radar-chart"></canvas>
                                 </div>
                             </div>
                         </div>

@@ -178,3 +178,66 @@ export async function postComment(payload) {
         clearTimeout(timeoutId);
     }
 }
+
+/**
+ * 流式 AI 请求。读取 SSE 事件流，每收到一段文字调用 onChunk(text)。
+ * 失败时抛出异常，由调用方 fallback 到非流式。
+ */
+export async function postCommentStream(payload, onChunk) {
+    var headers = { 'Content-Type': 'application/json' };
+    if (window.isLoggedIn && window.isLoggedIn()) {
+        var cu = window.getCurrentUser && window.getCurrentUser();
+        if (cu && cu.token) {
+            headers['Authorization'] = 'Bearer ' + cu.token;
+        }
+    }
+    var controller = new AbortController();
+    var timeoutId = setTimeout(function() { controller.abort(); }, 60000);
+
+    var url = COMMENT_API_ENDPOINT + (COMMENT_API_ENDPOINT.indexOf('?') >= 0 ? '&' : '?') + 'stream=true';
+
+    var res = await fetch(url, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(payload),
+        signal: controller.signal
+    });
+
+    if (!res.ok) {
+        clearTimeout(timeoutId);
+        var err = new Error('流式请求失败（' + res.status + '）');
+        err.status = res.status;
+        throw err;
+    }
+
+    var reader = res.body.getReader();
+    var decoder = new TextDecoder();
+    var buffer = '';
+    var fullText = '';
+
+    try {
+        while (true) {
+            var result = await reader.read();
+            if (result.done) break;
+            buffer += decoder.decode(result.value, { stream: true });
+            var lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i].trim();
+                if (!line || line === 'data: [DONE]') continue;
+                if (line.indexOf('data: ') !== 0) continue;
+                try {
+                    var json = JSON.parse(line.slice(6));
+                    if (json.text) {
+                        fullText += json.text;
+                        onChunk(json.text, fullText);
+                    }
+                } catch (e) { /* skip */ }
+            }
+        }
+    } finally {
+        clearTimeout(timeoutId);
+    }
+    return fullText;
+}

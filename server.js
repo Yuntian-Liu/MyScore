@@ -3,7 +3,7 @@ import { stat } from "node:fs/promises";
 import { createServer } from "node:http";
 import { createGzip } from "node:zlib";
 import { extname, join, normalize, resolve, sep } from "node:path";
-import { CORS_HEADERS, requestAiComment } from "./lib/aiComment.js";
+import { CORS_HEADERS, requestAiComment, requestAiCommentStream } from "./lib/aiComment.js";
 import { initDb, saveUserData, getUserData, findUser, findUserByUid, updateUserProfile, maskEmail } from "./lib/db.js";
 import { sendVerificationCode, registerWithEmail, loginWithPassword, loginWithCode, verifyToken } from "./lib/auth.js";
 
@@ -163,6 +163,21 @@ async function handleCommentApi(req, res, ip) {
       apiBaseUrl: process.env.AI_BASE_URL || "https://api.deepseek.com",
       model: process.env.AI_MODEL || "deepseek-v4-flash",
     };
+
+    // 流式路径：URL 带 ?stream=true
+    const isStream = new URL(req.url, `http://${req.headers.host}`).searchParams.get("stream") === "true";
+    if (isStream) {
+      res.writeHead(200, {
+        ...CORS_HEADERS,
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      });
+      await requestAiCommentStream(body, config, res);
+      res.end();
+      return;
+    }
+
     const result = await requestAiComment(body, config);
     sendJson(res, 200, result, CORS_HEADERS);
   } catch (error) {
