@@ -4,10 +4,10 @@ var CACHE_NAME = 'myscore-v520b3';
 var APP_SHELL = [
     '/',
     '/index.html',
-    '/style.css',
+    '/style.css?v=520b3',
     '/logo2.svg',
     '/manifest.json',
-    '/js/main.js',
+    '/js/main.js?v=520b3',
     '/js/config.js',
     '/js/storage.js',
     '/js/utils.js',
