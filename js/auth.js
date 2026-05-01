@@ -2,6 +2,7 @@
 import { STORAGE, TURNSTILE_SITE_KEY, AVATAR_OPTIONS, USER_AGREEMENT_HTML, PRIVACY_POLICY_HTML, XP_PER_LEVEL, ACHIEVEMENTS, XP_SOURCES, XP_DAILY_CAP } from './config.js';
 import { readStorageJson, escapeHtml, getAvatarUrl, showAiToast } from './utils.js';
 import { getRecords, saveRecords, getCustom, saveCustom } from './storage.js';
+import { logEvent } from './logger.js';
 
 let currentUser = null;
 let syncTimer = null;
@@ -204,11 +205,11 @@ async function requestLoginCode() {
             method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
         });
         var data = await res.json();
-        if (!res.ok) { showLoginError(data.error || '发送失败'); resetTurnstile(); return; }
+        if (!res.ok) { logEvent('auth-login-fail', { step: 'send-code', status: res.status, error: data.error }); showLoginError(data.error || '发送失败'); resetTurnstile(); return; }
         loginEmailCache = account;
         document.getElementById('login-email-display').textContent = data.maskedEmail || account;
         goToStep('step-code');
-    } catch (e) { showLoginError('网络错误，请检查连接'); }
+    } catch (e) { logEvent('auth-login-fail', { step: 'send-code', error: 'network' }); showLoginError('网络错误，请检查连接'); }
     finally { btn.disabled = false; btn.textContent = '发送验证码'; updateSendCodeBtn(); }
 }
 
@@ -224,10 +225,10 @@ async function submitVerifyCode() {
             body: JSON.stringify({ account: email, code: code })
         });
         var data = await res.json();
-        if (!res.ok) { showLoginError(data.error || '验证失败'); return; }
+        if (!res.ok) { logEvent('auth-login-fail', { step: 'verify-code', status: res.status, error: data.error }); showLoginError(data.error || '验证失败'); return; }
         if (data.isNewUser) { document.getElementById('login-modal-title').textContent = '创建账号'; goToStep('step-invite'); return; }
         onLoginSuccess(data.token, data.user);
-    } catch (e) { showLoginError('网络错误，请检查连接'); }
+    } catch (e) { logEvent('auth-login-fail', { step: 'verify-code', error: 'network' }); showLoginError('网络错误，请检查连接'); }
     finally { btn.disabled = false; btn.textContent = '验证'; }
 }
 
@@ -244,9 +245,9 @@ async function submitPasswordLogin() {
             body: JSON.stringify({ account: account, password: password })
         });
         var data = await res.json();
-        if (!res.ok) { showLoginError(data.error || '登录失败'); return; }
+        if (!res.ok) { logEvent('auth-login-fail', { step: 'password', status: res.status, error: data.error }); showLoginError(data.error || '登录失败'); return; }
         onLoginSuccess(data.token, data.user);
-    } catch (e) { showLoginError('网络错误，请检查连接'); }
+    } catch (e) { logEvent('auth-login-fail', { step: 'password', error: 'network' }); showLoginError('网络错误，请检查连接'); }
     finally { btn.disabled = false; btn.textContent = '登录'; }
 }
 
@@ -270,9 +271,9 @@ async function submitRegister() {
             })
         });
         var data = await res.json();
-        if (!res.ok) { showLoginError(data.error || '注册失败'); return; }
+        if (!res.ok) { logEvent('auth-login-fail', { step: 'register', status: res.status, error: data.error }); showLoginError(data.error || '注册失败'); return; }
         onLoginSuccess(data.token, data.user);
-    } catch (e) { showLoginError('网络错误，请检查连接'); }
+    } catch (e) { logEvent('auth-login-fail', { step: 'register', error: 'network' }); showLoginError('网络错误，请检查连接'); }
     finally { btn.disabled = false; btn.textContent = '完成注册'; }
 }
 
@@ -282,6 +283,7 @@ function onLoginSuccess(token, user) {
         userId: user.id, uid: user.uid, email: user.email, nickname: user.nickname,
         avatarSeed: user.avatar_seed, bio: user.bio, isAdmin: user.is_admin, isBeta: user.is_beta, token: token
     };
+    logEvent('auth-login', { uid: user.uid, hadLocalRecords: hadLocalRecords });
     localStorage.setItem(STORAGE.AUTH, JSON.stringify(currentUser));
     setUserMode('loggedin');
     closeLoginModal();
@@ -315,6 +317,7 @@ function forceLogout() {
 function confirmLogout() {
     var overlay = document.getElementById('logout-confirm-modal');
     if (overlay) overlay.classList.remove('active');
+    logEvent('auth-logout', { uid: currentUser ? currentUser.uid : null });
     clearTimeout(syncTimer);
     localStorage.removeItem(STORAGE.RECORDS);
     localStorage.removeItem(STORAGE.CUSTOM);
@@ -342,6 +345,8 @@ export async function restoreSession() {
         var saved = JSON.parse(localStorage.getItem(STORAGE.AUTH));
         if (saved && saved.token) {
             currentUser = saved;
+            var profileOk = false;
+            var tokenValid = true;
             try {
                 var res = await fetch('/api/auth/profile', { headers: { 'Authorization': 'Bearer ' + saved.token } });
                 if (res.ok) {
@@ -354,13 +359,19 @@ export async function restoreSession() {
                         currentUser.isBeta = data.profile.is_beta;
                         currentUser.uid = data.profile.uid;
                         localStorage.setItem(STORAGE.AUTH, JSON.stringify(currentUser));
+                        profileOk = true;
                     }
-                } else if (res.status === 401) { forceLogout(); return; }
+                } else if (res.status === 401) { tokenValid = false; forceLogout(); logEvent('auth-session-restore', { hadSavedAuth: true, tokenValid: false, profileOk: false }); return; }
             } catch {}
+            logEvent('auth-session-restore', { hadSavedAuth: true, tokenValid: tokenValid, profileOk: profileOk });
             updateLoginButton();
             pullFromCloud();
+        } else {
+            logEvent('auth-session-restore', { hadSavedAuth: false });
         }
-    } catch {}
+    } catch {
+        logEvent('auth-session-restore', { hadSavedAuth: false, error: 'parse_error' });
+    }
 }
 
 // ---- Profile Card / Panel ----
@@ -578,13 +589,15 @@ export function scheduleCloudSync() {
 
 async function pushToCloud() {
     if (!isLoggedIn()) return;
+    var recCount = getRecords().length;
     try {
         await fetch('/api/sync', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentUser.token },
             body: JSON.stringify(gatherAllLocalStorage())
         });
-    } catch (e) { console.warn('Cloud sync failed:', e); showAiToast('云同步失败，请检查网络连接'); }
+        logEvent('sync-push', { success: true, recordCount: recCount });
+    } catch (e) { logEvent('sync-push', { success: false, recordCount: recCount, error: String(e) }); console.warn('Cloud sync failed:', e); showAiToast('云同步失败，请检查网络连接'); }
 }
 
 async function pullFromCloud() {
@@ -592,10 +605,15 @@ async function pullFromCloud() {
     try {
         var res = await fetch('/api/sync', { headers: { 'Authorization': 'Bearer ' + currentUser.token } });
         if (res.status === 401) { forceLogout(); return; }
-        if (!res.ok) return;
+        if (!res.ok) { logEvent('sync-pull', { success: false, status: res.status }); return; }
         var result = await res.json();
-        if (result.data) mergeCloudData(result.data);
-    } catch (e) { console.warn('Cloud pull failed:', e); showAiToast('云端数据拉取失败，请检查网络连接'); }
+        if (result.data) {
+            mergeCloudData(result.data);
+            logEvent('sync-pull', { success: true, hadCloudData: true });
+        } else {
+            logEvent('sync-pull', { success: true, hadCloudData: false });
+        }
+    } catch (e) { logEvent('sync-pull', { success: false, error: String(e) }); console.warn('Cloud pull failed:', e); showAiToast('云端数据拉取失败，请检查网络连接'); }
 }
 
 function gatherAllLocalStorage() {
@@ -612,6 +630,7 @@ function gatherAllLocalStorage() {
 }
 
 function mergeCloudData(cloudData) {
+    var mergeInfo = {};
     if (cloudData.records && Array.isArray(cloudData.records) && cloudData.records.length > 0) {
         var localRecords = getRecords();
         var merged = cloudData.records.slice();
@@ -619,17 +638,20 @@ function mergeCloudData(cloudData) {
         localRecords.forEach(function(r) { if (!cloudIds.has(r.id)) merged.push(r); });
         merged.sort(function(a, b) { return b.id - a.id; });
         saveRecords(merged);
+        mergeInfo.recordsMerged = merged.length;
     }
     if (cloudData.custom && typeof cloudData.custom === 'object') {
         var localCustom = getCustom();
         var mergedCustom = Object.assign({}, cloudData.custom, localCustom);
         saveCustom(mergedCustom);
+        mergeInfo.customMerged = Object.keys(mergedCustom).length;
     }
     if (cloudData.goals && typeof cloudData.goals === 'object') {
         try {
             var localGoals = JSON.parse(localStorage.getItem('myscore_goals') || '{}');
             var mergedGoals = Object.assign({}, cloudData.goals, localGoals);
             localStorage.setItem('myscore_goals', JSON.stringify(mergedGoals));
+            mergeInfo.goalsMerged = Object.keys(mergedGoals).length;
         } catch {}
     }
     if (cloudData.ai_style) {
@@ -647,6 +669,7 @@ function mergeCloudData(cloudData) {
                 localStreak.longestStreak = cloudData.streak_data.longestStreak;
             }
             localStorage.setItem(STORAGE.STREAK, JSON.stringify(localStreak));
+            mergeInfo.streaksMerged = true;
         } catch {}
     }
     if (cloudData.xp_data && typeof cloudData.xp_data === 'object') {
@@ -655,6 +678,7 @@ function mergeCloudData(cloudData) {
             if ((cloudData.xp_data.total || 0) > localXp.total) {
                 localStorage.setItem(STORAGE.XP, JSON.stringify(cloudData.xp_data));
             }
+            mergeInfo.xpMerged = true;
         } catch {}
     }
     if (cloudData.achievements && Array.isArray(cloudData.achievements)) {
@@ -664,8 +688,10 @@ function mergeCloudData(cloudData) {
                 if (localAch.indexOf(id) === -1) localAch.push(id);
             });
             localStorage.setItem(STORAGE.ACHIEVEMENTS, JSON.stringify(localAch));
+            mergeInfo.achievementsMerged = localAch.length;
         } catch {}
     }
+    logEvent('sync-merge', mergeInfo);
     if (window.renderDashboard) window.renderDashboard();
 }
 

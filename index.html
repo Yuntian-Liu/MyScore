@@ -724,24 +724,27 @@
 </div>
 <section id="tutuer-panel" class="tutuer-panel hidden" aria-label="突突er伴学助手">
     <div class="tutuer-panel-header">
-        <div>
-            <p style="font-size:0.95rem;font-weight:700;color:#1e3a8a;">突突er伴学助手</p>
-            <p style="font-size:0.78rem;color:#475569;">聊情绪、问知识、一起定计划</p>
+        <div class="tutuer-panel-header-left">
+            <div class="tutuer-avatar">🫧</div>
+            <div class="tutuer-panel-header-info">
+                <p class="tutuer-panel-title">突突er伴学助手</p>
+                <p class="tutuer-panel-subtitle">聊情绪、问知识、一起定计划</p>
+            </div>
         </div>
         <div class="tutuer-panel-controls">
             <button id="tutuer-expand-btn" class="tutuer-expand-btn" type="button" onclick="toggleTutuerExpand(event)" aria-label="展开面板">⤢</button>
-            <button type="button" onclick="closeTutuerPanel(event)" style="width:30px;height:30px;border:none;border-radius:9999px;background:#ffffff;color:#64748b;cursor:pointer;">×</button>
+            <button type="button" class="tutuer-close-btn" onclick="closeTutuerPanel(event)" aria-label="关闭">×</button>
         </div>
     </div>
     <div id="tutuer-chat-list" class="tutuer-chat-list"></div>
     <div class="tutuer-panel-footer">
         <div class="tutuer-quick-actions">
-            <button class="tutuer-quick-btn" type="button" onclick="askTutuerStudyPlan()">一键生成今日学习计划</button>
-            <button class="tutuer-quick-btn" type="button" onclick="clearTutuerHistory()">清空对话</button>
+            <button class="tutuer-quick-btn" type="button" onclick="askTutuerStudyPlan()">📋 生成学习计划</button>
+            <button class="tutuer-quick-btn" type="button" onclick="clearTutuerHistory()">🗑 清空对话</button>
         </div>
         <div class="tutuer-input-row">
             <textarea id="tutuer-input" class="tutuer-input" autocomplete="off" placeholder="和突突er说点什么..." onkeydown="handleTutuerInputKeydown(event)"></textarea>
-            <button id="tutuer-send-btn" class="btn-primary" type="button" onclick="sendTutuerMessage()" style="padding:0.65rem 1rem;">发送</button>
+            <button id="tutuer-send-btn" class="btn-primary" type="button" onclick="sendTutuerMessage()">↑</button>
         </div>
     </div>
 </section>

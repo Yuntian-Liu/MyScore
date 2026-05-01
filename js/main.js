@@ -18,6 +18,7 @@ import './report.js';
 // ==================== 页面切换 ====================
 function showPage(p) {
     if (_isSyncing) return;
+    logEvent('nav', { page: p });
     document.querySelectorAll('.page').forEach(el => el.classList.add('hidden'));
     var pageEl = document.getElementById('page-' + p);
     if (!pageEl) return;
@@ -133,6 +134,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ==================== 在线/离线状态监听 ====================
     function updateOnlineStatus() {
+        logEvent('network', { online: navigator.onLine });
         var banner = document.getElementById('offline-banner');
         if (!banner) return;
         if (navigator.onLine) { banner.classList.add('hidden'); }

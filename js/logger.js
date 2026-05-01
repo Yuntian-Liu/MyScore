@@ -2,15 +2,14 @@
 import { APP_VERSION } from './config.js';
 
 var logs = [];
-var MAX_LOGS = 500;
+var MAX_LOGS = 1000;
 
-// 拦截 console
-var _origLog = console.log;
+// 拦截 console（仅 error 和 warn，不拦截 log 以避免第三方噪音）
 var _origError = console.error;
 var _origWarn = console.warn;
 
 function ts() {
-    return new Date().toISOString().slice(11, 23);
+    return new Date().toISOString().slice(0, 23);
 }
 
 function pushLog(level, args) {
@@ -23,11 +22,6 @@ function pushLog(level, args) {
     logs.push({ t: ts(), level: level, msg: msg });
     if (logs.length > MAX_LOGS) logs.shift();
 }
-
-console.log = function() {
-    pushLog('INFO', arguments);
-    _origLog.apply(console, arguments);
-};
 
 console.error = function() {
     pushLog('ERROR', arguments);
@@ -53,7 +47,10 @@ export function exportLogs() {
         'Version: V' + APP_VERSION + '\n' +
         'User Agent: ' + navigator.userAgent + '\n' +
         'Online: ' + navigator.onLine + '\n' +
-        'Time: ' + new Date().toISOString() + '\n';
+        'Time: ' + new Date().toISOString() + '\n' +
+        'Timezone: UTC' + (new Date().getTimezoneOffset() > 0 ? '-' : '+') + Math.abs(new Date().getTimezoneOffset() / 60) + '\n' +
+        'Screen: ' + screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x\n' +
+        'Viewport: ' + window.innerWidth + 'x' + window.innerHeight + '\n';
 
     // 登录状态
     try {
@@ -66,7 +63,10 @@ export function exportLogs() {
 
     // Service Worker 状态
     if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+        var sw = navigator.serviceWorker.controller;
         header += 'SW Controller: active\n';
+        header += 'SW ScriptURL: ' + (sw.scriptURL || 'unknown') + '\n';
+        header += 'SW State: ' + (sw.state || 'unknown') + '\n';
     } else {
         header += 'SW Controller: none\n';
     }
@@ -91,15 +91,53 @@ export function exportLogs() {
         var v = localStorage.getItem(k);
         if (v) snapshot += k + ': ' + v + '\n';
     });
-    snapshot += 'Records: ' + (localStorage.getItem('myscore_v51_records') || '[]').length + ' chars\n';
-    snapshot += 'Custom: ' + (localStorage.getItem('myscore_v51_custom') || '{}').length + ' chars\n';
+
+    // Records 摘要
+    try {
+        var recs = JSON.parse(localStorage.getItem('myscore_v51_records') || '[]');
+        snapshot += 'Records: ' + recs.length + ' entries\n';
+        if (recs.length > 0) {
+            var first = recs[0], last = recs[recs.length - 1];
+            snapshot += '  First: ' + first.examType + ' ' + first.date + ' id=' + first.id + '\n';
+            snapshot += '  Last:  ' + last.examType + ' ' + last.date + ' id=' + last.id + '\n';
+        }
+    } catch (e) { snapshot += 'Records: parse_error\n'; }
+
+    // Custom 考试类型摘要
+    try {
+        var cust = JSON.parse(localStorage.getItem('myscore_v51_custom') || '{}');
+        var custKeys = Object.keys(cust);
+        snapshot += 'Custom: ' + custKeys.length + ' types';
+        if (custKeys.length) snapshot += ' [' + custKeys.join(', ') + ']';
+        snapshot += '\n';
+    } catch (e) { snapshot += 'Custom: parse_error\n'; }
+
+    // localStorage 用量统计
+    var usageSection = '\n--- LOCALSTORAGE USAGE ---\n';
+    var totalSize = 0;
+    var lsKeys = ['myscore_v51_records', 'myscore_v51_custom', 'myscore_auth', 'myscore_xp_data',
+        'myscore_streak_data', 'myscore_achievements', 'myscore_daily_xp', 'myscore_user_mode',
+        'myscore_ai_style', 'myscore_local_ai_usage', 'myscore_goals', 'myscore_tutuer_history',
+        'myscore_pet_state', 'myscore_ai_debated'];
+    lsKeys.forEach(function(k) {
+        var v = localStorage.getItem(k);
+        if (v) {
+            var size = v.length * 2;
+            totalSize += size;
+            usageSection += k + ': ' + (size / 1024).toFixed(1) + ' KB\n';
+        }
+    });
+    usageSection += 'Total (tracked keys): ' + (totalSize / 1024).toFixed(1) + ' KB / ~5120 KB\n';
 
     // 成就解锁详情
     var achSnap = '\n--- ACHIEVEMENTS ---\n';
     try {
-        var ach = JSON.parse(localStorage.getItem('myscore_achievements') || '{}');
-        var unlocked = ach.unlocked || [];
-        achSnap += 'Unlocked (' + unlocked.length + '): ' + unlocked.join(', ') + '\n';
+        var ach = JSON.parse(localStorage.getItem('myscore_achievements') || '[]');
+        if (Array.isArray(ach)) {
+            achSnap += 'Unlocked (' + ach.length + '): ' + ach.join(', ') + '\n';
+        } else if (ach.unlocked) {
+            achSnap += 'Unlocked (' + ach.unlocked.length + '): ' + ach.unlocked.join(', ') + '\n';
+        }
     } catch (e) {
         achSnap += 'Parse error\n';
     }
@@ -109,12 +147,12 @@ export function exportLogs() {
     try {
         var usage = JSON.parse(localStorage.getItem('myscore_local_ai_usage') || '{}');
         var today = new Date().toISOString().slice(0, 10);
-        aiSnap += 'Today (' + today + '): ' + (usage[today] || 0) + ' calls\n';
+        aiSnap += 'Today (' + today + '): ' + (usage.count || 0) + ' calls\n';
     } catch (e) {
         aiSnap += 'Parse error\n';
     }
 
-    var blob = new Blob([header + body + snapshot + achSnap + aiSnap], { type: 'text/plain' });
+    var blob = new Blob([header + body + snapshot + usageSection + achSnap + aiSnap], { type: 'text/plain' });
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;

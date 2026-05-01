@@ -1,6 +1,7 @@
 // ==================== 数据存取层 ====================
 import { STORAGE, BUILTIN_EXAMS } from './config.js';
 import { readStorageJson, showAiToast } from './utils.js';
+import { logEvent } from './logger.js';
 
 export function getRecords() {
     const data = readStorageJson(STORAGE.RECORDS, []);
@@ -10,8 +11,10 @@ export function getRecords() {
 export function saveRecords(r) {
     try {
         localStorage.setItem(STORAGE.RECORDS, JSON.stringify(r));
+        logEvent('storage-save', { key: 'records', count: Array.isArray(r) ? r.length : 0 });
         if (window.scheduleCloudSync) window.scheduleCloudSync();
     } catch (e) {
+        logEvent('storage-full', { key: 'records', error: String(e) });
         showAiToast('本地存储空间不足，请导出并清理旧数据');
     }
 }
@@ -24,8 +27,10 @@ export function getCustom() {
 export function saveCustom(c) {
     try {
         localStorage.setItem(STORAGE.CUSTOM, JSON.stringify(c));
+        logEvent('storage-save', { key: 'custom', count: c && typeof c === 'object' ? Object.keys(c).length : 0 });
         if (window.scheduleCloudSync) window.scheduleCloudSync();
     } catch (e) {
+        logEvent('storage-full', { key: 'custom', error: String(e) });
         showAiToast('本地存储空间不足，请导出并清理旧数据');
     }
 }

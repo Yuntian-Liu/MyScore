@@ -1,5 +1,6 @@
 // ==================== 游戏化数据模块 ====================
 import { STORAGE, ACHIEVEMENTS, XP_PER_LEVEL, XP_SOURCES, XP_DAILY_CAP } from './config.js';
+import { logEvent } from './logger.js';
 
 var DAILY_XP_KEY = 'myscore_daily_xp';
 
@@ -114,6 +115,8 @@ export function addXP(sourceKey, opts) {
 
     saveData(STORAGE.XP, xpData);
 
+    logEvent('xp-gain', { source: sourceKey, amount: amount, newTotal: xpData.total, newLevel: xpData.level, levelUp: xpData.level > oldLevel });
+
     // XP 增加入队列
     if (!silent) enqueueToast(source.label, amount);
 
@@ -149,6 +152,8 @@ export function updateStreak() {
 
     saveData(STORAGE.STREAK, data);
 
+    logEvent('streak-update', { currentStreak: data.currentStreak, longestStreak: data.longestStreak, wasIncremented: last === yesterday });
+
     // 每日打卡 XP
     addXP('checkin');
 
@@ -175,6 +180,7 @@ export function checkAchievements() {
 
     if (newlyUnlocked.length > 0) {
         saveData(STORAGE.ACHIEVEMENTS, unlocked);
+        logEvent('achievement-unlock', { ids: newlyUnlocked.map(function(a) { return a.id; }), total: unlocked.length });
         newlyUnlocked.forEach(function (a) {
             enqueueToast('功成', undefined, a.name + ' · ' + a.desc, true);
         });

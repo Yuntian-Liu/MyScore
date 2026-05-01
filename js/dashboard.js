@@ -5,6 +5,7 @@ import { getRecords, saveRecords, allExams, buildArchiveHighlights } from './sto
 import { isLoggedIn, getUserMode, _isSyncing } from './auth.js';
 import { addXP, getGamificationData } from './gamification.js';
 import { fetchAIComment, renderAiComment, triggerLocalAiComment, showLocalAiHint, hideLocalAiHint, showModeChoiceModal, getAiCache, getGoal, currentAiStyle } from './ai.js';
+import { logEvent } from './logger.js';
 
 let mainChartInstance = null;
 let radarChartInstance = null;
@@ -258,6 +259,7 @@ function renderSparklineSVG(values, color) {
 // ==================== Slide Panel 管理 ====================
 
 function openSlidePanel(panelId) {
+    logEvent('panel-open', { panel: panelId });
     var el = document.getElementById(panelId);
     if (el) el.classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -664,6 +666,8 @@ function renderRadarChartForPanel(examType, records, exam, canvas) {
 
 function deleteRecord(id) {
     if (!confirm('确定删除这条记录？')) return;
+    var rec = getRecords().find(function(r) { return r.id === id; });
+    logEvent('record-delete', { recordId: id, examType: rec ? rec.examType : 'unknown' });
     saveRecords(getRecords().filter(r => r.id !== id));
     // 刷新当前活跃的 panel 或 dashboard
     var examPanel = document.getElementById('exam-detail-panel');

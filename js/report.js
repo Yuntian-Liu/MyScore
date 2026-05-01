@@ -3,7 +3,7 @@ import { APP_VERSION } from './config.js';
 import { escapeHtml, escapeAttr, getExamTheme, getExamBadgeMarkup, getReportTypeIconMarkup } from './utils.js';
 import { getRecords, allExams } from './storage.js';
 import { addXP } from './gamification.js';
-
+import { logEvent } from './logger.js';
 let currentReportType = 'scorecard';
 
 function openReportModal() {
@@ -263,6 +263,8 @@ async function downloadReport() {
         alert('所选范围内暂无数据');
         return;
     }
+
+    logEvent('report-export', { type: currentReportType, examType: examType, recordCount: records.length });
 
     if (currentReportType === 'scorecard') {
         await downloadScorecardImage(records);

@@ -1,5 +1,5 @@
 // ==================== MyScore Service Worker ====================
-var CACHE_NAME = 'myscore-v520b';
+var CACHE_NAME = 'myscore-v520b3';
 
 var APP_SHELL = [
     '/',

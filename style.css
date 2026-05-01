@@ -1345,16 +1345,17 @@
             box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.25);
         }
 
+        /* ===== Tutuer Panel — iMessage 风格 ===== */
         .tutuer-panel {
             position: fixed;
             left: 1.25rem;
             bottom: 1.25rem;
-            width: min(360px, calc(100vw - 1.5rem));
-            height: 470px;
+            width: min(380px, calc(100vw - 1.5rem));
+            height: 500px;
             background: #ffffff;
-            border: 1px solid #efd3c8;
+            border: none;
             border-radius: 20px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
             z-index: 980;
             display: flex;
             flex-direction: column;
@@ -1362,118 +1363,247 @@
         }
 
         .tutuer-panel-header {
-            background: #fff1ea;
-            border-bottom: 1px solid #efd3c8;
-            padding: 0.85rem 1rem;
+            background: #ffffff;
+            border-bottom: 1px solid #ececec;
+            padding: 0.35rem 0.75rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
 
-        .tutuer-panel-controls {
+        .tutuer-panel-header-left {
             display: flex;
             align-items: center;
             gap: 0.4rem;
         }
 
-        .tutuer-expand-btn {
-            display: none;
-            width: 30px;
-            height: 30px;
-            border: none;
-            border-radius: 9999px;
-            background: #ffffff;
-            color: #64748b;
-            cursor: pointer;
-            font-size: 0.95rem;
-            line-height: 1;
+        .tutuer-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #a8e6a3, #6ecf6e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            flex-shrink: 0;
         }
 
+        .tutuer-panel-header-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            line-height: 1.1;
+        }
+
+        .tutuer-panel-title {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: #1f2937;
+            line-height: 1.1;
+        }
+
+        .tutuer-panel-subtitle {
+            font-size: 0.72rem;
+            color: #9ca3af;
+            line-height: 1.0;
+            margin-top: -1px;
+        }
+
+        .tutuer-panel-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .tutuer-expand-btn {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 0.85rem;
+            line-height: 1;
+            transition: background 0.15s;
+        }
+        .tutuer-expand-btn:hover {
+            background: #f3f4f6;
+        }
+
+        .tutuer-close-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            border-radius: 50%;
+            background: transparent;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 1rem;
+            line-height: 1;
+            transition: background 0.15s;
+        }
+        .tutuer-close-btn:hover {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        /* 聊天区域 */
         .tutuer-chat-list {
             flex: 1;
             overflow-y: auto;
-            padding: 0.9rem;
-            background: #f8fafc;
+            padding: 0.75rem 0.9rem;
+            background: #f0f0f0;
             display: flex;
             flex-direction: column;
-            gap: 0.6rem;
+            gap: 0.5rem;
+            -webkit-overflow-scrolling: touch;
         }
 
+        /* 气泡通用 */
         .tutuer-msg {
-            max-width: 86%;
-            border-radius: 16px;
-            padding: 0.6rem 0.75rem;
-            line-height: 1.55;
-            font-size: 0.92rem;
+            max-width: 82%;
+            padding: 0.55rem 0.7rem;
+            line-height: 1.5;
+            font-size: 0.9rem;
             white-space: pre-wrap;
             word-break: break-word;
+            position: relative;
+            animation: tutuer-bubble-in 0.2s ease;
         }
 
+        @keyframes tutuer-bubble-in {
+            from { opacity: 0; transform: scale(0.96) translateY(4px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* assistant 气泡 — 白色 + 左侧小三角 */
         .tutuer-msg.assistant {
             background: #ffffff;
             color: #1f2937;
-            border: 1px solid #e5e7eb;
+            border-radius: 0 16px 16px 16px;
             align-self: flex-start;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+        }
+        .tutuer-msg.assistant::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 0;
+            width: 0;
+            height: 0;
+            border-top: 0 solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 6px solid #ffffff;
         }
 
+        /* user 气泡 — 绿色渐变 + 右侧小三角 */
         .tutuer-msg.user {
-            background: #dbe7e1;
-            color: var(--primary-ink);
-            border: 1px solid #bfd5ca;
+            background: linear-gradient(135deg, #95d4a0, #7cc989);
+            color: #ffffff;
+            border-radius: 16px 0 16px 16px;
             align-self: flex-end;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+        }
+        .tutuer-msg.user::before {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 0;
+            width: 0;
+            height: 0;
+            border-top: 0 solid transparent;
+            border-bottom: 8px solid transparent;
+            border-left: 6px solid #7cc989;
         }
 
+        /* Footer */
         .tutuer-panel-footer {
-            padding: 0.75rem;
-            border-top: 1px solid #e5e7eb;
+            padding: 0.65rem 0.75rem;
+            border-top: 1px solid #ececec;
             background: #ffffff;
         }
 
         .tutuer-quick-actions {
             display: flex;
-            gap: 0.5rem;
-            margin-bottom: 0.55rem;
+            gap: 0.4rem;
+            margin-bottom: 0.5rem;
             flex-wrap: wrap;
         }
 
         .tutuer-quick-btn {
-            border: 1px solid #efd3c8;
+            border: 1px solid #e5e7eb;
             border-radius: 9999px;
-            background: #fff1ea;
-            color: #a24c30;
-            font-size: 0.78rem;
-            font-weight: 600;
-            padding: 0.33rem 0.72rem;
+            background: #f9fafb;
+            color: #6b7280;
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 0.28rem 0.65rem;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
         }
 
         .tutuer-quick-btn:hover {
-            background: #f8dfd5;
-            border-color: #e8bcae;
+            background: #f3f4f6;
+            border-color: #d1d5db;
+            color: #374151;
         }
 
         .tutuer-input-row {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.4rem;
             align-items: flex-end;
         }
 
         .tutuer-input {
             flex: 1;
-            border: 1px solid #d1d5db;
-            border-radius: 12px;
-            padding: 0.65rem 0.8rem;
-            min-height: 42px;
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+            padding: 0.55rem 0.85rem;
+            min-height: 38px;
             max-height: 98px;
-            resize: vertical;
+            resize: none;
             outline: none;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
+            background: #f9fafb;
+            transition: border-color 0.15s, box-shadow 0.15s;
         }
 
         .tutuer-input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 2px rgba(195, 95, 61, 0.15);
+            border-color: #95d4a0;
+            box-shadow: 0 0 0 2px rgba(149, 212, 160, 0.2);
+            background: #ffffff;
+        }
+
+        .tutuer-input-row .btn-primary {
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #95d4a0, #6ecf6e);
+            border: none;
+            color: #fff;
+            font-size: 1.1rem;
+        }
+
+        .tutuer-send-loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: tutuer-spin 0.6s linear infinite;
+        }
+
+        @keyframes tutuer-spin {
+            to { transform: rotate(360deg); }
         }
 
         .site-footer {
@@ -2226,48 +2356,42 @@
         }
 
         .tutuer-panel {
-            background: rgba(255, 251, 245, 0.97);
-            border-color: rgba(188, 108, 37, 0.12);
-            border-radius: 24px;
             box-shadow: var(--shadow-lg);
         }
 
-        .tutuer-panel-header {
-            background: linear-gradient(180deg, rgba(243, 224, 207, 0.8), rgba(255, 247, 238, 0.95));
-            border-bottom-color: rgba(188, 108, 37, 0.12);
-        }
-
         .tutuer-chat-list {
-            background:
-                linear-gradient(180deg, rgba(255, 250, 243, 0.92), rgba(247, 239, 228, 0.92)),
-                radial-gradient(circle at top left, rgba(31, 106, 82, 0.04), transparent 30%);
+            background: linear-gradient(180deg, rgba(245, 242, 238, 0.92), rgba(240, 236, 230, 0.92));
         }
 
-        .tutuer-msg.assistant {
-            background: rgba(255, 255, 255, 0.92);
-            border-color: rgba(81, 63, 44, 0.1);
+        .tutuer-msg.assistant::before {
+            border-right-color: #ffffff;
         }
 
         .tutuer-msg.user {
-            background: rgba(221, 238, 231, 0.95);
+            background: linear-gradient(135deg, rgba(221, 238, 231, 0.95), rgba(200, 228, 212, 0.95));
             color: var(--primary-ink);
-            border-color: rgba(31, 106, 82, 0.14);
+        }
+        .tutuer-msg.user::before {
+            border-left-color: rgba(200, 228, 212, 0.95);
         }
 
         .tutuer-quick-btn {
-            border-color: rgba(188, 108, 37, 0.18);
-            background: rgba(255, 246, 237, 0.9);
+            border-color: rgba(188, 108, 37, 0.15);
+            background: rgba(255, 246, 237, 0.8);
             color: #8e5520;
         }
 
         .tutuer-input {
-            border-color: rgba(81, 63, 44, 0.14);
-            border-radius: 16px;
+            border-color: rgba(81, 63, 44, 0.12);
         }
 
         .tutuer-input:focus {
-            border-color: rgba(188, 108, 37, 0.6);
-            box-shadow: 0 0 0 3px rgba(188, 108, 37, 0.12);
+            border-color: rgba(188, 108, 37, 0.5);
+            box-shadow: 0 0 0 2px rgba(188, 108, 37, 0.1);
+        }
+
+        .tutuer-input-row .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #c87a3e);
         }
 
         .subject-box.listening {
@@ -2538,36 +2662,60 @@
             }
 
             .tutuer-panel {
-                left: 0.5rem;
-                right: 0.5rem;
-                width: auto;
-                bottom: max(0.5rem, env(safe-area-inset-bottom));
-                height: min(68dvh, 560px);
-                border-radius: 18px;
+                left: 0;
+                right: 0;
+                width: 100%;
+                bottom: 0;
+                height: min(75dvh, 560px);
+                border-radius: 20px 20px 0 0;
+                transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+            }
+
+            .tutuer-panel.hidden {
+                transform: translateY(100%);
+            }
+
+            .tutuer-panel::before {
+                content: '';
+                position: absolute;
+                top: 8px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 36px;
+                height: 4px;
+                border-radius: 2px;
+                background: #d1d5db;
+                z-index: 1;
             }
 
             .tutuer-panel.expanded-mobile {
-                top: 0.5rem;
-                bottom: 0.5rem;
-                height: auto;
+                top: 0;
+                bottom: 0;
+                height: 100%;
+                border-radius: 0;
             }
 
             .tutuer-panel.keyboard-open-mobile {
                 transition: height 0.18s ease, bottom 0.18s ease;
             }
 
+            .tutuer-panel-header {
+                padding-top: 0.75rem;
+            }
+
             .tutuer-panel-footer {
-                padding: 0.65rem;
+                padding: 0.55rem 0.65rem;
+                padding-bottom: max(0.55rem, env(safe-area-inset-bottom));
             }
 
             .tutuer-quick-actions {
-                margin-bottom: 0.45rem;
-                gap: 0.4rem;
+                margin-bottom: 0.4rem;
+                gap: 0.35rem;
             }
 
             .tutuer-quick-btn {
-                font-size: 0.75rem;
-                padding: 0.3rem 0.62rem;
+                font-size: 0.72rem;
+                padding: 0.25rem 0.55rem;
             }
 
             .tutuer-input-row {
@@ -2576,8 +2724,8 @@
 
             .tutuer-input {
                 min-width: 0;
-                min-height: 40px;
-                max-height: 84px;
+                min-height: 38px;
+                max-height: 80px;
                 resize: none;
             }
 
@@ -2636,15 +2784,26 @@
             }
 
             .tutuer-input-row .btn-primary {
-                width: auto;
+                width: 38px;
+                height: 38px;
                 flex: 0 0 auto;
-                padding: 0.65rem 0.95rem !important;
+                padding: 0 !important;
             }
 
             .tutuer-expand-btn {
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
+                width: 24px;
+                height: 24px;
+            }
+
+            .tutuer-close-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 24px;
+                height: 24px;
             }
 
             .fab-toolbar {

@@ -3,6 +3,7 @@ import { APP_VERSION } from './config.js';
 import { escapeHtml, escapeAttr, getExamTheme, getExamBadgeMarkup } from './utils.js';
 import { getRecords, saveRecords, getCustom, saveCustom } from './storage.js';
 import { addXP } from './gamification.js';
+import { logEvent } from './logger.js';
 
 let customSubs = [];
 
@@ -109,11 +110,13 @@ function submitCreateForm(e) {
     const exam = { id: 'custom_' + Date.now(), name: document.getElementById('new-exam-name').value, desc: document.getElementById('new-exam-desc').value, icon: '📝', builtin: false, calcTotal: true, subjects: customSubs };
     const custom = getCustom(); custom[exam.id] = exam; saveCustom(custom);
     addXP('custom');
+    logEvent('custom-create', { examId: exam.id, name: exam.name, subjectCount: customSubs.length });
     closeCreateModal(); renderCustomList(); alert('考试类型创建成功！');
 }
 
 function deleteCustom(id) {
     if (!confirm('确定删除？相关成绩也会被删除！')) return;
+    logEvent('custom-delete', { examId: id });
     const custom = getCustom(); delete custom[id]; saveCustom(custom);
     saveRecords(getRecords().filter(r => r.examType !== id));
     renderCustomList();
@@ -123,6 +126,7 @@ function deleteCustom(id) {
 function exportData() {
     const records = getRecords(); const custom = getCustom();
     if (!records.length && !Object.keys(custom).length) { alert('暂无数据可导出！'); return; }
+    logEvent('data-export', { recordCount: records.length, customCount: Object.keys(custom).length });
     const data = { version: APP_VERSION, date: new Date().toISOString(), records, custom };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -151,6 +155,7 @@ function importData(input) {
                 saveCustom(existing);
             }
             alert('导入成功！\n新记录: ' + newRecs + ' 条\n新考试类型: ' + newExams + ' 个');
+            logEvent('data-import', { newRecs: newRecs, newExams: newExams });
             if (window.renderDashboard) window.renderDashboard();
         } catch (err) { alert('导入失败: ' + err.message); }
     };

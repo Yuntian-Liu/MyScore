@@ -2,6 +2,7 @@
 import { readStorageJson, postComment, postCommentStream } from './utils.js';
 import { _justLoggedOut, profilePanelOpen, hideProfilePanel } from './auth.js';
 import { showModeChoiceModal } from './ai.js';
+import { logEvent } from './logger.js';
 
 const TUTUER_HISTORY_KEY = 'myscore_tutuer_history';
 let tutuerMessages = [];
@@ -36,18 +37,49 @@ function clearTutuerHistory() {
     renderTutuerMessages();
 }
 
+// ==================== 渲染 ====================
+
 export function renderTutuerMessages() {
     const list = document.getElementById('tutuer-chat-list');
     if (!list) return;
     list.innerHTML = '';
-    for (const msg of tutuerMessages) {
-        const bubble = document.createElement('div');
+    var isStreaming = tutuerSending && tutuerMessages.length > 0
+        && tutuerMessages[tutuerMessages.length - 1].role === 'assistant'
+        && tutuerMessages[tutuerMessages.length - 1].content === '';
+
+    for (var i = 0; i < tutuerMessages.length; i++) {
+        var msg = tutuerMessages[i];
+        var isLast = (i === tutuerMessages.length - 1);
+        var bubble = document.createElement('div');
         bubble.className = 'tutuer-msg ' + msg.role;
-        bubble.textContent = msg.content;
+
+        if (msg.role === 'assistant' && isLast && isStreaming) {
+            bubble.innerHTML = '<span class="ai-thinking-dots">正在思考</span>'
+                + '<span class="tutuer-stream-text" style="display:none;"></span>'
+                + '<span class="ai-cursor" style="display:none;">|</span>';
+        } else {
+            bubble.textContent = msg.content;
+        }
+
         list.appendChild(bubble);
     }
     list.scrollTop = list.scrollHeight;
 }
+
+function updateLastAssistantBubble(fullText) {
+    var list = document.getElementById('tutuer-chat-list');
+    var last = list ? list.lastElementChild : null;
+    if (!last) return;
+    var thinking = last.querySelector('.ai-thinking-dots');
+    var textSpan = last.querySelector('.tutuer-stream-text');
+    var cursor = last.querySelector('.ai-cursor');
+    if (thinking) thinking.style.display = 'none';
+    if (textSpan) { textSpan.style.display = 'inline'; textSpan.textContent = fullText; }
+    if (cursor) cursor.style.display = 'inline';
+    list.scrollTop = list.scrollHeight;
+}
+
+// ==================== 面板控制 ====================
 
 function openTutuerPanel() {
     const panel = document.getElementById('tutuer-panel');
@@ -109,6 +141,8 @@ function toggleTutuerExpand(event) {
     syncTutuerExpandBtn();
     scheduleTutuerViewportSync();
 }
+
+// ==================== Viewport 同步 ====================
 
 function scheduleTutuerViewportSync() {
     if (tutuerViewportSyncPending) return;
@@ -185,12 +219,16 @@ export function bindTutuerViewportEvents() {
     }
 }
 
+// ==================== 状态管理 ====================
+
 function setTutuerLoading(loading) {
     const sending = document.getElementById('tutuer-send-btn');
     if (!sending) return;
     tutuerSending = loading;
     sending.disabled = loading;
-    sending.textContent = loading ? '思考中...' : '发送';
+    sending.innerHTML = loading
+        ? '<span class="tutuer-send-loading"></span>'
+        : '发送';
 }
 
 export function setTutuerUnread(unread) {
@@ -219,9 +257,10 @@ function askTutuerStudyPlan() {
     sendTutuerMessage();
 }
 
+// ==================== 发送消息 ====================
+
 async function sendTutuerMessage() {
     if (tutuerSending) return;
-    // 退出登录后首次触发 AI → 弹出模式选择
     if (window._auth_justLoggedOut) {
         window._auth_justLoggedOut = false;
         showModeChoiceModal(function(chosenMode) {
@@ -246,10 +285,8 @@ async function sendTutuerMessage() {
             return { role: m.role, content: m.content };
         });
 
-        // 优先流式
         var reply = '';
         try {
-            // 添加一个空的 assistant 消息占位，流式更新
             tutuerMessages.push({ role: 'assistant', content: '' });
             var streamIdx = tutuerMessages.length - 1;
             renderTutuerMessages();
@@ -258,14 +295,12 @@ async function sendTutuerMessage() {
                 { mode: 'companion', userMessage: userText, conversationHistory: history },
                 function onChunk(delta, full) {
                     tutuerMessages[streamIdx].content = full;
-                    renderTutuerMessages();
+                    updateLastAssistantBubble(full);
                 }
             );
             if (!reply) reply = getTutuerFallbackReply(userText);
             tutuerMessages[streamIdx].content = reply;
         } catch (streamErr) {
-            // 流式失败，fallback 非流式
-            // 移除占位的空消息
             if (tutuerMessages.length && tutuerMessages[tutuerMessages.length - 1].role === 'assistant' && !tutuerMessages[tutuerMessages.length - 1].content) {
                 tutuerMessages.pop();
             }
@@ -278,10 +313,12 @@ async function sendTutuerMessage() {
             tutuerMessages.push({ role: 'assistant', content: reply });
         }
     } catch (err) {
+        logEvent('tutuer-error', { error: String(err) });
         tutuerMessages.push({ role: 'assistant', content: getTutuerFallbackReply(userText) });
     } finally {
         setTutuerLoading(false);
         saveTutuerHistory();
+        logEvent('tutuer-send', { historyLength: tutuerMessages.length });
         renderTutuerMessages();
         const panel = document.getElementById('tutuer-panel');
         if (panel && panel.classList.contains('hidden')) {
