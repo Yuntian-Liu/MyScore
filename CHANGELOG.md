@@ -5,6 +5,29 @@ The format is based on [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [5.3.0-beta] - 2026-05-03
+
+**代号：Trend Prediction & Report Polish（趋势预测与报告打磨）**
+
+### Added
+- ✅ **趋势图各科预测点**：折线图支持各科单独的 AI 预测虚线点，不再只有总分预测
+- ✅ **SVG 雷达图**：导出报告分享卡片内嵌 SVG 雷达图（五维能力可视化）
+- ✅ **html2canvas 报告导出**：重写导出逻辑，DOM-to-PNG 保证预览与下载图片一致
+- ✅ **html2canvas 字体容错**：两轮截图策略（原版字体 → 系统字体 fallback），解决 Google Fonts 超时
+- ✅ **移动端报告导出定宽**：固定宽度容器（成绩卡 700px / 分享卡 420px），手机端比例正常
+- ✅ **沉浸式滚动条**：全局美化滚动条（Firefox + WebKit），默认隐藏 hover 显示
+
+### Changed
+- 🔄 **报告导出架构**：从 Canvas 手绘（html2canvas 替代 canvas API），删除 ~500 行旧代码
+- 🔄 **移动端报告预览**：`table-layout: fixed` + 缩小字号/间距，解决表格溢出
+- 🔄 **导出报告预览**：分享卡片增加 SVG 雷达图预览
+
+### Fixed
+- 🔧 **成就系统不触发**：新用户手动录入成绩后成就未检测，修复模式选择弹窗触发链
+- 🔧 **模式选择弹窗不弹出**：`showModeChoiceModal` 未挂载到 window，导致 entry.js 无法调用
+- 🔧 **retryPrediction 重试静默失败**：面板路径传递 retryCount=0，结合失败缓存导致重试无效
+- 🔧 **sw.js 缓存版本不一致**：APP_SHELL URL 的 `?v=` 与 index.html 不同步
+
 ## [5.2.0-beta] - 2026-05-01
 
 **代号：Profile & Polish（个人名片与体验打磨）**

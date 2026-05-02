@@ -1,9 +1,9 @@
 ﻿<div align="center">
 
-# MyScore - AI 智能成绩管理系统 · V5.2.0-beta
+# MyScore - AI 智能成绩管理系统 · V5.3.0-beta
 
 <p>
-    <img src="https://img.shields.io/badge/v5.2.0--beta-Profile_Polish-7c3aed?style=flat-square&logo=rocket&logoColor=white" alt="Version">
+    <img src="https://img.shields.io/badge/v5.3.0--beta-Trend_Prediction-7c3aed?style=flat-square&logo=rocket&logoColor=white" alt="Version">
     <img src="https://img.shields.io/badge/Model-DeepSeek-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
     <img src="https://img.shields.io/badge/Deploy-Netlify_%2B_Zeabur-5468ff?style=flat-square&logo=vercel&logoColor=white" alt="Deploy">
     <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=flat-square" alt="License">
@@ -13,11 +13,11 @@
 
 </div>
 
-一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V5.2.0-beta**，完成个人名片、AI 流式输出、游戏化 UI 与 Dashboard 重构。
+一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V5.3.0-beta**，完成趋势图各科预测、报告导出优化与成就系统修复。
 
 ## 🔔 最新版本速览
 
-### V5.2.0-beta (Current)
+### V5.3.0-beta (Current)
 - ✅ **个人名片**：点击头像查看完整名片（等级卡片 + 数据概览 + 成就墙 + 经验来源明细）
 - ✅ **AI 流式输出**：后端 SSE 流式代理 + 前端逐字显示 + 「正在思考」打字机动效
 - ✅ **游戏化 UI 组件**：导航栏经验条、连续打卡胶囊、成就墙徽章条

@@ -289,6 +289,7 @@ function submitScore(e) {
     } else {
         addXP('score', { silent: true });
         window._pendingSaveToast = true;
+        if (window.showModeChoiceModal) window.showModeChoiceModal();
     }
     if (window.showPage) window.showPage('dashboard');
 }

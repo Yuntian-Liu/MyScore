@@ -55,11 +55,11 @@ export async function fetchAIComment(examType, currentScore, historyScores) {
     const box = document.getElementById('ai-comment-box');
     const actions = document.getElementById('ai-actions');
     const replyArea = document.getElementById('reply-input-area');
-    if (!container) return;
+    if (!container || !box) return;
     aiStyleLocked = true;
     container.style.display = 'block';
-    actions.style.display = 'none';
-    replyArea.style.display = 'none';
+    if (actions) actions.style.display = 'none';
+    if (replyArea) replyArea.style.display = 'none';
     box.innerHTML = '🤖 ' + AI_STYLES[currentAiStyle].teacherName + '正在推眼镜分析你的成绩...';
     box.style.background = 'rgba(221,238,231,0.72)';
     box.style.color = '#174f3d';
@@ -96,7 +96,7 @@ export async function fetchAIComment(examType, currentScore, historyScores) {
             if (streamFullText) {
                 lastAiComment = streamFullText;
                 renderAiComment(box, streamFullText, currentAiStyle);
-                actions.style.display = 'flex';
+                if (actions) actions.style.display = 'flex';
                 var truncated = !/[。！？.!?\n\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]$/u.test(streamFullText.trim());
                 logEvent('ai-comment', { examType, style: currentAiStyle, length: streamFullText.length, truncated: truncated, duration: Date.now() - streamStart, stream: true });
             } else { box.innerHTML = '老师去吃饭了...'; }
@@ -107,7 +107,7 @@ export async function fetchAIComment(examType, currentScore, historyScores) {
                 if (data.comment) {
                     lastAiComment = data.comment;
                     renderAiComment(box, data.comment, currentAiStyle);
-                    actions.style.display = 'flex';
+                    if (actions) actions.style.display = 'flex';
                     var comment = data.comment;
                     var truncated = !/[。！？.!?\n\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]$/u.test(comment.trim());
                     logEvent('ai-comment', { examType, style: currentAiStyle, length: comment.length, truncated: truncated, duration: data._duration, stream: false });
@@ -312,5 +312,6 @@ window.promptSetGoal = promptSetGoal;
 window.confirmGoal = confirmGoal;
 window.cancelGoal = cancelGoal;
 window.closeModeChoiceModal = closeModeChoiceModal;
+window.showModeChoiceModal = showModeChoiceModal;
 window.closeLocalAiLimitModal = closeLocalAiLimitModal;
 // setUserMode 已由 auth.js 挂载到 window

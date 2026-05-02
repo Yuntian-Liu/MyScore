@@ -1,6 +1,6 @@
 // ==================== 仪表盘 / 图表 / 历史记录 ====================
 import { STORAGE, ACHIEVEMENTS, XP_PER_LEVEL } from './config.js';
-import { escapeHtml, getExamTheme, getExamBadgeMarkup } from './utils.js';
+import { escapeHtml, getExamTheme, getExamBadgeMarkup, postComment, postCommentStream } from './utils.js';
 import { getRecords, saveRecords, allExams, buildArchiveHighlights } from './storage.js';
 import { isLoggedIn, getUserMode, _isSyncing } from './auth.js';
 import { addXP, getGamificationData } from './gamification.js';
@@ -10,6 +10,7 @@ import { logEvent } from './logger.js';
 let mainChartInstance = null;
 let radarChartInstance = null;
 let _currentDetailExamType = null;
+let _predictionFailCache = {};
 
 // ==================== Dashboard 主渲染 ====================
 
@@ -54,6 +55,293 @@ export function renderDashboard() {
 
     // 考试类型概览
     renderExamTypeGrid(records, exams, types);
+}
+
+// ==================== AI 成绩预测 ====================
+
+var _predictionCache = {};
+
+async function renderPrediction(records, exams) {
+    var section = document.getElementById('prediction-section');
+    var content = document.getElementById('prediction-content');
+    if (!section || !content) return;
+
+    // 找到 3+ 条记录的考试类型
+    var typeCounts = {};
+    records.forEach(function(r) {
+        typeCounts[r.examType] = (typeCounts[r.examType] || 0) + 1;
+    });
+    var predictable = Object.keys(typeCounts).filter(function(t) { return typeCounts[t] >= 3; });
+
+    if (!predictable.length) {
+        section.style.display = 'none';
+        return;
+    }
+
+    section.style.display = '';
+
+    // 对每个可预测的考试类型生成预测
+    var html = '';
+    for (var pi = 0; pi < predictable.length; pi++) {
+        var examType = predictable[pi];
+        var exam = exams[examType];
+        var recs = records.filter(function(r) { return r.examType === examType; });
+        var theme = getExamTheme(examType);
+
+        // 检查缓存
+        var cacheKey = 'pred_' + examType;
+        var cached = _predictionCache[cacheKey];
+        if (!cached || (Date.now() - cached.ts > 3600000)) {
+            // 异步请求，先显示加载状态
+            html += renderPredictionLoading(examType, exam, theme);
+            fetchPrediction(examType, recs, exam);
+            continue;
+        }
+
+        html += renderPredictionResult(examType, exam, theme, cached.data, recs);
+    }
+
+    if (html) content.innerHTML = html;
+}
+
+function renderPredictionLoading(examType, exam, theme) {
+    var name = exam ? exam.name : examType;
+    return '<div class="prediction-item" data-exam="' + examType + '">'
+        + '<div class="prediction-item-header">'
+        + getExamBadgeMarkup(examType, name, 20)
+        + '<span class="prediction-exam-name" style="color:' + theme.strong + ';">' + escapeHtml(name) + '</span>'
+        + '</div>'
+        + '<div class="prediction-loading"><span class="ai-thinking-dots"><span>.</span><span>.</span><span>.</span></span> AI 正在分析趋势</div>'
+        + '</div>';
+}
+
+function showPredictionError(examType, retryCount) {
+    var content = document.getElementById('prediction-content');
+    if (!content) return;
+    var items = content.querySelectorAll('.prediction-item');
+    for (var i = 0; i < items.length; i++) {
+        if (items[i].getAttribute('data-exam') === examType) {
+            var retryId = 'retry-pred-' + examType;
+            var html = '<div class="prediction-error-wrap">';
+            html += '<div class="prediction-error-text">预测生成失败' + (retryCount > 0 ? '（已重试 ' + retryCount + ' 次）' : '') + '</div>';
+            html += '<button class="prediction-retry-btn" id="' + retryId + '" onclick="retryPrediction(\'' + examType + '\')">重新预测</button>';
+            html += '</div>';
+            items[i].innerHTML = html;
+            break;
+        }
+    }
+}
+
+function retryPrediction(examType) {
+    var records = getRecords();
+    var exams = allExams();
+    var exam = exams[examType];
+    var recs = records.filter(function(r) { return r.examType === examType; });
+
+    // 清除缓存强制重新请求
+    _predictionCache['pred_' + examType] = null;
+
+    // 优先查找 Panel 内的预测容器
+    var panelEl = document.getElementById('panel-prediction-content');
+    if (panelEl) {
+        panelEl.innerHTML = '<div class="prediction-loading"><span class="ai-thinking-dots"><span>.</span><span>.</span><span>.</span></span> AI 正在分析趋势</div>';
+        fetchPrediction(examType, recs, exam, 1, panelEl);
+        return;
+    }
+
+    // Fallback: Dashboard 容器
+    var content = document.getElementById('prediction-content');
+    if (content) {
+        var items = content.querySelectorAll('.prediction-item');
+        for (var i = 0; i < items.length; i++) {
+            if (items[i].getAttribute('data-exam') === examType) {
+                items[i].innerHTML = '<div class="prediction-loading"><span class="ai-thinking-dots"><span>.</span><span>.</span><span>.</span></span> AI 正在分析趋势</div>';
+                break;
+            }
+        }
+    }
+
+    fetchPrediction(examType, recs, exam, 1);
+}
+
+function renderPredictionResult(examType, exam, theme, data, recs) {
+    var name = exam ? exam.name : examType;
+    var pred = data.prediction || {};
+    var isIelts = examType === 'ielts';
+    var total = pred.total !== undefined ? pred.total : '-';
+    if (total !== '-' && isIelts) total = Number(total).toFixed(1);
+    var confidence = data.confidence || 'medium';
+    var analysis = data.analysis || '';
+    var confColor = confidence === 'high' ? '#10b981' : (confidence === 'medium' ? '#f59e0b' : '#ef4444');
+    var confLabel = confidence === 'high' ? '高置信度' : (confidence === 'medium' ? '中等置信度' : '低置信度');
+    var confPct = confidence === 'high' ? 90 : (confidence === 'medium' ? 60 : 30);
+
+    var html = '<div class="prediction-item" data-exam="' + examType + '">';
+    html += '<div class="prediction-item-header">';
+    html += getExamBadgeMarkup(examType, name, 20);
+    html += '<span class="prediction-exam-name" style="color:' + theme.strong + ';">' + escapeHtml(name) + '</span>';
+    html += '</div>';
+
+    html += '<div class="prediction-body">';
+    // 总分预测
+    html += '<div class="prediction-total" style="color:' + theme.strong + ';">';
+    html += '<span class="prediction-total-label">预测总分</span>';
+    html += '<span class="prediction-total-value">' + total + '</span>';
+    html += '</div>';
+
+    // 分科预测
+    if (exam && exam.subjects) {
+        html += '<div class="prediction-scores">';
+        for (var s of exam.subjects) {
+            var score = pred[s.id] || pred[s.name] || '-';
+            if (score !== '-' && isIelts) score = Number(score).toFixed(1);
+            html += '<div class="prediction-score-chip" style="--accent:' + (s.color || theme.accent) + ';">';
+            html += '<span class="prediction-score-name">' + escapeHtml(s.short || s.name) + '</span>';
+            html += '<span class="prediction-score-val">' + score + '</span>';
+            html += '</div>';
+        }
+        html += '</div>';
+    }
+
+    // 置信度
+    html += '<div class="prediction-confidence">';
+    html += '<div class="prediction-conf-bar"><div class="prediction-conf-fill" style="width:' + confPct + '%;background:' + confColor + ';"></div></div>';
+    html += '<span class="prediction-conf-label" style="color:' + confColor + ';">' + confLabel + '</span>';
+    html += '</div>';
+
+    // 分析文字
+    if (analysis) {
+        html += '<div class="prediction-analysis">' + escapeHtml(analysis) + '</div>';
+    }
+
+    html += '</div></div>';
+    return html;
+}
+
+async function fetchPrediction(examType, recs, exam, _retryCount, _targetEl) {
+    var retryCount = _retryCount || 0;
+    var targetEl = _targetEl || document.getElementById('prediction-content');
+
+    // 失败缓存：5 分钟内同考试类型不重复请求（手动重试除外）
+    var failCache = _predictionFailCache[examType];
+    if (failCache && Date.now() - failCache < 5 * 60 * 1000 && retryCount === 0) {
+        if (targetEl && targetEl.id === 'panel-prediction-content') {
+            targetEl.innerHTML = '<div class="prediction-error-wrap"><div class="prediction-error-text">预测生成失败</div><button class="prediction-retry-btn" onclick="retryPrediction(\'' + examType + '\')">重新预测</button></div>';
+        }
+        return;
+    }
+
+    try {
+        var sorted = recs.slice().sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
+        var historyScores = sorted.slice(-8).map(function(r) {
+            var obj = { date: r.date, total: r.total };
+            if (r.scores) {
+                for (var k in r.scores) {
+                    obj[k] = r.scores[k];
+                }
+            }
+            return obj;
+        });
+
+        // 构建科目信息，让 AI 知道具体的 key 和分值范围
+        var subjectInfo = '';
+        if (exam && exam.subjects) {
+            subjectInfo = exam.subjects.map(function(s) {
+                return s.id + '(' + s.name + ', 0-' + (s.max || 9) + ')';
+            }).join(', ');
+        }
+
+        var result = await postComment({
+            mode: 'prediction',
+            examType: examType,
+            historyScores: historyScores,
+            subjectInfo: subjectInfo
+        });
+
+        var comment = result.comment || '';
+        // 尝试解析 JSON
+        var data;
+        try {
+            var jsonMatch = comment.match(/\{[\s\S]*\}/);
+            data = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+        } catch {
+            console.warn('[Prediction] JSON parse failed, raw:', comment.substring(0, 200));
+            data = null;
+        }
+
+        // JSON 解析失败或无有效预测数据 → 显示错误+重试
+        if (!data || !data.prediction) {
+            console.warn('[Prediction] no prediction field, raw:', comment.substring(0, 200));
+            throw new Error('Invalid prediction response');
+        }
+        // 兼容 "overall" / "总分" 等总分子段
+        if (data.prediction.total === undefined) {
+            var totalKey = Object.keys(data.prediction).find(function(k) {
+                return k.toLowerCase() === 'overall' || k === '总分';
+            });
+            if (totalKey) {
+                data.prediction.total = data.prediction[totalKey];
+            }
+        }
+        if (data.prediction.total === undefined) {
+            console.warn('[Prediction] no total field, keys:', Object.keys(data.prediction), 'raw:', comment.substring(0, 200));
+            throw new Error('Invalid prediction response');
+        }
+
+        // Key 模糊匹配：AI 可能输出 "Listening" 而非 "listening"
+        if (exam && exam.subjects) {
+            exam.subjects.forEach(function(s) {
+                if (data.prediction[s.id] === undefined) {
+                    var keys = Object.keys(data.prediction);
+                    var match = keys.find(function(k) { return k.toLowerCase() === s.id.toLowerCase(); });
+                    if (match && match !== s.id) data.prediction[s.id] = data.prediction[match];
+                }
+            });
+        }
+
+        // IELTS 分数规范化：强制半分制
+        if (examType === 'ielts') {
+            for (var k in data.prediction) {
+                if (typeof data.prediction[k] === 'number') {
+                    data.prediction[k] = Math.round(data.prediction[k] * 2) / 2;
+                }
+            }
+        }
+
+        // 缓存
+        _predictionCache['pred_' + examType] = { data: data, ts: Date.now() };
+        delete _predictionFailCache[examType];
+
+        // 更新 DOM — 支持 Panel 内和 Dashboard 两种容器
+        var theme = getExamTheme(examType);
+        targetEl = _targetEl || document.getElementById('prediction-content');
+        if (!targetEl) return;
+
+        // Panel 内直接替换内容
+        if (targetEl.id === 'panel-prediction-content') {
+            targetEl.innerHTML = renderPredictionResult(examType, exam, theme, data, recs);
+            return;
+        }
+
+        // Dashboard 内查找匹配的 prediction-item
+        var items = targetEl.querySelectorAll('.prediction-item');
+        for (var i = 0; i < items.length; i++) {
+            if (items[i].getAttribute('data-exam') === examType) {
+                items[i].outerHTML = renderPredictionResult(examType, exam, theme, data, recs);
+                break;
+            }
+        }
+    } catch (e) {
+        console.warn('[Prediction] failed for', examType, e);
+        _predictionFailCache[examType] = Date.now();
+        targetEl = _targetEl || document.getElementById('prediction-content');
+        if (!targetEl) return;
+        if (targetEl.id === 'panel-prediction-content') {
+            targetEl.innerHTML = '<div class="prediction-error-wrap"><div class="prediction-error-text">预测生成失败</div><button class="prediction-retry-btn" onclick="retryPrediction(\'' + examType + '\')">重新预测</button></div>';
+        } else {
+            showPredictionError(examType, retryCount);
+        }
+    }
 }
 
 // ==================== 最近成绩摘要 ====================
@@ -163,37 +451,17 @@ function renderRecentSummary(records, exams) {
 
     div.innerHTML = html;
 
-    // AI 预览
+    // AI 预览（仅显示缓存，不在 Dashboard 触发 API 调用）
     if (aiPreview) {
         var aiCache = getAiCache();
-        var historyRecs = records.filter(r => r.examType === last.examType).map(r => r.total).slice(-5);
-        var aiCacheKey = last.examType + ':' + last.total + ':' + historyRecs.join(',');
         var aiText = document.getElementById('ai-preview-text');
 
-        if (isLoggedIn()) {
-            if (aiCache.lastAiComment) {
-                aiText.textContent = aiCache.lastAiComment.split('|||')[0].trim().substring(0, 60);
-                aiPreview.style.display = 'flex';
-            } else if (aiCacheKey !== aiCache.lastAiCacheKey) {
-                fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs).then(function() {
-                    var c = getAiCache();
-                    if (c.lastAiComment && aiText) {
-                        aiText.textContent = c.lastAiComment.split('|||')[0].trim().substring(0, 60);
-                        aiPreview.style.display = 'flex';
-                    }
-                });
-            }
-            hideLocalAiHint();
-        } else {
-            var mode = getUserMode();
-            if (!mode) {
-                showModeChoiceModal(function(chosenMode) {
-                    if (chosenMode === 'local') triggerLocalAiComment(exam, last, historyRecs, aiCacheKey);
-                });
-            } else if (mode === 'local') {
-                triggerLocalAiComment(exam, last, historyRecs, aiCacheKey);
-            }
+        if (aiCache.lastAiComment) {
+            aiText.textContent = aiCache.lastAiComment.split('|||')[0].trim().substring(0, 60);
+            aiPreview.style.display = 'flex';
         }
+        if (!isLoggedIn()) showLocalAiHint();
+        else hideLocalAiHint();
     }
 }
 
@@ -309,15 +577,54 @@ function renderExamDetail(examType) {
     html += '<div class="panel-stat-box"><p>最近考试</p><strong style="font-size:1.1rem;">' + escapeHtml(recs.length ? recs[recs.length-1].date : '-') + '</strong></div>';
     html += '</div>';
 
+    // 对比按钮（2+条记录）
+    if (recs.length >= 2) {
+        html += '<button class="action-chip" style="margin:0.5rem 0 1rem;" onclick="openComparePanel(\'' + examType + '\')">';
+        html += '<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7h12M8 12h12M8 17h12M4 7h.01M4 12h.01M4 17h.01"/></svg>';
+        html += ' 成绩对比</button>';
+    }
+
     if (recs.length >= 1) {
         // 趋势图
         html += '<h3 class="panel-section-title">📈 成绩趋势</h3>';
         html += '<div class="panel-chart-wrap"><canvas id="panel-main-chart"></canvas></div>';
 
+        // AI 成绩预测（3+条记录，手动触发）
+        if (recs.length >= 3) {
+            html += '<h3 class="panel-section-title">🔮 AI 成绩预测</h3>';
+            html += '<div id="panel-prediction-content" class="panel-prediction-section">';
+            var predCached = _predictionCache['pred_' + examType];
+            if (predCached && (Date.now() - predCached.ts < 3600000)) {
+                html += renderPredictionResult(examType, exam, theme, predCached.data, recs);
+            } else {
+                html += '<div style="text-align:center;padding:0.6rem 0;">';
+                html += '<div style="color:#6b7280;font-size:0.88rem;margin-bottom:0.6rem;">基于历史趋势预测下一次成绩</div>';
+                html += '<button onclick="window._startPanelPrediction(\'' + examType + '\')" style="background:rgba(31,106,82,0.1);color:#174f3d;border:1.5px solid rgba(31,106,82,0.2);padding:0.5rem 1.4rem;border-radius:99px;cursor:pointer;font-size:0.88rem;font-weight:700;">✨ 开始预测</button>';
+                html += '</div>';
+            }
+            html += '</div>';
+        }
+
         // 雷达图
         if (exam.subjects && exam.subjects.length >= 3) {
             html += '<h3 class="panel-section-title">🎯 技能画像</h3>';
             html += '<div class="panel-chart-wrap" style="max-width:400px;margin:0 auto 1.5rem;"><canvas id="panel-radar-chart"></canvas></div>';
+        }
+
+        // AI 薄弱项分析（3+条记录，手动触发）
+        if (recs.length >= 3 && exam.subjects && exam.subjects.length >= 2) {
+            html += '<h3 class="panel-section-title">🩺 AI 薄弱项分析</h3>';
+            html += '<div id="weakness-content" class="weakness-section">';
+            var weakCached = _weaknessCache['weak_' + examType];
+            if (weakCached && (Date.now() - weakCached.ts < 7200000)) {
+                html += renderWeaknessHTML(weakCached.data, exam);
+            } else {
+                html += '<div style="text-align:center;padding:0.6rem 0;">';
+                html += '<div style="color:#6b7280;font-size:0.88rem;margin-bottom:0.6rem;">分析你的薄弱科目并给出建议</div>';
+                html += '<button onclick="window._startPanelWeakness(\'' + examType + '\')" style="background:rgba(31,106,82,0.1);color:#174f3d;border:1.5px solid rgba(31,106,82,0.2);padding:0.5rem 1.4rem;border-radius:99px;cursor:pointer;font-size:0.88rem;font-weight:700;">✨ 开始分析</button>';
+                html += '</div>';
+            }
+            html += '</div>';
         }
     }
 
@@ -362,6 +669,244 @@ function renderExamDetail(examType) {
                 renderRadarChartForPanel(examType, recs, exam, radarCanvas);
             }
         }, 50);
+    }
+
+    // 手动触发函数需要的上下文
+    window._panelExamCtx = window._panelExamCtx || {};
+    window._panelExamCtx[examType] = { recs: recs, exam: exam };
+}
+
+// ==================== AI 薄弱项分析 ====================
+
+var _weaknessCache = {};
+
+async function fetchWeaknessAnalysis(examType, recs, exam) {
+    var el = document.getElementById('weakness-content');
+    if (!el) return;
+
+    var cacheKey = 'weak_' + examType;
+    var cached = _weaknessCache[cacheKey];
+
+    if (cached && (Date.now() - cached.ts < 7200000)) {
+        el.innerHTML = renderWeaknessHTML(cached.data, exam);
+        return;
+    }
+
+    try {
+        var sorted = recs.slice().sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
+        var historyScores = sorted.slice(-8).map(function(r) {
+            var obj = { date: r.date, total: r.total };
+            if (r.scores) {
+                for (var k in r.scores) { obj[k] = r.scores[k]; }
+            }
+            return obj;
+        });
+
+        var result = await postComment({
+            mode: 'weakness',
+            examType: examType,
+            historyScores: historyScores
+        });
+
+        var comment = result.comment || '';
+        var data;
+        try {
+            var jsonMatch = comment.match(/\{[\s\S]*\}/);
+            data = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+        } catch {
+            data = null;
+        }
+
+        if (!data || !data.weaknesses) {
+            el.innerHTML = '<div class="weakness-error">分析暂时不可用</div>';
+            return;
+        }
+
+        _weaknessCache[cacheKey] = { data: data, ts: Date.now() };
+        el.innerHTML = renderWeaknessHTML(data, exam);
+    } catch (e) {
+        console.warn('[Weakness] failed for', examType, e);
+        el.innerHTML = '<div class="weakness-error">分析暂时不可用</div>';
+    }
+}
+
+function renderWeaknessHTML(data, exam) {
+    var html = '';
+    if (data.overall) {
+        html += '<div class="weakness-overall">' + escapeHtml(data.overall) + '</div>';
+    }
+    if (data.weaknesses && data.weaknesses.length) {
+        html += '<div class="weakness-list">';
+        for (var w of data.weaknesses) {
+            var isWeak = w.level === '弱';
+            var color = isWeak ? '#ef4444' : '#f59e0b';
+            var bg = isWeak ? '#fef2f2' : '#fffbeb';
+            html += '<div class="weakness-item" style="background:' + bg + ';border-left:3px solid ' + color + ';">';
+            html += '<div class="weakness-item-head">';
+            html += '<span class="weakness-subject" style="color:' + color + ';">' + escapeHtml(w.subject || '') + '</span>';
+            html += '<span class="weakness-level-badge" style="background:' + color + ';">' + escapeHtml(w.level || '') + '</span>';
+            html += '</div>';
+            if (w.analysis) html += '<p class="weakness-analysis">' + escapeHtml(w.analysis) + '</p>';
+            if (w.suggestion) html += '<p class="weakness-suggestion">💡 ' + escapeHtml(w.suggestion) + '</p>';
+            html += '</div>';
+        }
+        html += '</div>';
+    }
+    return html;
+}
+
+// ==================== Panel E: 成绩对比 ====================
+
+var compareChartA = null;
+var compareChartB = null;
+
+function openComparePanel(examType) {
+    renderComparePanel(examType);
+    openSlidePanel('compare-panel');
+}
+
+function renderComparePanel(examType) {
+    var records = getRecords();
+    var exams = allExams();
+    var exam = exams[examType];
+    var recs = records.filter(function(r) { return r.examType === examType; });
+    var body = document.getElementById('compare-body');
+    if (!body || !exam || recs.length < 2) return;
+
+    var theme = getExamTheme(examType);
+    var sorted = recs.slice().sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
+
+    var html = '';
+    html += '<div class="compare-header">' + getExamBadgeMarkup(examType, exam.name, 20) + ' ' + escapeHtml(exam.name) + ' · 选择两次考试进行对比</div>';
+
+    // 选择器
+    html += '<div class="compare-selectors">';
+    html += '<div class="compare-select-group"><label>记录 A</label><select id="compare-select-a" class="compare-select" onchange="updateCompareChart(\'' + examType + '\')">';
+    for (var i = 0; i < sorted.length; i++) {
+        html += '<option value="' + i + '"' + (i === sorted.length - 2 ? ' selected' : '') + '>' + escapeHtml(sorted[i].date) + ' · ' + (sorted[i].total != null ? sorted[i].total.toFixed(1) : '-') + '</option>';
+    }
+    html += '</select></div>';
+    html += '<div class="compare-select-group"><label>记录 B</label><select id="compare-select-b" class="compare-select" onchange="updateCompareChart(\'' + examType + '\')">';
+    for (var i = 0; i < sorted.length; i++) {
+        html += '<option value="' + i + '"' + (i === sorted.length - 1 ? ' selected' : '') + '>' + escapeHtml(sorted[i].date) + ' · ' + (sorted[i].total != null ? sorted[i].total.toFixed(1) : '-') + '</option>';
+    }
+    html += '</select></div>';
+    html += '</div>';
+
+    // 雷达图区域
+    if (exam.subjects && exam.subjects.length >= 3) {
+        html += '<div class="compare-radar-row">';
+        html += '<div class="compare-radar-col"><div class="compare-radar-label">A</div><canvas id="compare-radar-a"></canvas></div>';
+        html += '<div class="compare-radar-col"><div class="compare-radar-label">B</div><canvas id="compare-radar-b"></canvas></div>';
+        html += '</div>';
+    }
+
+    // 差异表
+    html += '<div id="compare-diff-table"></div>';
+
+    body.innerHTML = html;
+
+    // 初始渲染
+    setTimeout(function() { updateCompareChart(examType); }, 50);
+}
+
+function updateCompareChart(examType) {
+    var records = getRecords();
+    var exams = allExams();
+    var exam = exams[examType];
+    var recs = records.filter(function(r) { return r.examType === examType; });
+    var sorted = recs.slice().sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
+    if (!exam || sorted.length < 2) return;
+
+    var selA = document.getElementById('compare-select-a');
+    var selB = document.getElementById('compare-select-b');
+    if (!selA || !selB) return;
+
+    var idxA = parseInt(selA.value) || 0;
+    var idxB = parseInt(selB.value) || 0;
+    var recA = sorted[idxA];
+    var recB = sorted[idxB];
+    if (!recA || !recB) return;
+
+    var subjects = exam.subjects || [];
+    var isIelts = examType === 'ielts';
+    var theme = getExamTheme(examType);
+
+    function normalize(s, val) {
+        if (isIelts) return val;
+        var mx;
+        if (s.type === 'sections') mx = (s.sections || []).reduce(function(sum, sec) { return sum + (sec.max || 0) * (sec.score || 0); }, 0);
+        else if (s.type === 'formula') mx = (s.max || 0) * (s.mult || 1);
+        else mx = s.max || 100;
+        if (!mx) mx = 100;
+        return Math.round((val / mx) * 1000) / 10;
+    }
+
+    var labels = subjects.map(function(s) { return s.short || s.name; });
+    var dataA = subjects.map(function(s) {
+        var raw = recA.scores ? recA.scores[s.id] : undefined;
+        return normalize(s, (raw !== undefined && raw !== null) ? Number(raw) : 0);
+    });
+    var dataB = subjects.map(function(s) {
+        var raw = recB.scores ? recB.scores[s.id] : undefined;
+        return normalize(s, (raw !== undefined && raw !== null) ? Number(raw) : 0);
+    });
+
+    // 更新雷达图
+    var scaleMax = isIelts ? 9 : 100;
+    var canvasA = document.getElementById('compare-radar-a');
+    var canvasB = document.getElementById('compare-radar-b');
+
+    if (canvasA && canvasB && subjects.length >= 3) {
+        if (compareChartA) { compareChartA.destroy(); compareChartA = null; }
+        if (compareChartB) { compareChartB.destroy(); compareChartB = null; }
+
+        compareChartA = new Chart(canvasA.getContext('2d'), {
+            type: 'radar',
+            data: { labels: labels, datasets: [{ data: dataA, backgroundColor: theme.accent + '25', borderColor: theme.accent, borderWidth: 2, pointBackgroundColor: theme.accent, pointRadius: 3 }] },
+            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } }, scales: { r: { beginAtZero: true, max: scaleMax, ticks: { stepSize: isIelts ? 1 : 20, font: { size: 9 } }, pointLabels: { font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.06)' } } } }
+        });
+
+        compareChartB = new Chart(canvasB.getContext('2d'), {
+            type: 'radar',
+            data: { labels: labels, datasets: [{ data: dataB, backgroundColor: 'rgba(59,130,246,0.15)', borderColor: '#3b82f6', borderWidth: 2, pointBackgroundColor: '#3b82f6', pointRadius: 3 }] },
+            options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } }, scales: { r: { beginAtZero: true, max: scaleMax, ticks: { stepSize: isIelts ? 1 : 20, font: { size: 9 } }, pointLabels: { font: { size: 10 } }, grid: { color: 'rgba(0,0,0,0.06)' } } } }
+        });
+    }
+
+    // 差异表
+    var diffDiv = document.getElementById('compare-diff-table');
+    if (diffDiv && subjects.length) {
+        var dhtml = '<div class="compare-diff">';
+        dhtml += '<div class="compare-diff-header"><span>科目</span><span>A (' + escapeHtml(recA.date) + ')</span><span>B (' + escapeHtml(recB.date) + ')</span><span>变化</span></div>';
+        for (var i = 0; i < subjects.length; i++) {
+            var s = subjects[i];
+            var rawA = recA.scores ? recA.scores[s.id] : 0;
+            var rawB = recB.scores ? recB.scores[s.id] : 0;
+            var diff = Number(rawB) - Number(rawA);
+            var diffColor = diff > 0 ? '#10b981' : (diff < 0 ? '#ef4444' : '#6b7280');
+            var diffSign = diff > 0 ? '+' : '';
+            dhtml += '<div class="compare-diff-row">';
+            dhtml += '<span class="compare-diff-subject">' + escapeHtml(s.short || s.name) + '</span>';
+            dhtml += '<span>' + Number(rawA).toFixed(s.dec) + '</span>';
+            dhtml += '<span>' + Number(rawB).toFixed(s.dec) + '</span>';
+            dhtml += '<span style="color:' + diffColor + ';font-weight:700;">' + diffSign + diff.toFixed(s.dec) + '</span>';
+            dhtml += '</div>';
+        }
+        // 总分行
+        if (recA.total != null && recB.total != null) {
+            var tDiff = recB.total - recA.total;
+            var tDiffColor = tDiff > 0 ? '#10b981' : (tDiff < 0 ? '#ef4444' : '#6b7280');
+            var tDiffSign = tDiff > 0 ? '+' : '';
+            dhtml += '<div class="compare-diff-row compare-diff-total">';
+            dhtml += '<span class="compare-diff-subject" style="font-weight:700;">总分</span>';
+            dhtml += '<span style="font-weight:700;">' + recA.total.toFixed(1) + '</span>';
+            dhtml += '<span style="font-weight:700;">' + recB.total.toFixed(1) + '</span>';
+            dhtml += '<span style="color:' + tDiffColor + ';font-weight:800;">' + tDiffSign + tDiff.toFixed(1) + '</span>';
+            dhtml += '</div>';
+        }
+        dhtml += '</div>';
+        diffDiv.innerHTML = dhtml;
     }
 }
 
@@ -448,70 +993,64 @@ function renderRecentDetail() {
         html += '</div>';
     }
 
-    // AI 评论（完整版）
+    // AI 评论（手动触发版）
+    var historyRecs = records.filter(r => r.examType === last.examType).map(r => r.total).slice(-5);
+    var aiCache = getAiCache();
+    var aiCacheKey = last.examType + ':' + last.total + ':' + historyRecs.join(',');
+    var hasCached = aiCache.lastAiComment && aiCache.lastAiCacheKey === aiCacheKey;
+    var curStyle = localStorage.getItem('myscore_ai_style') || 'storm';
+
     html += '<div id="panel-ai-section" style="margin-top:1.2rem;">';
     html += '<h3 class="panel-section-title">🤖 AI 点评</h3>';
+    // 风格选择栏
     html += '<div id="panel-ai-style-bar" style="display:flex;gap:0.4rem;margin-bottom:0.5rem;flex-wrap:wrap;">';
-    html += '<button onclick="setAiStyle(\'storm\')" id="style-storm" title="犀利刻薄" style="font-size:0.78rem;padding:0.35rem 0.75rem;border-radius:99px;border:1px solid rgba(31,106,82,0.2);background:rgba(31,106,82,0.12);color:#174f3d;cursor:pointer;font-weight:700;">⛈️ 风暴</button>';
-    html += '<button onclick="setAiStyle(\'sun\')" id="style-sun" title="温暖鼓励" style="font-size:0.78rem;padding:0.35rem 0.75rem;border-radius:99px;border:1px solid rgba(81,63,44,0.12);background:rgba(255,251,245,0.95);color:#8e5520;cursor:pointer;font-weight:700;">☀️ 暖阳</button>';
-    html += '<button onclick="setAiStyle(\'cold\')" id="style-cold" title="理性分析" style="font-size:0.78rem;padding:0.35rem 0.75rem;border-radius:99px;border:1px solid rgba(81,63,44,0.12);background:rgba(255,251,245,0.95);color:#8e5520;cursor:pointer;font-weight:700;">❄️ 冷锋</button>';
-    html += '<button onclick="setAiStyle(\'rain\')" id="style-rain" title="先损后帮" style="font-size:0.78rem;padding:0.35rem 0.75rem;border-radius:99px;border:1px solid rgba(81,63,44,0.12);background:rgba(255,251,245,0.95);color:#8e5520;cursor:pointer;font-weight:700;">🌧️ 阵雨</button>';
+    var styleList = [
+        { key: 'storm', icon: '⛈️', label: '风暴' },
+        { key: 'sun',   icon: '☀️', label: '暖阳' },
+        { key: 'cold',  icon: '❄️', label: '冷锋' },
+        { key: 'rain',  icon: '🌧️', label: '阵雨' }
+    ];
+    styleList.forEach(function(s) {
+        var isActive = s.key === curStyle;
+        var bg = isActive ? 'rgba(31,106,82,0.12)' : 'rgba(255,251,245,0.95)';
+        var bc = isActive ? 'rgba(31,106,82,0.2)' : 'rgba(81,63,44,0.12)';
+        var clr = isActive ? '#174f3d' : '#8e5520';
+        html += '<button onclick="window._panelAiSetStyle(\'' + s.key + '\')" id="panel-style-' + s.key + '" style="font-size:0.78rem;padding:0.35rem 0.75rem;border-radius:99px;border:1px solid ' + bc + ';background:' + bg + ';color:' + clr + ';cursor:pointer;font-weight:700;">' + s.icon + ' ' + s.label + '</button>';
+    });
     html += '</div>';
-    html += '<div id="panel-ai-comment-box" style="background:rgba(221,238,231,0.72);border:1px solid rgba(31,106,82,0.14);border-radius:1rem;padding:1rem;color:#174f3d;line-height:1.7;font-size:0.95rem;position:relative;">🤖 AI 正在分析...</div>';
-    html += '<div id="panel-ai-actions" style="display:none;justify-content:flex-end;gap:0.5rem;margin-top:0.5rem;"><button onclick="showReplyInput()" style="font-size:0.82rem;color:#174f3d;background:rgba(255,251,245,0.95);border:1px solid rgba(31,106,82,0.16);padding:0.42rem 0.9rem;border-radius:99px;cursor:pointer;font-weight:700;">继续聊聊</button></div>';
-    html += '<div id="panel-reply-input-area" style="display:none;margin-top:0.5rem;"><div style="display:flex;gap:0.5rem;"><input type="text" id="panel-user-rebuttal" autocomplete="off" placeholder="输入你想回应的话..." style="flex:1;border:1px solid rgba(81,63,44,0.14);border-radius:0.9rem;padding:0.65rem 0.8rem;outline:none;font-size:0.92rem;background:rgba(255,251,245,0.94);"><button onclick="sendRebuttal()" style="background:#1f6a52;color:white;border:none;padding:0.65rem 1rem;border-radius:0.9rem;cursor:pointer;font-size:0.9rem;font-weight:700;">发送</button></div></div>';
+
+    // 评论框：有缓存显示缓存，无缓存显示开始按钮
+    var boxStyle = 'background:rgba(221,238,231,0.72);border:1px solid rgba(31,106,82,0.14);border-radius:1rem;padding:1rem;color:#174f3d;line-height:1.7;font-size:0.95rem;position:relative;';
+    if (hasCached) {
+        html += '<div id="panel-ai-comment-box" style="' + boxStyle + '"></div>';
+    } else {
+        html += '<div id="panel-ai-comment-box" style="' + boxStyle + '">';
+        html += '<div style="text-align:center;padding:0.5rem 0;">';
+        html += '<div style="color:#6b7280;font-size:0.88rem;margin-bottom:0.7rem;">选择你喜欢的风格，开始获取 AI 点评</div>';
+        html += '<button onclick="window._startPanelAiAnalysis()" style="background:rgba(31,106,82,0.1);color:#174f3d;border:1.5px solid rgba(31,106,82,0.2);padding:0.55rem 1.6rem;border-radius:99px;cursor:pointer;font-size:0.9rem;font-weight:700;">✨ 开始分析</button>';
+        html += '</div></div>';
+    }
+    // 操作按钮（继续聊聊）
+    var actionsDisplay = hasCached ? 'flex' : 'none';
+    html += '<div id="panel-ai-actions" style="display:' + actionsDisplay + ';justify-content:flex-end;gap:0.5rem;margin-top:0.5rem;">';
+    html += '<button onclick="window._panelShowReply()" style="font-size:0.82rem;color:#174f3d;background:rgba(255,251,245,0.95);border:1px solid rgba(31,106,82,0.16);padding:0.42rem 0.9rem;border-radius:99px;cursor:pointer;font-weight:700;">继续聊聊</button>';
+    html += '</div>';
+    // 回嘴输入区
+    html += '<div id="panel-reply-input-area" style="display:none;margin-top:0.5rem;"><div style="display:flex;gap:0.5rem;">';
+    html += '<input type="text" id="panel-user-rebuttal" autocomplete="off" placeholder="输入你想回应的话..." style="flex:1;border:1px solid rgba(81,63,44,0.14);border-radius:0.9rem;padding:0.65rem 0.8rem;outline:none;font-size:0.92rem;background:rgba(255,251,245,0.94);">';
+    html += '<button onclick="window._panelSendRebuttal()" style="background:#1f6a52;color:white;border:none;padding:0.65rem 1rem;border-radius:0.9rem;cursor:pointer;font-size:0.9rem;font-weight:700;">发送</button>';
+    html += '</div></div>';
     html += '</div>';
 
     body.innerHTML = html;
 
-    // 触发 AI 评论（指向 panel 内的 box）
-    // 需要临时让 ai.js 的 fetchAIComment 写入 panel-ai-comment-box
-    var historyRecs = records.filter(r => r.examType === last.examType).map(r => r.total).slice(-5);
-    var aiCache = getAiCache();
-    var aiCacheKey = last.examType + ':' + last.total + ':' + historyRecs.join(',');
+    // 存储面板上下文供 panel AI 函数使用
+    window._panelAiCtx = { examType: last.examType, examName: exam ? exam.name : last.examType, score: last.total, history: historyRecs, exam: exam, analyzed: hasCached, lastComment: hasCached ? aiCache.lastAiComment : '' };
 
-    // 使用全局 container/box 的方式让 ai.js 能找到
-    // 临时设置 id 映射
-    var panelBox = document.getElementById('panel-ai-comment-box');
-    if (panelBox) {
-        panelBox.id = 'ai-comment-box';
-        var panelActions = document.getElementById('panel-ai-actions');
-        if (panelActions) panelActions.id = 'ai-actions';
-        var panelReply = document.getElementById('panel-reply-input-area');
-        if (panelReply) panelReply.id = 'reply-input-area';
-        var panelInput = document.getElementById('panel-user-rebuttal');
-        if (panelInput) panelInput.id = 'user-rebuttal';
-    }
-
-    // 创建临时 ai-container
-    var tempContainer = document.createElement('div');
-    tempContainer.id = 'ai-container';
-    tempContainer.style.display = 'block';
-    panelBox.parentNode.insertBefore(tempContainer, panelBox);
-    tempContainer.appendChild(panelBox);
-    var actionsEl = document.getElementById('ai-actions');
-    if (actionsEl) tempContainer.appendChild(actionsEl);
-    var replyEl = document.getElementById('reply-input-area');
-    if (replyEl) tempContainer.appendChild(replyEl);
-
-    if (isLoggedIn()) {
-        if (aiCacheKey !== aiCache.lastAiCacheKey) {
-            fetchAIComment(exam ? exam.name : last.examType, last.total, historyRecs);
-        } else if (aiCache.lastAiComment) {
-            renderAiComment(document.getElementById('ai-comment-box'), aiCache.lastAiComment);
-            var act = document.getElementById('ai-actions');
-            if (act) act.style.display = 'flex';
-        }
-        hideLocalAiHint();
-    } else {
-        var mode = getUserMode();
-        if (!mode) {
-            showModeChoiceModal(function(chosenMode) {
-                if (chosenMode === 'local') triggerLocalAiComment(exam, last, historyRecs, aiCacheKey);
-            });
-        } else if (mode === 'local') {
-            triggerLocalAiComment(exam, last, historyRecs, aiCacheKey);
-        }
+    // 如果有缓存，渲染缓存的评论
+    if (hasCached) {
+        var panelBox = document.getElementById('panel-ai-comment-box');
+        if (panelBox) renderAiComment(panelBox, aiCache.lastAiComment, curStyle);
     }
 }
 
@@ -594,9 +1133,61 @@ function renderMainChartForPanel(examType, records, exam, canvas) {
         }
     }
 
+    // 添加预测虚线（如果缓存中有预测数据）
+    var cached = _predictionCache['pred_' + examType];
+    var labels = sorted.map(r => r.date);
+    if (cached && cached.data && cached.data.prediction) {
+        var pred = cached.data.prediction;
+        var hasAppendedLabel = false;
+
+        // 建立科目 ID → { name, color } 映射
+        var subjectMap = {};
+        if (exam && exam.subjects) {
+            for (var si = 0; si < exam.subjects.length; si++) {
+                subjectMap[exam.subjects[si].id] = { name: exam.subjects[si].name, color: exam.subjects[si].color };
+            }
+        }
+
+        // 总分预测虚线
+        var predTotal = pred.total;
+        if (predTotal !== undefined && predTotal !== '-') {
+            var predData = new Array(sorted.length).fill(null);
+            predData.push(Number(predTotal));
+            labels.push('预测');
+            hasAppendedLabel = true;
+            datasets.push({
+                label: 'AI 预测', data: predData,
+                borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.08)',
+                borderWidth: 2, borderDash: [6, 4], pointStyle: 'triangle',
+                pointRadius: 6, pointBackgroundColor: '#f59e0b',
+                fill: false, tension: 0.3, spanGaps: false
+            });
+        }
+
+        // 各科目预测虚线
+        for (var key in pred) {
+            if (key === 'total' || key === 'overall') continue;
+            var subjInfo = subjectMap[key];
+            if (subjInfo && pred[key] !== undefined && pred[key] !== '-') {
+                if (!hasAppendedLabel) {
+                    labels.push('预测');
+                    hasAppendedLabel = true;
+                }
+                var sData = new Array(sorted.length).fill(null);
+                sData.push(Number(pred[key]));
+                datasets.push({
+                    label: subjInfo.name + ' 预测', data: sData,
+                    borderColor: subjInfo.color, borderWidth: 2, borderDash: [6, 4],
+                    pointStyle: 'triangle', pointRadius: 5, pointBackgroundColor: subjInfo.color,
+                    fill: false, tension: 0.3, spanGaps: false
+                });
+            }
+        }
+    }
+
     mainChartInstance = new Chart(canvas.getContext('2d'), {
         type: 'line',
-        data: { labels: sorted.map(r => r.date), datasets: datasets },
+        data: { labels: labels, datasets: datasets },
         options: {
             responsive: true, maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
@@ -648,6 +1239,21 @@ function renderRadarChartForPanel(examType, records, exam, canvas) {
             return normalize(s, (raw !== undefined && raw !== null) ? Number(raw) : 0);
         });
         datasets.push({ label: '最佳', data: bestData, backgroundColor: 'rgba(245,158,11,0.1)', borderColor: '#f59e0b', borderWidth: 1.5, borderDash: [5,5], pointBackgroundColor: '#f59e0b', pointRadius: 3 });
+    }
+
+    if (records.length >= 3) {
+        var avgData = subjects.map(function(s) {
+            var sum = 0, count = 0;
+            records.forEach(function(r) {
+                var raw = r.scores ? r.scores[s.id] : undefined;
+                if (raw !== undefined && raw !== null) {
+                    sum += normalize(s, Number(raw));
+                    count++;
+                }
+            });
+            return count > 0 ? Math.round((sum / count) * 10) / 10 : 0;
+        });
+        datasets.push({ label: '平均', data: avgData, backgroundColor: 'rgba(59,130,246,0.08)', borderColor: '#3b82f6', borderWidth: 1.5, borderDash: [3,3], pointBackgroundColor: '#3b82f6', pointRadius: 3 });
     }
 
     var scaleMax = isIelts ? 9 : 100;
@@ -759,3 +1365,170 @@ window.openRecentDetail = openRecentDetail;
 window.openHistoryPanel = openHistoryPanel;
 window.openSlidePanel = openSlidePanel;
 window.closeSlidePanel = closeSlidePanel;
+window.openComparePanel = openComparePanel;
+window.updateCompareChart = updateCompareChart;
+window.retryPrediction = retryPrediction;
+
+// ==================== 面板预测/薄弱项手动触发 ====================
+
+window._startPanelPrediction = function(examType) {
+    var ctx = window._panelExamCtx && window._panelExamCtx[examType];
+    if (!ctx) return;
+    var predEl = document.getElementById('panel-prediction-content');
+    if (!predEl) return;
+    // 清除失败缓存（手动触发）
+    delete _predictionFailCache[examType];
+    predEl.innerHTML = '<div class="prediction-loading"><span class="ai-thinking-dots"><span>.</span><span>.</span><span>.</span></span> AI 正在分析趋势</div>';
+    fetchPrediction(examType, ctx.recs, ctx.exam, 0, predEl);
+};
+
+window._startPanelWeakness = function(examType) {
+    var ctx = window._panelExamCtx && window._panelExamCtx[examType];
+    if (!ctx) return;
+    var el = document.getElementById('weakness-content');
+    if (!el) return;
+    el.innerHTML = '<div class="weakness-loading"><span class="ai-thinking-dots"><span>.</span><span>.</span><span>.</span></span> AI 正在分析薄弱项</div>';
+    fetchWeaknessAnalysis(examType, ctx.recs, ctx.exam);
+};
+
+// ==================== 面板 AI 点评（手动触发） ====================
+
+// 面板内切换 AI 风格
+window._panelAiSetStyle = function(styleKey) {
+    localStorage.setItem('myscore_ai_style', styleKey);
+    // 更新按钮高亮
+    var allStyles = ['storm', 'sun', 'cold', 'rain'];
+    allStyles.forEach(function(s) {
+        var btn = document.getElementById('panel-style-' + s);
+        if (!btn) return;
+        if (s === styleKey) {
+            btn.style.background = 'rgba(31,106,82,0.12)';
+            btn.style.borderColor = 'rgba(31,106,82,0.2)';
+            btn.style.color = '#174f3d';
+        } else {
+            btn.style.background = 'rgba(255,251,245,0.95)';
+            btn.style.borderColor = 'rgba(81,63,44,0.12)';
+            btn.style.color = '#8e5520';
+        }
+    });
+    // 如果已经分析过，切换风格后重新分析
+    if (window._panelAiCtx && window._panelAiCtx.analyzed) {
+        window._startPanelAiAnalysis();
+    }
+};
+
+// 面板内开始 AI 分析
+window._startPanelAiAnalysis = async function() {
+    var ctx = window._panelAiCtx;
+    if (!ctx) return;
+    var box = document.getElementById('panel-ai-comment-box');
+    var actions = document.getElementById('panel-ai-actions');
+    if (!box) return;
+    if (actions) actions.style.display = 'none';
+    var replyArea = document.getElementById('panel-reply-input-area');
+    if (replyArea) replyArea.style.display = 'none';
+
+    var style = localStorage.getItem('myscore_ai_style') || 'storm';
+    var teacherNames = { storm: '风暴老师', sun: '暖阳老师', cold: '冷锋老师', rain: '阵雨老师' };
+    var teacherName = teacherNames[style] || 'AI 老师';
+
+    // 显示加载
+    box.innerHTML = '<strong>🤖 ' + escapeHtml(teacherName) + '：</strong> <span class="ai-thinking-dots">正在思考</span><span id="panel-ai-stream-text" style="display:none;"></span><span id="panel-ai-cursor" class="ai-cursor" style="display:none;">|</span>';
+
+    try {
+        var fullText = await postCommentStream(
+            { examType: ctx.examName, currentScore: ctx.score, historyScores: ctx.history, style: style },
+            function onChunk(delta, full) {
+                var thinking = box.querySelector('.ai-thinking-dots');
+                if (thinking) thinking.style.display = 'none';
+                var span = document.getElementById('panel-ai-stream-text');
+                var cursor = document.getElementById('panel-ai-cursor');
+                if (span) { span.style.display = 'inline'; span.textContent = full; }
+                if (cursor) cursor.style.display = 'inline';
+            }
+        );
+        var cursor = document.getElementById('panel-ai-cursor');
+        if (cursor) cursor.style.display = 'none';
+
+        if (fullText) {
+            ctx.analyzed = true;
+            ctx.lastComment = fullText;
+            renderAiComment(box, fullText, style);
+            if (actions) actions.style.display = 'flex';
+            logEvent('ai-comment', { examType: ctx.examType, style: style, length: fullText.length, stream: true });
+        } else {
+            box.innerHTML = '老师去吃饭了...';
+        }
+    } catch (err) {
+        console.error(err);
+        // fallback 到非流式
+        try {
+            var data = await postComment({ examType: ctx.examName, currentScore: ctx.score, historyScores: ctx.history, style: style });
+            if (data.comment) {
+                ctx.analyzed = true;
+                ctx.lastComment = data.comment;
+                renderAiComment(box, data.comment, style);
+                if (actions) actions.style.display = 'flex';
+                logEvent('ai-comment', { examType: ctx.examType, style: style, length: data.comment.length, stream: false });
+            } else {
+                box.innerHTML = '老师去吃饭了...';
+            }
+        } catch (err2) {
+            console.error(err2);
+            logEvent('ai-error', { examType: ctx.examType, error: err2.message });
+            box.innerHTML = '<span style="color:#9ca3af;">老师断线了... </span><button onclick="window._startPanelAiAnalysis()" style="margin-left:0.5rem;font-size:0.82rem;color:#1f6a52;background:none;border:1px solid rgba(31,106,82,0.2);padding:0.3rem 0.8rem;border-radius:99px;cursor:pointer;">重试</button>';
+        }
+    }
+};
+
+// 面板内回嘴输入
+window._panelShowReply = function() {
+    var area = document.getElementById('panel-reply-input-area');
+    var actions = document.getElementById('panel-ai-actions');
+    if (area) area.style.display = 'block';
+    if (actions) actions.style.display = 'none';
+    var input = document.getElementById('panel-user-rebuttal');
+    if (input) input.focus();
+};
+
+// 面板内发送回嘴
+window._panelSendRebuttal = async function() {
+    var ctx = window._panelAiCtx;
+    if (!ctx) return;
+    var input = document.getElementById('panel-user-rebuttal');
+    var rebuttal = input ? input.value.trim() : '';
+    if (!rebuttal) return;
+    var box = document.getElementById('panel-ai-comment-box');
+    var actions = document.getElementById('panel-ai-actions');
+    if (!box) return;
+
+    var style = localStorage.getItem('myscore_ai_style') || 'storm';
+    var teacherNames = { storm: '风暴老师', sun: '暖阳老师', cold: '冷锋老师', rain: '阵雨老师' };
+    box.innerHTML = '<strong>😤 你：</strong> ' + escapeHtml(rebuttal) + '<br><hr style="margin:8px 0;border:0;border-top:1px dashed #a7f3d0">🤖 ' + (teacherNames[style] || 'AI 老师') + '正在想怎么回你...';
+    box.style.background = 'rgba(243,224,207,0.82)';
+    box.style.color = '#8e5520';
+    box.style.borderColor = 'rgba(188,108,37,0.24)';
+    var replyArea = document.getElementById('panel-reply-input-area');
+    if (replyArea) replyArea.style.display = 'none';
+
+    try {
+        var data = await postComment({
+            examType: ctx.examName, currentScore: ctx.score, historyScores: ctx.history,
+            userRebuttal: rebuttal, previousComment: ctx.lastComment, style: style
+        });
+        if (data.comment) {
+            ctx.lastComment = data.comment;
+            box.style.background = 'rgba(221,238,231,0.72)';
+            box.style.color = '#174f3d';
+            box.style.borderColor = 'rgba(31,106,82,0.14)';
+            box.innerHTML = '<strong>😤 你：</strong> ' + escapeHtml(rebuttal) + '<br><br><strong>👩‍🏫 ' + (teacherNames[style] || 'AI 老师') + '：</strong> ' + escapeHtml(data.comment);
+            if (actions) actions.style.display = 'flex';
+            if (input) input.value = '';
+            logEvent('ai-rebuttal', { examType: ctx.examType, style: style, length: data.comment.length });
+        }
+    } catch (err) {
+        console.error(err);
+        logEvent('ai-error', { examType: ctx.examType, type: 'rebuttal', error: err.message });
+        box.innerHTML += '<br><span style="color:#9ca3af;">(老师被气得掉线了)</span>';
+    }
+};

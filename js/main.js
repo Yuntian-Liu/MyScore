@@ -23,6 +23,11 @@ function showPage(p) {
     var pageEl = document.getElementById('page-' + p);
     if (!pageEl) return;
     pageEl.classList.remove('hidden');
+    // 页面切换淡入动画
+    pageEl.classList.add('page-enter');
+    setTimeout(function() {
+        pageEl.classList.remove('page-enter');
+    }, 300);
     document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
     var navEl = document.getElementById('nav-' + p);
     if (navEl) navEl.classList.add('active');

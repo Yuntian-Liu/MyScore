@@ -24,7 +24,7 @@ function playNextToast() {
 
 function showToastInternal(tag, amount, detail, isAchievement, onDone) {
     var el = document.createElement('div');
-    el.className = 'gamification-toast' + (isAchievement ? ' achievement' : '');
+    el.className = 'gamification-toast' + (isAchievement ? ' achievement achievement-unlock' : '');
 
     if (amount !== undefined) {
         el.innerHTML = '<span class="gt-tag">' + tag + '</span>' +
@@ -123,6 +123,12 @@ export function addXP(sourceKey, opts) {
     // 升级入队列
     if (xpData.level > oldLevel && !silent) {
         enqueueToast('进境', undefined, '升至 Lv.' + xpData.level);
+        // XP 条闪光效果
+        var xpBar = document.getElementById('gam-xp-bar');
+        if (xpBar) {
+            xpBar.classList.add('level-up-flash');
+            setTimeout(function() { xpBar.classList.remove('level-up-flash'); }, 1500);
+        }
     }
 
     return xpData;
@@ -149,6 +155,15 @@ export function updateStreak() {
     data.longestStreak = Math.max(data.longestStreak || 0, data.currentStreak);
     data.lastDate = today;
     if (!data.firstVisit) data.firstVisit = today;
+
+    // 记录签到日期（保留最近90天）
+    data.dates = data.dates || [];
+    if (data.dates.indexOf(today) === -1) {
+        data.dates.push(today);
+    }
+    // 清理90天前的数据
+    var cutoff = new Date(Date.now() - 90 * 86400000).toISOString().slice(0, 10);
+    data.dates = data.dates.filter(function(d) { return d >= cutoff; });
 
     saveData(STORAGE.STREAK, data);
 

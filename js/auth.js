@@ -1,5 +1,5 @@
 // ==================== 认证 / 用户管理 / 云同步 ====================
-import { STORAGE, TURNSTILE_SITE_KEY, AVATAR_OPTIONS, USER_AGREEMENT_HTML, PRIVACY_POLICY_HTML, XP_PER_LEVEL, ACHIEVEMENTS, XP_SOURCES, XP_DAILY_CAP } from './config.js';
+import { STORAGE, TURNSTILE_SITE_KEY, AVATAR_OPTIONS, USER_AGREEMENT_HTML, PRIVACY_POLICY_HTML, XP_PER_LEVEL, ACHIEVEMENTS, XP_SOURCES, XP_DAILY_CAP, LOCAL_AI_DAILY_LIMIT } from './config.js';
 import { readStorageJson, escapeHtml, getAvatarUrl, showAiToast } from './utils.js';
 import { getRecords, saveRecords, getCustom, saveCustom } from './storage.js';
 import { logEvent } from './logger.js';
@@ -49,7 +49,7 @@ export function incrementLocalAiUsage() {
 }
 
 export function isLocalAiLimitReached() {
-    return getLocalAiUsage().count >= 5; // LOCAL_AI_DAILY_LIMIT
+    return getLocalAiUsage().count >= LOCAL_AI_DAILY_LIMIT;
 }
 
 // ---- 登录流程 ----
@@ -467,6 +467,62 @@ window.openProfileCard = function () {
     }, 150);
 };
 
+function renderStreakHeatmap(dates) {
+    var dateSet = {};
+    dates.forEach(function(d) { dateSet[d] = true; });
+
+    // 计算最近 13 周的范围
+    var today = new Date();
+    var todayDay = today.getDay(); // 0=Sun, 1=Mon...
+    var endDate = new Date(today);
+    endDate.setDate(endDate.getDate() + (6 - todayDay)); // 本周六
+    var startDate = new Date(endDate);
+    startDate.setDate(startDate.getDate() - 13 * 7 + 1); // 13周前的周一
+
+    var weeks = [];
+    var current = new Date(startDate);
+
+    for (var w = 0; w < 13; w++) {
+        var weekDays = [];
+        for (var d = 0; d < 7; d++) {
+            var ds = current.toISOString().slice(0, 10);
+            var isFuture = current > today;
+            var checked = !!dateSet[ds];
+            weekDays.push({ date: ds, checked: checked, future: isFuture });
+            current.setDate(current.getDate() + 1);
+        }
+        weeks.push(weekDays);
+    }
+
+    var html = '<div class="heatmap-grid">';
+    // 月份标签行
+    html += '<div class="heatmap-months">';
+    var lastMonth = -1;
+    for (var w = 0; w < weeks.length; w++) {
+        var firstDay = weeks[w][0];
+        var m = new Date(firstDay.date).getMonth();
+        if (m !== lastMonth) {
+            html += '<span class="heatmap-month" style="grid-column:' + (w + 1) + ';">' + (m + 1) + '月</span>';
+            lastMonth = m;
+        }
+    }
+    html += '</div>';
+
+    // 日期标签 + 方格
+    var dayLabels = ['', '一', '', '三', '', '五', ''];
+    html += '<div class="heatmap-body">';
+    for (var row = 0; row < 7; row++) {
+        html += '<span class="heatmap-day-label">' + dayLabels[row] + '</span>';
+        for (var w = 0; w < weeks.length; w++) {
+            var cell = weeks[w][row];
+            var cls = cell.future ? 'heatmap-cell heatmap-future' : (cell.checked ? 'heatmap-cell heatmap-checked' : 'heatmap-cell');
+            html += '<span class="' + cls + '" title="' + cell.date + '"></span>';
+        }
+    }
+    html += '</div></div>';
+    return html;
+}
+
 function renderProfileCardContent() {
     var body = document.getElementById('profile-card-body');
     if (!body || !isLoggedIn()) return;
@@ -516,6 +572,12 @@ function renderProfileCardContent() {
         html += '</div>';
     });
     html += '</div>';
+    // === 区域4.5: 打卡日历热力图 ===
+    var streakDates = streakData.dates || [];
+    if (streakDates.length > 0) {
+        html += '<div class="pc-section-title">打卡日历</div>';
+        html += '<div class="pc-heatmap">' + renderStreakHeatmap(streakDates) + '</div>';
+    }
     // === 区域5: 经验来源 ===
     html += '<div class="pc-section-title">经验来源</div>';
     html += '<div class="pc-xp-list">';

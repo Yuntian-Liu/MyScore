@@ -4,6 +4,7 @@ import { createServer } from "node:http";
 import { createGzip } from "node:zlib";
 import { extname, join, normalize, resolve, sep } from "node:path";
 import { CORS_HEADERS, requestAiComment, requestAiCommentStream } from "./lib/aiComment.js";
+import { handleFeishuEvent } from "./lib/feishu.js";
 import { initDb, saveUserData, getUserData, findUser, findUserByUid, updateUserProfile, maskEmail } from "./lib/db.js";
 import { sendVerificationCode, registerWithEmail, loginWithPassword, loginWithCode, verifyToken } from "./lib/auth.js";
 
@@ -112,7 +113,7 @@ async function readJsonBody(req) {
 }
 
 // 匿名用户每日 AI 评论限额（按 IP）
-const ANONYMOUS_DAILY_LIMIT = 5;
+const ANONYMOUS_DAILY_LIMIT = 8;
 const dailyCommentStore = new Map(); // key: "ip:date", value: count
 
 function checkAnonymousDailyLimit(ip) {
@@ -539,6 +540,18 @@ const server = createServer(async (req, res) => {
 
   if (path === "/api/sync") {
     await handleSyncRequest(req, res);
+    return;
+  }
+
+  // 飞书事件回调
+  if (path === "/api/feishu/event" && req.method === "POST") {
+    try {
+      const body = await readJsonBody(req);
+      const result = await handleFeishuEvent(body);
+      sendJson(res, 200, result);
+    } catch {
+      sendJson(res, 500, { error: "Feishu event handling failed" });
+    }
     return;
   }
 

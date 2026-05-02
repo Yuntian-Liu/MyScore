@@ -11,12 +11,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="apple-touch-icon" href="logo2.svg">
     <meta name="myscore-comment-endpoint" content="/api/comment">
-    <title>MyScore V5.2.0-beta - AI 智能成绩单 | 碳碳四键的个人开发应用实践</title>
+    <title>MyScore V5.3.0-beta - AI 智能成绩单 | 碳碳四键的个人开发应用实践</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="style.css?v=520b3">
+    <link rel="stylesheet" href="style.css?v=530b2">
 </head>
 <body>
     <!-- 离线横幅 -->
@@ -351,7 +352,7 @@
                     <div class="mode-choice-icon">👋</div>
                     <h2>选择使用方式</h2>
                 </div>
-                <p class="mode-choice-desc">你可以登录使用完整功能，也可以选择本地使用。本地模式下 AI 评论功能每日限 5 次，登录后即可解锁。</p>
+                <p class="mode-choice-desc">你可以登录使用完整功能，也可以选择本地使用。本地模式下 AI 评论功能每日限 8 次，登录后即可解锁。</p>
                 <div class="mode-choice-buttons">
                     <button class="mode-choice-btn mode-choice-login" onclick="closeModeChoiceModal('login')">
                         <span class="mode-choice-btn-icon">☁️</span>
@@ -364,7 +365,7 @@
                         <span class="mode-choice-btn-icon">💻</span>
                         <div>
                             <div class="mode-choice-btn-title">本地使用</div>
-                            <div class="mode-choice-btn-sub">AI 评论每日限 5 次</div>
+                            <div class="mode-choice-btn-sub">AI 评论每日限 8 次</div>
                         </div>
                     </button>
                 </div>
@@ -378,7 +379,7 @@
                     <div class="mode-choice-icon">💡</div>
                     <h2>今日 AI 次数已用完</h2>
                 </div>
-                <p class="mode-choice-desc">本地模式每日 AI 评论限 5 次。登录后即可解锁无限次使用。</p>
+                <p class="mode-choice-desc">本地模式每日 AI 评论限 8 次。登录后即可解锁无限次使用。</p>
                 <div class="mode-choice-buttons">
                     <button class="mode-choice-btn mode-choice-login" onclick="closeLocalAiLimitModal(true)">
                         <span class="mode-choice-btn-icon">☁️</span>
@@ -624,7 +625,7 @@
                         </svg>
                     </span>
                     <div>
-                        <div class="footer-title">MyScore V5.2.0-beta</div>
+                        <div class="footer-title">MyScore V5.3.0-beta</div>
                         <div class="footer-desc">碳碳四键的个人开发实践项目</div>
                     </div>
                 </div>
@@ -660,7 +661,7 @@
                         <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
                         GitHub
                     </a>
-                    · V5.2.0-beta · 蜀ICP备2026006689号
+                    · V5.3.0-beta · 蜀ICP备2026006689号
                 </span>
                 <span>Designed for a calmer, brighter study workflow</span>
             </div>
@@ -816,8 +817,6 @@
     </div>
 </div>
 
-<!-- 报告预览隐藏容器（用于生成图片）-->
-<div id="report-canvas-container" style="position:absolute;left:-9999px;top:-9999px;"></div>
 
 <!-- 目标设置浮层 -->
 <div id="goal-overlay" onclick="if(event.target===this)cancelGoal()" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.35);z-index:9999;justify-content:center;align-items:center;">
@@ -878,7 +877,18 @@
     </div>
 </div>
 
-<script type="module" src="js/main.js?v=520b3"></script>
+<!-- Panel E: 成绩对比 -->
+<div id="compare-panel" class="slide-panel-overlay" onclick="if(event.target===this)closeSlidePanel('compare-panel')">
+    <div class="slide-panel">
+        <div class="slide-panel-header">
+            <button class="slide-panel-back" onclick="closeSlidePanel('compare-panel')">← 返回</button>
+            <h2 class="slide-panel-title">成绩对比</h2>
+        </div>
+        <div class="slide-panel-body" id="compare-body"></div>
+    </div>
+</div>
+
+<script type="module" src="js/main.js?v=530b2"></script>
 
 </body>
 </html>

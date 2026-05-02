@@ -2,7 +2,7 @@
 import { APP_VERSION } from './config.js';
 import { escapeHtml, escapeAttr, getExamTheme, getExamBadgeMarkup } from './utils.js';
 import { getRecords, saveRecords, getCustom, saveCustom } from './storage.js';
-import { addXP } from './gamification.js';
+import { addXP, checkAchievements } from './gamification.js';
 import { logEvent } from './logger.js';
 
 let customSubs = [];
@@ -157,6 +157,7 @@ function importData(input) {
             alert('导入成功！\n新记录: ' + newRecs + ' 条\n新考试类型: ' + newExams + ' 个');
             logEvent('data-import', { newRecs: newRecs, newExams: newExams });
             if (window.renderDashboard) window.renderDashboard();
+            checkAchievements();
         } catch (err) { alert('导入失败: ' + err.message); }
     };
     reader.readAsText(file); input.value = '';
