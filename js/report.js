@@ -443,7 +443,6 @@ window.openReportModal = openReportModal;
 window.closeReportModal = closeReportModal;
 window.closeReportModalOnBackdrop = closeReportModalOnBackdrop;
 window.selectReportType = selectReportType;
-window.onReportChange = onReportChange;
 window.populateRecordSelect = populateRecordSelect;
 window.renderReportPreview = renderReportPreview;
 window.downloadReport = downloadReport;
