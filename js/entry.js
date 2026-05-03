@@ -281,6 +281,22 @@ function submitScore(e) {
     const rec = { id: Date.now(), examType: currentExam, date: dateVal, scores: scores, total: total };
     const recs = getRecords(); recs.push(rec); saveRecords(recs);
     logEvent('score-save', { examType: currentExam, total: total });
+
+    // 飞书通知（静默，不阻塞主流程）
+    (function () {
+        var auth = localStorage.getItem('myscore_auth');
+        if (!auth) return;
+        try {
+            var user = JSON.parse(auth);
+            if (!user.token || !user.feishuOpenId) return;
+            fetch('/api/feishu/notify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + user.token },
+                body: JSON.stringify({ record: rec })
+            }).catch(function () {});
+        } catch (e) {}
+    })();
+
     // 未选模式时静默记录 XP，避免与模式选择弹窗冲突
     if (localStorage.getItem('myscore_user_mode')) {
         addXP('score');

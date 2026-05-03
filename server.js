@@ -4,8 +4,8 @@ import { createServer } from "node:http";
 import { createGzip } from "node:zlib";
 import { extname, join, normalize, resolve, sep } from "node:path";
 import { CORS_HEADERS, requestAiComment, requestAiCommentStream } from "./lib/aiComment.js";
-import { handleFeishuEvent } from "./lib/feishu.js";
-import { initDb, saveUserData, getUserData, findUser, findUserByUid, updateUserProfile, maskEmail } from "./lib/db.js";
+import { handleFeishuEvent, generateBindCode, sendFeishuNotification } from "./lib/feishu.js";
+import { initDb, saveUserData, getUserData, findUser, findUserByUid, updateUserProfile, updateUserFeishuOpenId, maskEmail } from "./lib/db.js";
 import { sendVerificationCode, registerWithEmail, loginWithPassword, loginWithCode, verifyToken } from "./lib/auth.js";
 
 const PORT = Number(process.env.PORT || 3000);
@@ -460,6 +460,13 @@ async function handleAuthRequest(req, res, path) {
         }
         updates.bio = body.bio;
       }
+      if (body.feishu_open_id !== undefined) {
+        const fu = updateUserFeishuOpenId(payload.email, body.feishu_open_id);
+        if (!fu) {
+          sendJson(res, 404, { error: "用户不存在" }, CORS_HEADERS);
+          return;
+        }
+      }
       const user = updateUserProfile(payload.email, updates);
       if (!user) {
         sendJson(res, 404, { error: "用户不存在" }, CORS_HEADERS);
@@ -551,6 +558,44 @@ const server = createServer(async (req, res) => {
       sendJson(res, 200, result);
     } catch {
       sendJson(res, 500, { error: "Feishu event handling failed" });
+    }
+    return;
+  }
+
+  // 飞书绑定码生成
+  if (path === "/api/feishu/bind" && req.method === "POST") {
+    try {
+      const token = extractBearerToken(req);
+      const payload = verifyToken(token);
+      if (!payload) {
+        sendJson(res, 401, { error: "未登录或登录已过期" }, CORS_HEADERS);
+        return;
+      }
+      const code = generateBindCode(payload.userId, payload.email);
+      console.log("[Feishu] Bind code generated for", payload.email, ":", code);
+      sendJson(res, 200, { ok: true, code }, CORS_HEADERS);
+    } catch (err) {
+      console.error("[Feishu] Bind error:", err);
+      sendJson(res, 500, { error: "生成绑定码失败" }, CORS_HEADERS);
+    }
+    return;
+  }
+
+  // 飞书成绩通知
+  if (path === "/api/feishu/notify" && req.method === "POST") {
+    try {
+      const token = extractBearerToken(req);
+      const payload = verifyToken(token);
+      if (!payload) {
+        sendJson(res, 401, { error: "未登录或登录已过期" }, CORS_HEADERS);
+        return;
+      }
+      const body = await readJsonBody(req);
+      const result = await sendFeishuNotification(payload.userId, body.record);
+      sendJson(res, 200, { ok: true, ...result }, CORS_HEADERS);
+    } catch (err) {
+      console.error("[Feishu] Notify error:", err);
+      sendJson(res, 200, { ok: true, skipped: true }, CORS_HEADERS);
     }
     return;
   }

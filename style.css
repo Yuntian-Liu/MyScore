@@ -5043,6 +5043,48 @@
     padding: 1rem 0 0.5rem;
     line-height: 1.6;
 }
+/* ---- Feishu Bind ---- */
+.feishu-bind-card {
+    background: rgba(39,91,86,0.03);
+    border-radius: 12px;
+    padding: 1rem;
+}
+.feishu-code-display {
+    font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: 0.35em;
+    color: var(--accent);
+    text-align: center;
+    padding: 1rem 0;
+    user-select: all;
+}
+.feishu-countdown {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.75rem;
+}
+.feishu-bound-status {
+    border-left: 3px solid var(--accent);
+}
+.feishu-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #22c55e;
+    display: inline-block;
+    flex-shrink: 0;
+}
+.feishu-spinner {
+    width: 24px;
+    height: 24px;
+    border: 2.5px solid rgba(39,91,86,0.15);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: feishuSpin 0.7s linear infinite;
+    margin: 0 auto;
+}
+@keyframes feishuSpin { to { transform: rotate(360deg); } }
 #settings-avatar-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);

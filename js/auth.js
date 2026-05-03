@@ -281,7 +281,8 @@ function onLoginSuccess(token, user) {
     var hadLocalRecords = getRecords().length > 0;
     currentUser = {
         userId: user.id, uid: user.uid, email: user.email, nickname: user.nickname,
-        avatarSeed: user.avatar_seed, bio: user.bio, isAdmin: user.is_admin, isBeta: user.is_beta, token: token
+        avatarSeed: user.avatar_seed, bio: user.bio, isAdmin: user.is_admin, isBeta: user.is_beta,
+        feishuOpenId: user.feishu_open_id || null, token: token
     };
     logEvent('auth-login', { uid: user.uid, hadLocalRecords: hadLocalRecords });
     localStorage.setItem(STORAGE.AUTH, JSON.stringify(currentUser));
@@ -357,6 +358,7 @@ export async function restoreSession() {
                         currentUser.bio = data.profile.bio;
                         currentUser.isAdmin = data.profile.is_admin;
                         currentUser.isBeta = data.profile.is_beta;
+                        currentUser.feishuOpenId = data.profile.feishu_open_id || null;
                         currentUser.uid = data.profile.uid;
                         localStorage.setItem(STORAGE.AUTH, JSON.stringify(currentUser));
                         profileOk = true;
@@ -625,6 +627,7 @@ async function saveProfile() {
         if (!res.ok) { var data = await res.json(); var errEl = document.getElementById('edit-profile-error'); if (errEl) { errEl.textContent = data.error || '保存失败'; errEl.style.display = 'block'; } return; }
         var data = await res.json();
         currentUser.nickname = data.profile.nickname; currentUser.avatarSeed = data.profile.avatar_seed; currentUser.bio = data.profile.bio;
+        currentUser.feishuOpenId = data.profile.feishu_open_id || null;
         localStorage.setItem(STORAGE.AUTH, JSON.stringify(currentUser));
         updateLoginButton(); closeEditProfileModal();
     } catch (e) { var errEl = document.getElementById('edit-profile-error'); if (errEl) { errEl.textContent = '网络错误'; errEl.style.display = 'block'; } }

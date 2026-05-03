@@ -35,6 +35,9 @@ export function openSettings() {
     var verEl = document.getElementById('settings-version');
     if (verEl) verEl.textContent = 'V' + APP_VERSION;
 
+    // 飞书绑定状态
+    renderFeishuBindSection();
+
     document.getElementById('settings-modal').classList.add('active');
 }
 
@@ -218,6 +221,129 @@ function clearAllData() {
     closeSettings();
 }
 
+// ---- 飞书集成 ----
+
+var _feishuBindTimer = null;
+
+function renderFeishuBindSection() {
+    var container = document.getElementById('feishu-bind-status');
+    if (!container) return;
+    var user = getCurrentUser();
+
+    if (!user) {
+        container.innerHTML = '<div class="feishu-bind-card"><p style="color:var(--text-muted);font-size:0.85rem;">登录后可绑定飞书机器人，接收成绩通知</p></div>';
+        return;
+    }
+
+    if (user.feishuOpenId) {
+        container.innerHTML = '<div class="feishu-bind-card feishu-bound-status">' +
+            '<div style="display:flex;align-items:center;gap:0.5rem;">' +
+            '<span class="feishu-status-dot"></span>' +
+            '<span style="color:var(--accent);font-weight:600;">已绑定飞书</span></div>' +
+            '<p style="color:var(--text-muted);font-size:0.8rem;margin-top:0.35rem;">录入成绩后将自动推送通知到飞书</p>' +
+            '<button class="btn-secondary" onclick="unbindFeishu()" style="margin-top:0.75rem;width:100%;">解绑飞书</button></div>';
+        return;
+    }
+
+    container.innerHTML = '<div class="feishu-bind-card">' +
+        '<p style="color:var(--text-secondary);font-size:0.875rem;margin-bottom:0.75rem;">绑定后可在飞书接收成绩通知、查询成绩和成就</p>' +
+        '<button class="btn-primary" onclick="requestFeishuBindCode()" style="width:100%;">绑定飞书机器人</button></div>';
+}
+
+async function requestFeishuBindCode() {
+    var container = document.getElementById('feishu-bind-status');
+    var user = getCurrentUser();
+    if (!user || !user.token) return;
+
+    container.innerHTML = '<div class="feishu-bind-card"><div style="text-align:center;padding:1rem 0;"><div class="feishu-spinner"></div><p style="color:var(--text-muted);margin-top:0.5rem;">正在生成绑定码...</p></div></div>';
+
+    try {
+        var res = await fetch('/api/feishu/bind', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + user.token }
+        });
+        var data = await res.json();
+        if (!data.ok) throw new Error(data.error || '生成失败');
+
+        renderBindCodeDisplay(data.code);
+    } catch (e) {
+        container.innerHTML = '<div class="feishu-bind-card"><p style="color:#ef4444;">' + (e.message || '网络错误') + '</p>' +
+            '<button class="btn-secondary" onclick="requestFeishuBindCode()" style="margin-top:0.75rem;width:100%;">重试</button></div>';
+    }
+}
+
+function renderBindCodeDisplay(code) {
+    var container = document.getElementById('feishu-bind-status');
+    var secondsLeft = 300;
+
+    function updateDisplay() {
+        var m = Math.floor(secondsLeft / 60);
+        var s = secondsLeft % 60;
+        var timeStr = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+
+        container.innerHTML = '<div class="feishu-bind-card">' +
+            '<div style="text-align:center;">' +
+            '<p style="color:var(--text-secondary);font-size:0.875rem;font-weight:500;">请在飞书中向 MyScore 机器人发送：</p>' +
+            '<div class="feishu-code-display">' + code + '</div>' +
+            '<p style="color:var(--text-muted);font-size:0.8rem;margin-top:0.5rem;">发送内容：<code style="background:rgba(39,91,86,0.08);padding:2px 8px;border-radius:4px;font-size:0.85rem;color:var(--accent);">绑定 ' + code + '</code></p>' +
+            '<div class="feishu-countdown" id="feishu-timer">⏱ ' + timeStr + ' 后过期</div>' +
+            '<button class="btn-secondary" onclick="checkFeishuBindStatus()" style="margin-top:1rem;width:100%;">我已发送，检查状态</button>' +
+            '</div></div>';
+
+        if (secondsLeft <= 0) {
+            clearInterval(_feishuBindTimer);
+            _feishuBindTimer = null;
+            container.innerHTML = '<div class="feishu-bind-card"><p style="color:#f59e0b;">绑定码已过期</p>' +
+                '<button class="btn-primary" onclick="requestFeishuBindCode()" style="margin-top:0.75rem;width:100%;">重新获取</button></div>';
+        }
+        secondsLeft--;
+    }
+
+    updateDisplay();
+    _feishuBindTimer = setInterval(updateDisplay, 1000);
+}
+
+async function checkFeishuBindStatus() {
+    if (_feishuBindTimer) { clearInterval(_feishuBindTimer); _feishuBindTimer = null; }
+    var user = getCurrentUser();
+    if (!user || !user.token) return;
+
+    try {
+        var res = await fetch('/api/auth/profile', {
+            headers: { 'Authorization': 'Bearer ' + user.token }
+        });
+        var data = await res.json();
+        if (data.ok && data.profile && data.profile.feishu_open_id) {
+            user.feishuOpenId = data.profile.feishu_open_id;
+            localStorage.setItem('myscore_auth', JSON.stringify(user));
+            showAiToast('飞书绑定成功！');
+            logEvent('feishu', { action: 'bind-success' });
+            renderFeishuBindSection();
+        } else {
+            showAiToast('尚未检测到绑定，请确认已在飞书中发送绑定码');
+            requestFeishuBindCode();
+        }
+    } catch (e) {
+        showAiToast('检查状态失败，请重试');
+    }
+}
+
+function unbindFeishu() {
+    if (!confirm('确定要解绑飞书吗？解绑后将不再接收成绩通知。')) return;
+    var user = getCurrentUser();
+    if (!user) return;
+    delete user.feishuOpenId;
+    localStorage.setItem('myscore_auth', JSON.stringify(user));
+    fetch('/api/auth/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + user.token },
+        body: JSON.stringify({ feishu_open_id: null })
+    }).catch(function () {});
+    showAiToast('已解绑飞书');
+    logEvent('feishu', { action: 'unbind' });
+    renderFeishuBindSection();
+}
+
 // ---- 挂载到 window ----
 window.openSettings = openSettings;
 window.closeSettings = closeSettings;
@@ -231,3 +357,6 @@ window.settingsGoHome = settingsGoHome;
 window.settingsSwitchGuideSection = settingsSwitchGuideSection;
 window.settingsShowChangelogHistory = settingsShowChangelogHistory;
 window.settingsBackToCurrentChangelog = settingsBackToCurrentChangelog;
+window.requestFeishuBindCode = requestFeishuBindCode;
+window.checkFeishuBindStatus = checkFeishuBindStatus;
+window.unbindFeishu = unbindFeishu;

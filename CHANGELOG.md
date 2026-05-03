@@ -5,6 +5,25 @@ The format is based on [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [5.4.0-beta] - 2026-05-04
+
+**代号：Feishu Integration（飞书集成）**
+
+### Added
+- ✅ **飞书机器人完整对接**：lib/feishu.js 命令路由 + 绑定码系统 + 6种卡片模板
+- ✅ **飞书绑定流程**：设置页 6 位码绑定 UI（生成码 → 飞书发送 → 自动匹配）
+- ✅ **飞书成绩通知**：录入成绩后自动推送交互式卡片到飞书
+- ✅ **飞书机器人命令**：查询 / 趋势 / 目标 / 成就 / 帮助 / 绑定
+- ✅ **db.js feishu_open_id 字段**：用户记录支持飞书绑定关系存储
+- ✅ **server.js 新路由**：POST /api/feishu/bind + POST /api/feishu/notify
+- ✅ **auth.js feishuOpenId 存储**：登录/恢复会话/资料更新时同步飞书绑定状态
+
+### Changed
+- 🔄 **设置页新增飞书集成区块**：绑定状态展示 + 码展示 + 解绑功能
+- 🔄 **版本号升级至 V5.4.0-beta**
+
+---
+
 ## [5.3.0-beta] - 2026-05-03
 
 **代号：Trend Prediction & Report Polish（趋势预测与报告打磨）**
