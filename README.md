@@ -26,6 +26,9 @@
 - ✅ **导出日志增强**：新增飞书绑定状态字段
 - 🔧 **修复飞书通知 uid/id 字段混淆**
 - 🔧 **修复成就命令浏览器模块导入失败**
+- ✅ **报告页「分享到飞书」按钮**：成绩单/分享卡片双模式推送至飞书会话（需绑定飞书）
+- ✅ **注册流程飞书引导步骤**：注册完成后可选绑定，含 ⓘ 悬浮提示、绑定码生成、跳过功能
+- 📧 **联系邮箱更新为 ytunx.com**
 
 ### V5.4.0-beta
 - ✅ **飞书机器人完整对接**：命令路由系统 + 6 位码绑定流程 + 成绩通知卡片
@@ -179,6 +182,15 @@
 - **突突er 伴学助手**: 左下角悬浮入口唤起聊天面板，可陪聊、答疑、做计划，不与 AI 点评冲突。
 - **版本日志入口**: 首次打开自动弹出更新日志，后续可通过左下角悬浮图标再次查看。
 
+### 🚀 飞书机器人集成 (v5.4.0-beta 新增, v5.5.0-beta 扩展)
+- **9 大命令**: 绑定、查询、趋势、目标、成就、统计、历史、打卡、等级 —— 全覆盖核心功能。
+- **6 位码绑定流程**: 设置页生成绑定码 → 飞书发送匹配 → 自动关联账号，安全便捷。
+- **交互式卡片**: 所有命令使用 `column_set` 交互式卡片，信息密度高、视觉效果好。
+- **成绩通知推送**: 录入成绩后自动推送精美的交互式卡片到飞书，含各科分数 + AI 摘要。
+- **报告分享**: 导出报告页可直接「分享到飞书」，将成绩单或分享卡片推送到飞书会话。
+- **Webhook 去重**: 基于 `event_id` 的去重机制，防止飞书重试导致重复处理。
+- **AES 加密解密**: 支持飞书 Encrypt Key 加密的事件体自动解密。
+
 ### 📱 响应式体验 (2.3.1 重点)
 - **移动端优先适配**: 手机端导航重排、按钮触控区优化、底部安全留白优化。
 - **聊天输入稳定性**: 输入法弹出时伴学助手面板自动避让，输入框可视性更稳定。
@@ -200,9 +212,12 @@
 - **完全自由**: 创建任意考试类型（如托福、GRE、期末考）
 - **四种计分**: 直接输入 / 多小题计分 / 分部分计分 / 公式计算 / 扣分制
 
-### 📊 数据可视化 & 管理 (3.0.0 持续升级)
-- **趋势图表**: Chart.js 绘制精美成绩曲线
-- **报告导出**: 支持生成成绩单卡片/详细报告/学习总结，预览与导出图均已升级为 V8.0 新视觉
+### 📊 数据可视化 & 游戏 (3.0.0 持续升级)
+- **趋势图表**: Chart.js 绘制成绩曲线 + SVG 雷达图（科目能力画像）
+- **报告导出**: 成绩单 / 分享卡片双模式，html2canvas 截图导出 PNG，支持**分享到飞书**
+- **游戏化系统**: XP 经验值 + 等级 + 成就墙 + 连续打卡，录入成绩即可获得成长反馈
+- **Dashboard 仪表盘**: 最近成绩摘要、考试类型网格、Sparkline 迷你趋势线、Slide Panel 二级面板
+- **AI 预测卡片**: 3+ 条记录时自动显示基于历史走势的分数预测
 - **云端同步**: 登录后自动同步，跨设备访问（4.0.0 新增）
 - **数据安全**: 浏览器 LocalStorage 本地存储 + 服务端加密同步
 - **备份恢复**: 支持 JSON 格式一键导出/导入
@@ -230,43 +245,66 @@
     - `JWT_SECRET` — 随机长字符串（令牌加密，**必须设置**）
     - `RESEND_API_KEY` — Resend API Key（发送验证码邮件）
     - `RESEND_FROM` — 发件人地址，如 `MyScore <noreply@yourdomain.com>`
+    - **飞书集成（可选）**：
+      - `FEISHU_APP_ID` — 飞书应用 App ID
+      - `FEISHU_APP_SECRET` — 飞书应用 App Secret
+      - `FEISHU_ENCRYPT_KEY` — 飞书 Encrypt Key（事件加密，可选）
+      - `FEISHU_VERIFICATION_TOKEN` — 飞书 Verification Token（可选）
     - （可选）`INVITE_CODES` — 内测邀请码列表，逗号分隔（如 `BETA2026,TEST123`）
     - （可选）`TURNSTILE_SECRET_KEY` — Cloudflare Turnstile Secret Key（防机器人刷验证码）
     - （可选）`DATA_DIR` — 数据存储路径（配合 Zeabur 持久卷使用，默认 `./data`）
 
-> **Cloudflare Turnstile 配置说明**：在 [Cloudflare Dashboard](https://dash.cloudflare.com/) → Turnstile → 创建 Site 后会得到 Site Key 和 Secret Key。Site Key 需填入 `app.js` 顶部的 `TURNSTILE_SITE_KEY` 变量，Secret Key 填入 Zeabur 环境变量 `TURNSTILE_SECRET_KEY`。两者配对使用，缺一则验证不生效。
+> **Cloudflare Turnstile 配置说明**：在 [Cloudflare Dashboard](https://dash.cloudflare.com/) → Turnstile → 创建 Site 后会得到 Site Key 和 Secret Key。Site Key 需填入前端代码中的 `TURNSTILE_SITE_KEY` 变量，Secret Key 填入 Zeabur 环境变量 `TURNSTILE_SECRET_KEY`。两者配对使用，缺一则验证不生效。
+
+> **飞书机器人配置说明**：在 [飞书开放平台](https://open.feishu.cn/) 创建企业自建应用 → 启用机器人能力 → 配置事件订阅（消息回调 URL 为 `https://你的域名/api/feishu/event`）→ 获取 App ID / App Secret。配置 Encrypt Key 后事件体会自动加密传输。
 3. 仓库已包含 `server.js`、`package.json` 与 `zbpack.json`，默认启动命令为 `npm start`。
-4. Zeabur 将提供完整功能：AI 评价 + 用户系统 + 云端同步。
+4. Zeabur 将提供完整功能：AI 评价 + 用户系统 + 云端同步 + 飞书机器人。
 
 ### 3. 日常使用
 1. **录入成绩**: 选择考试类型 -> 填写日期 -> 录入分数 -> 保存。
 2. **AI 互动**: 保存后，AI 老师会自动评价（支持四种风格切换）；点击”继续聊聊”可开启多轮对话；点击左下角”唤起突突er”可进入伴学对话。
 3. **查看统计**: 点击"仪表盘"查看趋势图表。
-4. **报告导出**: 点击"仪表盘"中的"导出报告"可生成成绩单卡片/详细报告/学习总结。
+4. **报告导出**: 点击"仪表盘"中的"导出报告"可生成成绩单卡片/分享卡片，支持下载 PNG 或**分享到飞书**（需绑定飞书）。
 5. **双平台部署**: 无论页面托管在 Netlify 还是 Zeabur，前端均统一走 `/api/comment`。
 
 ---
 
 ## 📂 项目结构
+```
 MyScore/
-├── index.html              # 主程序入口 (纯 HTML 结构)
-├── style.css               # 样式文件
-├── app.js                  # 前端交互逻辑
+├── index.html              # 主页面 (纯 HTML 结构)
+├── style.css               # 全局样式 (~2500 行)
+├── sw.js                   # Service Worker (PWA 离线缓存)
+├── manifest.json           # PWA 清单文件
 ├── server.js               # Zeabur / Node 服务入口
 ├── netlify.toml            # Netlify 路由与函数映射
-├── package.json            # Node 启动配置与项目版本
-├── zbpack.json             # Zeabur 部署参数
-├── DEPLOYMENT.md           # 双平台部署说明
-├── start-local.bat         # 本地开发启动脚本（不提交到 git）
-├── lib/
-│   ├── aiComment.js        # 共享 AI 逻辑 (CORS + prompt + API 调用)
-│   ├── auth.js             # 认证逻辑（验证码、密码、JWT）
+├── package.json / zbpack.json  # 部署配置
+├── js/                     # 前端 ES Modules (15 个模块)
+│   ├── main.js             # 入口：初始化、路由、事件绑定
+│   ├── entry.js            # 成绩录入（多考试类型、校验、保存）
+│   ├── dashboard.js        # 仪表盘（图表、雷达图、Slide Panel）
+│   ├── ai.js               # AI 评论（流式输出、风格切换、回嘴模式）
+│   ├── auth.js             # 前端认证（登录/注册/Token 管理）
+│   ├── settings.js         # 设置页（个人资料、飞书绑定、日志导出）
+│   ├── config.js           # 配置（考试定义、版本日志、使用指南）
+│   ├── report.js           # 报告导出（成绩单/分享卡片 + 飞书分享）
+│   ├── gamification.js     # 游戏化（XP、等级、成就、打卡）
+│   ├── storage.js          # 本地存储封装
+│   ├── utils.js            # 工具函数（转义、主题色、格式化）
+│   ├── custom.js           # 自定义考试管理
+│   ├── pet.js              # 桌面宠物交互
+│   ├── tutuer.js           # 突突er 伴学助手
+│   ├── info.js / logger.js # 信息面板 + 事件埋点
+├── lib/                    # 服务端共享模块
+│   ├── feishu.js           # 飞书集成（9 命令、卡片模板、通知推送）
+│   ├── aiComment.js        # AI 逻辑 (SSE 代理、Prompt 构建)
+│   ├── auth.js             # 服务端认证（验证码、密码、JWT）
 │   └── db.js               # JSON 文件数据库
-├── netlify/
-│   └── functions/
-│       └── comment.js      # Netlify Serverless 函数
-├── Versions_history/       # 历史版本归档
-└── README.md               # 项目文档
+├── netlify/functions/
+│   └── comment.js          # Netlify Serverless 函数
+└── docs/
+    └── tech_report.tex     # LaTeX 技术报告（比赛提交）
+```
 
 ## 🎯 版本历史
 
@@ -363,14 +401,16 @@ MyScore/
 - **数据兼容性**: 4.0.1 与 4.0.0 数据格式完全兼容，现有用户数据不受影响。
 - **本地/登录双模式**: 不登录可选择"本地使用"（AI 每日限 5 次），登录后解锁完整功能并自动同步数据至云端 (4.1.0 新增)。
 - **零依赖**: 整个项目不需要 npm install，所有功能使用 Node.js 内置模块实现。
+- **PWA 离线缓存**: Service Worker 缓存前端资源，**每次大版本更新需同步更新 sw.js 的 CACHE_NAME**，否则旧缓存可能导致 UI 异常。
+- **飞书集成 (可选)**: 配置 `FEISHU_APP_ID` + `FEISHU_APP_SECRET` 即可启用飞书机器人，不配置则隐藏相关入口。
 - **内测邀请码 (可选)**: 在 Zeabur 环境变量中设置 `INVITE_CODES`（逗号分隔），注册时输入有效邀请码可获得「内测」标识。不设置则邀请码功能禁用。
-- **Cloudflare Turnstile (可选)**: Site Key 填入 `app.js`，Secret Key 填入 Zeabur 环境变量 `TURNSTILE_SECRET_KEY`，两者缺一则验证不生效。
+- **Cloudflare Turnstile (可选)**: Site Key 填入前端代码，Secret Key 填入 Zeabur 环境变量 `TURNSTILE_SECRET_KEY`，两者缺一则验证不生效。
 - **备案信息**: 若迁移至自有服务器并面向中国大陆访问，请按监管要求在页脚悬挂备案号并链接工信部备案系统。
 
 ## 📄 许可证
 
 Copyright © LYT, 2026 All Rights Reserved
-联系方式：liuyuntian@ytun.team
+联系方式：liuyuntian@ytunx.com
 
 ![Made with Love](https://img.shields.io/badge/Made_with-❤️_by_Yuntian-ff69b4?style=flat-square)
 

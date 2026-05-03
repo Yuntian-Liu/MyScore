@@ -8,6 +8,8 @@ let currentUser = null;
 let syncTimer = null;
 let selectedAvatarSeed = 'adventurer';
 let loginEmailCache = '';
+let _pendingRegToken = null;
+let _pendingRegUser = null;
 
 var turnstileWidgetId = null;
 var turnstileReady = false;
@@ -272,7 +274,9 @@ async function submitRegister() {
         });
         var data = await res.json();
         if (!res.ok) { logEvent('auth-login-fail', { step: 'register', status: res.status, error: data.error }); showLoginError(data.error || '注册失败'); return; }
-        onLoginSuccess(data.token, data.user);
+        _pendingRegToken = data.token;
+        _pendingRegUser = data.user;
+        goToStep('step-feishu');
     } catch (e) { logEvent('auth-login-fail', { step: 'register', error: 'network' }); showLoginError('网络错误，请检查连接'); }
     finally { btn.disabled = false; btn.textContent = '完成注册'; }
 }
@@ -295,6 +299,98 @@ function onLoginSuccess(token, user) {
         _isSyncing = false;
         if (window.renderDashboard) window.renderDashboard();
     }).catch(function() { _isSyncing = false; });
+}
+
+// ---- 注册后飞书绑定引导 ----
+
+function skipRegFeishu() {
+    if (_pendingRegToken && _pendingRegUser) {
+        onLoginSuccess(_pendingRegToken, _pendingRegUser);
+        _pendingRegToken = null;
+        _pendingRegUser = null;
+    }
+}
+
+var _regFeishuTimer = null;
+
+async function startRegFeishuBind() {
+    var area = document.getElementById('reg-feishu-bind-area');
+    var btn = document.getElementById('btn-reg-feishu-bind');
+    if (!area || !_pendingRegToken) return;
+
+    btn.style.display = 'none';
+    area.innerHTML = '<div style="text-align:center;padding:0.8rem 0;"><div class="feishu-spinner"></div><p style="color:var(--text-muted,#9ca3af);margin-top:0.4rem;font-size:0.85rem;">正在生成绑定码...</p></div>';
+
+    try {
+        var res = await fetch('/api/feishu/bind', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _pendingRegToken }
+        });
+        var data = await res.json();
+        if (!data.ok) throw new Error(data.error || '生成失败');
+        renderRegFeishuCode(data.code);
+    } catch (e) {
+        area.innerHTML = '<p style="color:#ef4444;text-align:center;font-size:0.85rem;">' + (e.message || '网络错误') + '</p>' +
+            '<button class="btn-secondary" onclick="startRegFeishuBind()" style="margin-top:0.5rem;width:100%;">重试</button>';
+        btn.style.display = '';
+    }
+}
+
+function renderRegFeishuCode(code) {
+    var area = document.getElementById('reg-feishu-bind-area');
+    var secondsLeft = 300;
+
+    function updateDisplay() {
+        var m = Math.floor(secondsLeft / 60);
+        var s = secondsLeft % 60;
+        var timeStr = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+
+        area.innerHTML =
+            '<div style="text-align:center;">' +
+                '<p style="color:var(--text-secondary,#6d758d);font-size:0.85rem;font-weight:500;">在飞书搜索 <strong>MyScore</strong>，发送：</p>' +
+                '<div class="feishu-code-display">' + code + '</div>' +
+                '<div style="background:rgba(39,91,86,0.06);border-radius:6px;padding:0.45rem 0.6rem;margin:0.5rem auto;max-width:200px;font-size:0.82rem;display:flex;align-items:center;justify-content:center;gap:0.3rem;cursor:pointer;" onclick="var el=this;navigator.clipboard.writeText(\'绑定 ' + code + '\').then(function(){el.innerHTML=\'✅ 已复制\'})">' +
+                    '<span style="color:var(--text-muted,#9ca3af);">📋</span><code style="background:none;color:var(--text-secondary,#6d758d);font-size:0.85rem;">绑定 ' + code + '</code><span style="color:var(--text-muted,#9ca3af);font-size:0.72rem;margin-left:0.2rem;">点击复制</span>' +
+                '</div>' +
+                '<div class="feishu-countdown" style="justify-content:center;">⏱ ' + timeStr + ' 后过期</div>' +
+                '<button class="btn-secondary" onclick="checkRegFeishuBindStatus()" style="margin-top:0.75rem;width:100%;">我已发送，检查状态</button>' +
+            '</div>';
+
+        if (secondsLeft <= 0) {
+            clearInterval(_regFeishuTimer);
+            _regFeishuTimer = null;
+            area.innerHTML = '<p style="color:#f59e0b;text-align:center;font-size:0.85rem;">绑定码已过期</p>' +
+                '<button class="btn-primary" onclick="startRegFeishuBind()" style="margin-top:0.5rem;width:100%;">重新获取</button>';
+            document.getElementById('btn-reg-feishu-bind').style.display = '';
+        }
+        secondsLeft--;
+    }
+
+    updateDisplay();
+    _regFeishuTimer = setInterval(updateDisplay, 1000);
+}
+
+async function checkRegFeishuBindStatus() {
+    if (_regFeishuTimer) { clearInterval(_regFeishuTimer); _regFeishuTimer = null; }
+    if (!_pendingRegToken || !_pendingRegUser) return;
+
+    try {
+        var res = await fetch('/api/auth/profile', {
+            headers: { 'Authorization': 'Bearer ' + _pendingRegToken }
+        });
+        var data = await res.json();
+        if (data.ok && data.profile && data.profile.feishu_open_id) {
+            _pendingRegUser.feishu_open_id = data.profile.feishu_open_id;
+            showAiToast('飞书绑定成功！欢迎连接 MyScore 🎉');
+            logEvent('feishu', { action: 'bind-success-onboard' });
+            skipRegFeishu();
+        } else {
+            showAiToast('尚未检测到绑定，请确认已在飞书中发送绑定码');
+            startRegFeishuBind();
+        }
+    } catch (e) {
+        showAiToast('检查状态失败，请重试');
+    }
 }
 
 // ---- 退出登录 ----
@@ -783,3 +879,6 @@ window.openAgreementModal = openAgreementModal;
 window.closeAgreementModal = closeAgreementModal;
 window.scheduleCloudSync = scheduleCloudSync;
 window.setUserMode = setUserMode;
+window.skipRegFeishu = skipRegFeishu;
+window.startRegFeishuBind = startRegFeishuBind;
+window.checkRegFeishuBindStatus = checkRegFeishuBindStatus;

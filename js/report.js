@@ -27,6 +27,7 @@ function openReportModal() {
 
     document.getElementById('report-modal').classList.add('active');
     renderReportPreview();
+    _updateShareFeishuButtonVisibility();
 }
 
 function closeReportModal() {
@@ -392,12 +393,59 @@ async function downloadReport() {
     }
 }
 
+// ==================== 分享到飞书 ====================
+async function shareReportToFeishu() {
+    var preview = document.getElementById('report-preview');
+    if (!preview || !preview.querySelector('div[style*="font-family"]')) {
+        showAiToast('请先选择数据生成预览');
+        return;
+    }
+
+    var auth = localStorage.getItem('myscoreauth');
+    if (!auth) { showAiToast('请先登录后再分享到飞书'); return; }
+    var user;
+    try { user = JSON.parse(auth); } catch (e) { showAiToast('登录状态异常'); return; }
+    if (!user.token || !user.feishuOpenId) { showAiToast('请先在设置页绑定飞书'); return; }
+
+    var btn = document.getElementById('report-share-feishu-btn');
+    if (btn) { btn.textContent = '发送中...'; btn.style.pointerEvents = 'none'; }
+
+    try {
+        var res = await fetch('/api/feishu/notify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + user.token },
+            body: JSON.stringify({ type: currentReportType === 'scorecard' ? 'share_scorecard' : 'share_card' })
+        });
+        if (!res.ok) throw new Error();
+        showAiToast('已分享到飞书！');
+        logEvent('report-share-feishu', { type: currentReportType });
+        addXP('export');
+    } catch (e) {
+        showAiToast('分享失败，请重试');
+    } finally {
+        if (btn) { btn.textContent = '分享到飞书 ↗'; btn.style.pointerEvents = ''; }
+    }
+}
+
+function _updateShareFeishuButtonVisibility() {
+    var btn = document.getElementById('report-share-feishu-btn');
+    if (!btn) return;
+    var auth = localStorage.getItem('myscoreauth');
+    if (!auth) { btn.style.display = 'none'; return; }
+    try {
+        var user = JSON.parse(auth);
+        btn.style.display = (user.token && user.feishuOpenId) ? '' : 'none';
+    } catch (e) { btn.style.display = 'none'; }
+}
+
 // ==================== 挂载到 window ====================
 window.openReportModal = openReportModal;
 window.closeReportModal = closeReportModal;
 window.closeReportModalOnBackdrop = closeReportModalOnBackdrop;
 window.selectReportType = selectReportType;
-window.onReportExamChange = onReportExamChange;
+window.onReportChange = onReportChange;
 window.populateRecordSelect = populateRecordSelect;
 window.renderReportPreview = renderReportPreview;
 window.downloadReport = downloadReport;
+window.shareReportToFeishu = shareReportToFeishu;
+window._updateShareFeishuButtonVisibility = _updateShareFeishuButtonVisibility;

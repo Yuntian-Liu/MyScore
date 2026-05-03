@@ -484,6 +484,27 @@
                         <button class="btn-primary" onclick="submitRegister()" id="btn-register" style="width:100%;margin-top:1rem;">完成注册</button>
                         <button class="btn-secondary" onclick="goToStep('step-info')" style="width:100%;margin-top:0.5rem;">返回</button>
                     </div>
+
+                    <!-- Step 3: 飞书绑定（可选，内测功能） -->
+                    <div class="login-step" id="step-feishu">
+                        <div class="feishu-onboard-header">
+                            <div class="feishu-onboard-icon">🚀</div>
+                            <h3 class="feishu-onboard-title">连接飞书机器人</h3>
+                            <span style="display:inline-flex;align-items:center;gap:0.35rem;">
+                                <span class="feishu-beta-badge">内测功能</span>
+                                <span class="info-tooltip" data-tooltip="飞书是一款办公协作工具。绑定后可在飞书接收成绩通知、查询成绩趋势等。此功能需要你加入我们的组织才能找到 MyScore 机器人，目前处于内测阶段。">ⓘ</span>
+                            </span>
+                        </div>
+                        <p class="feishu-onboard-desc">
+                            绑定飞书后，录入成绩会自动推送通知卡片到飞书，还能直接在飞书里查询成绩、看趋势、查成就。
+                        </p>
+                        <div class="feishu-onboard-note">
+                            <strong>💡 这是什么？</strong>飞书是办公协作工具。你需要先加入我们的组织才能找到 MyScore 机器人。如果不了解飞书或暂时不想用，可以直接跳过，以后随时可以在设置页绑定。<br><br>📧 没有收到邀请链接？<a href="mailto:liuyuntian@ytunx.com" style="color:var(--accent,#6366f1);font-weight:600;">联系开发者获取</a>
+                        </div>
+                        <div id="reg-feishu-bind-area"></div>
+                        <button class="btn-primary" onclick="startRegFeishuBind()" id="btn-reg-feishu-bind" style="width:100%;margin-top:0.75rem;">试试连接</button>
+                        <button class="btn-skip" onclick="skipRegFeishu()" id="btn-reg-feishu-skip" style="width:100%;margin-top:0.5rem;">跳过，先去体验</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -816,9 +837,10 @@
         <div id="report-preview" style="background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;min-height:200px;">
             <p style="color:#9ca3af;text-align:center;">选择选项后预览将显示在这里</p>
         </div>
-        <div style="display:flex;gap:1rem;justify-content:flex-end;">
+        <div style="display:flex;gap:1rem;justify-content:flex-end;flex-wrap:wrap;">
             <button class="btn-secondary" onclick="closeReportModal()">取消</button>
             <button class="btn-primary" onclick="downloadReport()">下载报告</button>
+            <button id="report-share-feishu-btn" class="btn-feishu" onclick="shareReportToFeishu()" style="display:none;">分享到飞书 ↗</button>
         </div>
     </div>
 </div>

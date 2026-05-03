@@ -591,7 +591,7 @@ const server = createServer(async (req, res) => {
         return;
       }
       const body = await readJsonBody(req);
-      const result = await sendFeishuNotification(payload.userId, body.record);
+      const result = await sendFeishuNotification(payload.userId, body.record, { type: body.type });
       sendJson(res, 200, { ok: true, ...result }, CORS_HEADERS);
     } catch (err) {
       console.error("[Feishu] Notify error:", err);

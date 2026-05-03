@@ -325,6 +325,8 @@ export const CHANGELOG_CURRENT = `
       <li><strong>飞书交互卡片全面升级</strong>：所有命令使用 column_set 交互式卡片，视觉效果大幅提升</li>
       <li><strong>设置页飞书区块</strong>：绑定状态展示 / 6 位码大字展示 / 引导步骤 / 解绑功能</li>
       <li><strong>导出日志飞书状态</strong>：日志导出新增 Feishu Bound 字段，便于排查绑定问题</li>
+      <li><strong>报告页「分享到飞书」</strong>：导出报告页新增分享按钮，支持将成绩单或分享卡片一键推送至飞书会话（需绑定飞书）</li>
+      <li><strong>注册流程飞书引导</strong>：注册完成后新增可选的飞书绑定引导步骤，含 ⓘ 悬浮提示、绑定码生成、跳过功能，降低新用户使用门槛</li>
     </ul>
   </div>
   <div class="changelog-section">
@@ -582,7 +584,7 @@ export const GUIDE_SECTIONS = [
         <div class="guide-quick-item"><span class="guide-num">3</span>左下角「快捷工具」可展开工具箱（桌面端 hover，移动端点击），内含设置、伴学助手、版本日志</div>
         <div class="guide-quick-item"><span class="guide-num">4</span>注册账号后数据自动同步云端，换设备不丢失</div>
         <div class="guide-quick-item"><span class="guide-num">5</span>每日打卡积累经验值，解锁成就徽章</div>
-        <div class="guide-quick-item"><span class="guide-num">6</span>设置页可绑定飞书机器人，录入成绩后自动收到飞书通知卡片</div>
+        <div class="guide-quick-item"><span class="guide-num">6</span>设置页或注册时均可绑定飞书机器人，录入成绩后自动收到飞书通知，报告页还可分享到飞书</div>
         <div class="guide-quick-item"><span class="guide-num">7</span>点击右上角头像 → 查看个人名片（等级/经验/打卡/成就一览）</div>
       </div>
     </div>`
@@ -736,6 +738,31 @@ export const GUIDE_SECTIONS = [
         <li><strong>解绑方式</strong>：设置页 → 飞书集成区域 → 点击「解绑飞书」</li>
       </ul>
       <p class="guide-desc" style="margin-top:0.5rem;font-size:0.82rem;color:var(--text-muted);">未绑定飞书时，通知功能自动跳过，不影响正常使用。</p>
+    </div>
+    <div class="guide-section">
+      <div class="guide-section-title">
+        <span class="guide-icon" style="background:linear-gradient(135deg,#10b981,#0ea5e9);">分</span>
+        报告分享到飞书
+      </div>
+      <p class="guide-desc">在报告导出页面生成预览后，如果已绑定飞书，会出现「分享到飞书 ↗」按钮：</p>
+      <ul class="guide-list">
+        <li><strong>成绩单模式</strong>：按考试类型分组推送最近成绩摘要到飞书</li>
+        <li><strong>分享卡片模式</strong>：推送单次成绩的大字总分卡片 + 各科明细 + 趋势对比</li>
+        <li><strong>使用条件</strong>：已登录 + 已绑定飞书（按钮自动显示/隐藏）</li>
+      </ul>
+    </div>
+    <div class="guide-section">
+      <div class="guide-section-title">
+        <span class="guide-icon" style="background:linear-gradient(135deg,#f59e0b,#6366f1);">注</span>
+        注册时绑定引导
+      </div>
+      <p class="guide-desc">新用户注册完成后，会看到可选的<strong>飞书绑定引导步骤</strong>（标注为内测功能）：</p>
+      <ul class="guide-list">
+        <li>可点击「试试连接」获取 6 位绑定码，直接在注册流程中完成绑定</li>
+        <li>也可点击「跳过，先去体验」跳过此步骤，以后随时在设置页绑定</li>
+        <li>鼠标悬浮 ⓘ 图标可查看简要说明（什么是飞书、为什么是内测、如何获取邀请）</li>
+        <li>没有组织邀请链接？提示栏提供「联系开发者获取」入口</li>
+      </ul>
     </div>`
   },
   { id: 'guide-growth', label: '成长体系', content: `
