@@ -360,7 +360,6 @@ async function downloadReport() {
     try {
         canvas = await _captureWithTimeout(wrapper1, canvasOpts, 8000);
     } catch (e) {
-        console.warn('[Report] 原版截图超时，使用系统字体重试');
     } finally {
         document.body.removeChild(wrapper1);
     }

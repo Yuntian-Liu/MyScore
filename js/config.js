@@ -200,7 +200,7 @@ export const IELTS_TABLES = {
     ]
 };
 
-export const APP_VERSION = '5.4.0-beta';
+export const APP_VERSION = '5.5.0-beta';
 export const CHANGELOG_STORAGE_KEY = 'myscore_changelog_seen_' + APP_VERSION;
 
 export const PET_STORAGE_KEY = 'myscore_pet_state';
@@ -309,6 +309,56 @@ export const CHANGELOG_CURRENT = `
 </div>
 <div class="changelog-entry">
   <div class="changelog-header">
+    <span class="changelog-version">V5.5.0-beta</span>
+    <span class="changelog-date">2026-05-03</span>
+  </div>
+  <div class="changelog-codename">Feishu Integration（飞书集成）</div>
+  <div class="changelog-section">
+    <div class="changelog-section-title">
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#4285f4,#f9ab00);">★</span>
+      新增
+    </div>
+    <ul class="changelog-list">
+      <li><strong>飞书机器人完整对接</strong>：9 种命令全覆盖（绑定/查询/趋势/目标/成就/统计/历史/打卡/等级）</li>
+      <li><strong>6 位码绑定流程</strong>：设置页生成绑定码 → 飞书发送匹配 → 自动关联账号，5 分钟有效期 + 实时倒计时</li>
+      <li><strong>飞书成绩通知卡片</strong>：录入成绩后自动推送交互式卡片到飞书（总分大字 + 分项明细 + AI 摘要）</li>
+      <li><strong>飞书交互卡片全面升级</strong>：所有命令使用 column_set 交互式卡片，视觉效果大幅提升</li>
+      <li><strong>设置页飞书区块</strong>：绑定状态展示 / 6 位码大字展示 / 引导步骤 / 解绑功能</li>
+      <li><strong>导出日志飞书状态</strong>：日志导出新增 Feishu Bound 字段，便于排查绑定问题</li>
+    </ul>
+  </div>
+  <div class="changelog-section">
+    <div class="changelog-section-title">
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#8b5cf6,#3b82f6);">~</span>
+      优化
+    </div>
+    <ul class="changelog-list">
+      <li>飞书绑定码移动端适配 — 缩小字体和间距，窄屏不再溢出</li>
+      <li>清理 console.warn 调试语句 — dashboard/auth/report 共 8 处</li>
+      <li>站内使用文档更新 — 飞书命令表补充至 9 个命令</li>
+    </ul>
+  </div>
+  <div class="changelog-section">
+    <div class="changelog-section-title">
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#ef4444,#f97316);">!</span>
+      修复
+    </div>
+    <ul class="changelog-list">
+      <li>飞书通知不推送 — sendFeishuNotification 误用 findUserByUid（按 uid 整数查找），改为 findUserById（按 id 时间戳查找）</li>
+      <li>飞书「成就」命令无响应 — import("../js/config.js") 在 Node.js 环境失败（config.js 使用 document API），改为本地 ACHIEVEMENTS 数组</li>
+      <li>飞书「等级」命令 RangeError — XP 计算公式错误导致负数，修正为 total / (80 * level)</li>
+      <li>前端飞书绑定状态不同步 — 移除前端 feishuOpenId 检查，改为服务端判断</li>
+      <li>绑定码复制按钮 this 上下文错误 — 箭头函数中 this 指向全局对象，改用 var el=this 缓存</li>
+      <li>桌宠气泡移动端溢出 — 移除 inline width: 220px，交由 CSS 媒体查询控制</li>
+      <li>飞书重复推送 — webhook 重试导致旧命令被重复处理，添加 event_id 去重机制</li>
+    </ul>
+  </div>
+</div>`;
+
+// ==================== 版本日志：历史版本 ====================
+export const CHANGELOG_HISTORY = `
+<div class="changelog-entry">
+  <div class="changelog-header">
     <span class="changelog-version">V5.4.0-beta</span>
     <span class="changelog-date">2026-05-04</span>
   </div>
@@ -330,19 +380,16 @@ export const CHANGELOG_CURRENT = `
   <div class="changelog-section">
     <div class="changelog-section-title">
       <span class="changelog-icon" style="background:linear-gradient(135deg,#8b5cf6,#3b82f6);">~</span>
-      后端
+      优化
     </div>
     <ul class="changelog-list">
-      <li>server.js 新增 POST /api/feishu/bind（绑定码生成）和 POST /api/feishu/notify（通知推送）两个路由</li>
-      <li>db.js 新增 feishu_open_id 字段 + updateUserFeishuOpenId() / findUserByFeishuOpenId() 函数</li>
-      <li>auth.js 登录/恢复/更新三处同步 feishuOpenId 字段到前端存储</li>
-      <li>profile PUT 接口支持 feishu_open_id 更新（用于解绑）</li>
+      <li>server.js 新增 POST /api/feishu/bind 和 /api/feishu/notify 路由</li>
+      <li>db.js 新增 feishu_open_id 字段与查询函数</li>
+      <li>auth.js 登录/恢复/更新三处同步飞书绑定状态</li>
+      <li>profile PUT 接口支持飞书解绑</li>
     </ul>
   </div>
-</div>`;
-
-// ==================== 版本日志：历史版本 ====================
-export const CHANGELOG_HISTORY = `
+</div>
 <div class="changelog-entry">
   <div class="changelog-header">
     <span class="changelog-version">V5.3.0-beta</span>
@@ -647,7 +694,7 @@ export const GUIDE_SECTIONS = [
         <span class="guide-icon" style="background:linear-gradient(135deg,#0ea5e9,#6366f1);">飞</span>
         飞书机器人绑定
       </div>
-      <p class="guide-desc">绑定飞书后，每次录入成绩都会自动推送精美的通知卡片到你的飞书。还可以在飞书中直接查询成绩、查看趋势和目标进度。</p>
+      <p class="guide-desc">绑定飞书后，每次录入成绩都会自动推送精美的通知卡片到你的飞书。还可以在飞书中直接查询成绩、查看趋势、目标进度、统计概览、历史记录、打卡状态和等级信息。</p>
       <div class="guide-steps-list">
         <div class="guide-step"><div class="guide-step-num">1</div><div><strong>打开飞书</strong>：在飞书搜索框中搜索 <strong style="color:var(--accent);">MyScore</strong>，进入机器人对话</div></div>
         <div class="guide-step"><div class="guide-step-num">2</div><div><strong>获取绑定码</strong>：回到 MyScore 网站设置页，点击「获取绑定码」，获得 6 位数字码</div></div>
@@ -661,7 +708,7 @@ export const GUIDE_SECTIONS = [
         <span class="guide-icon" style="background:linear-gradient(135deg,#0ea5e9,#10b981);">令</span>
         机器人命令
       </div>
-      <p class="guide-desc">绑定成功后，在飞书中直接发送以下关键词即可与 MyScore 交互：</p>
+      <p class="guide-desc">绑定成功后，在飞书中直接发送以下关键词即可与 MyScore 交互（共 9 个命令）：</p>
       <table class="guide-table">
         <thead><tr><th>命令</th><th>功能</th><th>返回形式</th></tr></thead>
         <tbody>
@@ -669,6 +716,10 @@ export const GUIDE_SECTIONS = [
           <tr><td><code style="background:rgba(39,91,86,0.08);padding:2px 8px;border-radius:4px;">趋势</code></td><td>最近 5 次成绩变化走势（含升降箭头）</td><td>文字消息</td></tr>
           <tr><td><code style="background:rgba(39,91,86,0.08);padding:2px 8px;border-radius:4px;">目标</code></td><td>各科目目标完成进度百分比 + 进度条</td><td>文字消息</td></tr>
           <tr><td><code style="background:rgba(39,91,86,0.08);padding:2px 8px;border-radius:4px;">成就</code></td><td>已解锁的成就列表</td><td>交互式卡片</td></tr>
+          <tr><td><code style="background:rgba(39,91,86,0.08);padding:2px 8px;border-radius:4px;">统计</code></td><td>成绩统计概览（总记录数、平均分、最高分等）</td><td>交互式卡片</td></tr>
+          <tr><td><code style="background:rgba(39,91,86,0.08);padding:2px 8px;border-radius:4px;">历史</code></td><td>最近 5 次成绩记录摘要</td><td>交互式卡片</td></tr>
+          <tr><td><code style="background:rgba(39,91,86,0.08);padding:2px 8px;border-radius:4px;">打卡</code></td><td>今日打卡状态与连续天数</td><td>交互式卡片</td></tr>
+          <tr><td><code style="background:rgba(39,91,86,0.08);padding:2px 8px;border-radius:4px;">等级</code></td><td>当前等级、XP 进度与段位信息</td><td>交互式卡片</td></tr>
           <tr><td><code style="background:rgba(39,91,86,0.08);padding:2px 8px;border-radius:4px;">帮助</code></td><td>所有可用命令的快速参考</td><td>帮助卡片</td></tr>
         </tbody>
       </table>
@@ -794,14 +845,14 @@ export const GUIDE_SECTIONS = [
   }
 ];
 
-export var USER_AGREEMENT_HTML = '<h3>一、服务描述</h3><p>MyScore（以下简称"本服务"）是一款成绩记录与管理工具，提供成绩录入、趋势分析、AI 评价反馈及云端数据同步等功能。本服务由碳碳四键（以下简称"我们"）开发并运营。</p><p>本服务目前处于内测阶段，功能和界面可能随时调整。我们保留随时修改、暂停或终止服务的权利。</p><h3>二、用户账号</h3><p>1. 您需要通过邮箱验证码注册账号以使用云端同步功能。未登录状态下，数据仅保存在浏览器本地存储中。</p><p>2. 您应妥善保管账号信息和密码，因账号信息泄露导致的损失由您自行承担。</p><p>3. 您不得将账号转让、出借给他人使用。违反此规定产生的一切后果由您自行承担。</p><p>4. 您承诺注册信息真实有效，如发现虚假信息，我们有权暂停或终止您的账号。</p><h3>三、用户行为规范</h3><p>1. 您承诺不利用本服务从事任何违反法律法规的活动。</p><p>2. 您不得通过技术手段干扰本服务的正常运行，包括但不限于攻击、爬虫、注入等行为。</p><p>3. 您不得批量注册账号或恶意占用系统资源（如高频发送验证码请求）。</p><p>4. 您在使用 AI 功能时，不得输入违反法律法规或公序良俗的内容。我们保留在发现违规内容时中断服务并封禁账号的权利。</p><h3>四、知识产权</h3><p>本服务的所有内容（包括但不限于界面设计、代码、文案、图标）均受知识产权法保护。未经我们书面许可，您不得复制、修改或分发相关内容。</p><p>您在本服务中录入的成绩数据，知识产权归您所有。</p><h3>五、AI 功能说明</h3><p>1. 本服务提供 AI 评价反馈和伴学助手功能，由第三方 AI 大模型（DeepSeek）驱动。</p><p>2. AI 生成的内容仅供参考，不构成任何学术建议、医学建议或专业意见。您应自行判断 AI 建议的合理性。</p><p>3. AI 模型可能产生不准确、不适当或过时的内容，我们不对 AI 生成内容的准确性、完整性承担保证责任。</p><p>4. AI 功能依赖第三方服务商的可用性，如服务商故障可能导致 AI 功能暂时不可用。</p><h3>六、服务可用性</h3><p>1. 我们将尽合理努力保障服务的持续可用，但不保证服务不出现中断、延迟或错误。</p><p>2. 因服务器维护、网络故障、第三方服务商故障等不可控因素导致的服务中断，我们不承担责任，但会尽快恢复。</p><p>3. 因不可抗力（如自然灾害、政策变化）导致的服务终止或数据丢失，我们不承担责任。</p><h3>七、免责声明</h3><p>1. 本服务按"现状"提供，我们不对其适用性、可靠性、及时性作任何明示或暗示的保证。</p><p>2. 因系统故障、自然灾害等原因导致的数据丢失，我们不承担责任，但会尽合理努力保障数据安全。</p><p>3. 您通过本服务获取的任何信息或 AI 建议，均需自行判断其适用性，我们不对由此产生的任何损失承担责任。</p><h3>八、协议变更</h3><p>我们有权在必要时修改本协议条款。变更后的协议将在本页面更新。继续使用本服务即视为同意变更后的条款。如您不同意变更内容，应立即停止使用本服务。</p><h3>九、适用法律</h3><p>本协议适用中华人民共和国法律。如发生争议，双方应友好协商解决；协商不成的，任一方有权向本服务运营主体所在地有管辖权的法院提起诉讼。</p>';
+export var USER_AGREEMENT_HTML = '<h3>一、服务描述</h3><p>MyScore（以下简称"本服务"）是一款成绩记录与管理工具，提供成绩录入、趋势分析、AI 评价反馈、云端数据同步及飞书机器人通知等功能。本服务由碳碳四键（以下简称"我们"）开发并运营。</p><p>本服务目前处于内测阶段，功能和界面可能随时调整。我们保留随时修改、暂停或终止服务的权利。</p><h3>二、用户账号</h3><p>1. 您需要通过邮箱验证码注册账号以使用云端同步功能。未登录状态下，数据仅保存在浏览器本地存储中。</p><p>2. 您应妥善保管账号信息和密码，因账号信息泄露导致的损失由您自行承担。</p><p>3. 您不得将账号转让、出借给他人使用。违反此规定产生的一切后果由您自行承担。</p><p>4. 您承诺注册信息真实有效，如发现虚假信息，我们有权暂停或终止您的账号。</p><h3>三、用户行为规范</h3><p>1. 您承诺不利用本服务从事任何违反法律法规的活动。</p><p>2. 您不得通过技术手段干扰本服务的正常运行，包括但不限于攻击、爬虫、注入等行为。</p><p>3. 您不得批量注册账号或恶意占用系统资源（如高频发送验证码请求）。</p><p>4. 您在使用 AI 功能时，不得输入违反法律法规或公序良俗的内容。我们保留在发现违规内容时中断服务并封禁账号的权利。</p><p>5. 您在使用飞书机器人功能时，应遵守飞书开放平台的使用规范。不得利用机器人功能发送垃圾信息或从事违规活动。</p><h3>四、知识产权</h3><p>本服务的所有内容（包括但不限于界面设计、代码、文案、图标）均受知识产权法保护。未经我们书面许可，您不得复制、修改或分发相关内容。</p><p>您在本服务中录入的成绩数据，知识产权归您所有。</p><h3>五、AI 功能说明</h3><p>1. 本服务提供 AI 评价反馈和伴学助手功能，由第三方 AI 大模型（DeepSeek）驱动。</p><p>2. AI 生成的内容仅供参考，不构成任何学术建议、医学建议或专业意见。您应自行判断 AI 建议的合理性。</p><p>3. AI 模型可能产生不准确、不适当或过时的内容，我们不对 AI 生成内容的准确性、完整性承担保证责任。</p><p>4. AI 功能依赖第三方服务商的可用性，如服务商故障可能导致 AI 功能暂时不可用。</p><p>5. 飞书机器人中的 AI 摘要和评论内容同样由上述 AI 服务生成，适用本条所有规定。</p><h3>六、服务可用性</h3><p>1. 我们将尽合理努力保障服务的持续可用，但不保证服务不出现中断、延迟或错误。</p><p>2. 因服务器维护、网络故障、第三方服务商故障等不可控因素导致的服务中断，我们不承担责任，但会尽快恢复。</p><p>3. 因不可抗力（如自然灾害、政策变化）导致的服务终止或数据丢失，我们不承担责任。</p><h3>七、免责声明</h3><p>1. 本服务按"现状"提供，我们不对其适用性、可靠性、及时性作任何明示或暗示的保证。</p><p>2. 因系统故障、自然灾害等原因导致的数据丢失，我们不承担责任，但会尽合理努力保障数据安全。</p><p>3. 您通过本服务获取的任何信息或 AI 建议，均需自行判断其适用性，我们不对由此产生的任何损失承担责任。</p><p>4. 飞书通知推送依赖飞书开放平台的可用性，如飞书服务中断或接口变更，可能导致通知功能暂时不可用，我们不承担责任。</p><h3>八、协议变更</h3><p>我们有权在必要时修改本协议条款。变更后的协议将在本页面更新。继续使用本服务即视为同意变更后的条款。如您不同意变更内容，应立即停止使用本服务。</p><h3>九、适用法律</h3><p>本协议适用中华人民共和国法律。如发生争议，双方应友好协商解决；协商不成的，任一方有权向本服务运营主体所在地有管辖权的法院提起诉讼。</p>';
 
-export var PRIVACY_POLICY_HTML = '<h3>一、信息收集</h3><p>我们收集以下信息以提供服务：</p><p>1. <strong>账号信息</strong>：邮箱地址、昵称、头像选择。</p><p>2. <strong>成绩数据</strong>：您录入的考试成绩、自定义考试类型、目标分数。</p><p>3. <strong>使用记录</strong>：AI 评价对话历史（最近 30 条）。</p><p>我们不会收集您的真实姓名、身份证号、手机号等敏感信息。</p><h3>二、信息使用</h3><p>您的信息仅用于以下目的：</p><p>1. 提供云端数据同步服务，使您可以在不同设备上访问成绩数据。</p><p>2. 生成 AI 学习评价与陪学反馈。</p><p>3. 改善产品体验和服务质量。</p><p>我们不会将您的数据出售或分享给第三方。我们不会使用您的数据训练 AI 模型。</p><h3>三、信息存储</h3><p>1. 未登录状态下，所有数据存储在您的浏览器本地（localStorage）。</p><p>2. 登录后，数据同步至我们的服务器并加密存储。服务器部署在境外，由开发者自行运维管理。</p><p>3. 由于本服务包含 AI 对话功能，服务器部署于境外以确保 AI 服务的可用性和稳定性。所有数据由开发者直接管理，不经过任何第三方服务，数据安全可控。</p><h3>四、信息保护</h3><p>1. 密码采用单向哈希加密存储，我们无法查看您的明文密码。</p><p>2. 身份认证采用 JWT 令牌机制，有效期为 30 天。</p><p>3. 所有 API 通信采用 HTTPS 加密传输。</p><p>4. 数据存储使用持久卷，服务器重启或更新不会导致数据丢失。</p><h3>五、用户权利</h3><p>1. 您可以随时通过"导出数据"功能下载您的全部数据。</p><p>2. 您可以随时退出登录并清除本地数据。</p><p>3. 如需删除云端数据，请通过服务内的联系渠道联系我们，我们将在合理时间内处理。</p><p>4. 您有权拒绝我们收集非必要信息，但可能影响部分功能的使用。</p><h3>六、Cookie 与本地存储</h3><p>本服务使用浏览器 localStorage 存储数据，不使用第三方 Cookie，不加载任何第三方追踪脚本。localStorage 数据仅存在于您的设备上，我们无法远程访问。</p><h3>七、第三方服务</h3><p>本服务使用以下第三方服务：</p><p>1. <strong>DeepSeek API</strong>：用于生成 AI 学习评价。评价内容会发送至 DeepSeek 服务器处理，但我们不会将您的个人信息（如邮箱、昵称）一并发送。</p><p>2. <strong>Resend</strong>：用于发送注册验证码邮件。Resend 仅处理邮箱地址，不获取其他数据。</p><p>3. <strong>DiceBear</strong>：用于生成头像。头像由随机种子生成，不关联您的个人信息。</p><p>上述服务均有其自身的隐私政策，建议您查阅相关条款。</p><h3>八、数据保留与删除</h3><p>1. 您的账号数据会在服务运营期间持续保留。</p><p>2. 如果您希望删除账号及所有数据，请联系我们，我们将在核实身份后 7 个工作日内完成删除。</p><p>3. 服务停止运营时，我们会提前 30 天通知用户，并提供数据导出和删除的渠道。</p><h3>九、未成年人保护</h3><p>本服务主要面向学生群体。未满 14 周岁的用户在注册前应取得监护人的同意。我们不会针对性地收集未成年人的额外信息。</p><h3>十、政策更新</h3><p>本隐私政策可能在必要时更新。重大变更将通过站内通知告知您。继续使用本服务即视为同意更新后的政策。</p><p style="margin-top:1rem;color:#9ca3af;">最后更新：2026 年 4 月</p>';
+export var PRIVACY_POLICY_HTML = '<h3>一、信息收集</h3><p>我们收集以下信息以提供服务：</p><p>1. <strong>账号信息</strong>：邮箱地址、昵称、头像选择。</p><p>2. <strong>成绩数据</strong>：您录入的考试成绩、自定义考试类型、目标分数。</p><p>3. <strong>使用记录</strong>：AI 评价对话历史（最近 30 条）。</p><p>4. <strong>飞书绑定信息</strong>：如您选择绑定飞书机器人，我们会记录飞书 Open ID 用于推送成绩通知。飞书 Open ID 由飞书平台生成，不包含您的真实姓名或手机号。</p><p>我们不会收集您的真实姓名、身份证号、手机号等敏感信息。</p><h3>二、信息使用</h3><p>您的信息仅用于以下目的：</p><p>1. 提供云端数据同步服务，使您可以在不同设备上访问成绩数据。</p><p>2. 生成 AI 学习评价与陪学反馈。</p><p>3. 在您绑定飞书后，向您推送成绩通知和查询结果。</p><p>4. 改善产品体验和服务质量。</p><p>我们不会将您的数据出售或分享给第三方。我们不会使用您的数据训练 AI 模型。</p><h3>三、信息存储</h3><p>1. 未登录状态下，所有数据存储在您的浏览器本地（localStorage）。</p><p>2. 登录后，数据同步至我们的服务器并加密存储。服务器部署在境外，由开发者自行运维管理。</p><p>3. 由于本服务包含 AI 对话功能，服务器部署于境外以确保 AI 服务的可用性和稳定性。所有数据由开发者直接管理，不经过任何第三方服务，数据安全可控。</p><p>4. 飞书 Open ID 存储在服务器数据库中，仅用于匹配飞书用户与 MyScore 账号，不与其他数据关联分析。</p><h3>四、信息保护</h3><p>1. 密码采用单向哈希加密存储，我们无法查看您的明文密码。</p><p>2. 身份认证采用 JWT 令牌机制，有效期为 30 天。</p><p>3. 所有 API 通信采用 HTTPS 加密传输。</p><p>4. 数据存储使用持久卷，服务器重启或更新不会导致数据丢失。</p><h3>五、用户权利</h3><p>1. 您可以随时通过"导出数据"功能下载您的全部数据。</p><p>2. 您可以随时退出登录并清除本地数据。</p><p>3. 您可以随时在设置页解绑飞书，解绑后我们将停止向您推送通知并删除服务器上的飞书 Open ID。</p><p>4. 如需删除云端数据，请通过服务内的联系渠道联系我们，我们将在合理时间内处理。</p><p>5. 您有权拒绝我们收集非必要信息，但可能影响部分功能的使用。</p><h3>六、Cookie 与本地存储</h3><p>本服务使用浏览器 localStorage 存储数据，不使用第三方 Cookie，不加载任何第三方追踪脚本。localStorage 数据仅存在于您的设备上，我们无法远程访问。</p><h3>七、第三方服务</h3><p>本服务使用以下第三方服务：</p><p>1. <strong>DeepSeek API</strong>：用于生成 AI 学习评价。评价内容会发送至 DeepSeek 服务器处理，但我们不会将您的个人信息（如邮箱、昵称）一并发送。</p><p>2. <strong>Resend</strong>：用于发送注册验证码邮件。Resend 仅处理邮箱地址，不获取其他数据。</p><p>3. <strong>DiceBear</strong>：用于生成头像。头像由随机种子生成，不关联您的个人信息。</p><p>4. <strong>飞书开放平台</strong>：用于成绩通知推送和飞书机器人交互。绑定时会向飞书发送您的成绩数据摘要，飞书平台的隐私政策适用于该部分数据处理。</p><p>上述服务均有其自身的隐私政策，建议您查阅相关条款。</p><h3>八、数据保留与删除</h3><p>1. 您的账号数据会在服务运营期间持续保留。</p><p>2. 如果您希望删除账号及所有数据，请联系我们，我们将在核实身份后 7 个工作日内完成删除。</p><p>3. 服务停止运营时，我们会提前 30 天通知用户，并提供数据导出和删除的渠道。</p><h3>九、未成年人保护</h3><p>本服务主要面向学生群体。未满 14 周岁的用户在注册前应取得监护人的同意。我们不会针对性地收集未成年人的额外信息。</p><h3>十、政策更新</h3><p>本隐私政策可能在必要时更新。重大变更将通过站内通知告知您。继续使用本服务即视为同意更新后的政策。</p><p style="margin-top:1rem;color:#9ca3af;">最后更新：2026 年 5 月 3 日</p>';
 
 export const BETA_BANNER = {
     enabled: true,
     items: [
-        'V5.4.0-beta 更新：飞书机器人完整集成（绑定/通知/6种命令/卡片模板）',
+        'V5.5.0-beta 更新：飞书机器人 9 命令全覆盖 + 交互卡片升级',
         '设置页一键绑定飞书，录入成绩自动推送卡片通知到飞书',
         '感谢 <span class="banner-name banner-name-red">大鲨鱼</span><span class="banner-name banner-name-blue">Osc</span><span class="banner-name banner-name-green">处方</span> 的反馈贡献'
     ]

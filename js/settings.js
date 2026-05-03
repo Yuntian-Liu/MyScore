@@ -290,7 +290,7 @@ function renderBindCodeDisplay(code) {
             '<p style="color:var(--text-secondary);font-size:0.875rem;font-weight:500;">在飞书搜索 <strong>MyScore</strong>，发送以下内容：</p>' +
             '<div class="feishu-code-display">' + code + '</div>' +
             '<p style="color:var(--text-muted);font-size:0.85rem;margin-top:0.5rem;">复制后在飞书中粘贴发送</p>' +
-            '<div style="background:rgba(39,91,86,0.06);border-radius:6px;padding:0.5rem 0.75rem;margin:0.5rem 0;font-size:0.82rem;display:flex;align-items:center;justify-content:center;gap:0.3rem;cursor:pointer;" onclick="navigator.clipboard.writeText(\'绑定 ' + code + '\').then(function(){this.style.color=\'var(--accent)\';this.innerHTML=\'✅ 已复制：绑定 ' + code + '\'})" id="feishu-copy-btn">' +
+            '<div style="background:rgba(39,91,86,0.06);border-radius:6px;padding:0.5rem 0.75rem;margin:0.5rem 0;font-size:0.82rem;display:flex;align-items:center;justify-content:center;gap:0.3rem;cursor:pointer;" onclick="var el=this;navigator.clipboard.writeText(\'绑定 ' + code + '\').then(function(){el.style.color=\'var(--accent)\';el.innerHTML=\'✅ 已复制：绑定 ' + code + '\'})" id="feishu-copy-btn">' +
             '<span style="color:var(--text-muted);">📋</span><code style="background:none;color:var(--text-secondary);font-size:0.85rem;">绑定 ' + code + '</code><span style="color:var(--text-muted);font-size:0.75rem;margin-left:0.25rem;">点击复制</span></div>' +
             '<div class="feishu-countdown" id="feishu-timer">⏱ ' + timeStr + ' 后过期</div>' +
             '<button class="btn-secondary" onclick="checkFeishuBindStatus()" style="margin-top:1rem;width:100%;">我已发送，检查状态</button>' +

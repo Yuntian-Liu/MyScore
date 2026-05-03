@@ -265,13 +265,11 @@ async function fetchPrediction(examType, recs, exam, _retryCount, _targetEl) {
             var jsonMatch = comment.match(/\{[\s\S]*\}/);
             data = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
         } catch {
-            console.warn('[Prediction] JSON parse failed, raw:', comment.substring(0, 200));
             data = null;
         }
 
         // JSON 解析失败或无有效预测数据 → 显示错误+重试
         if (!data || !data.prediction) {
-            console.warn('[Prediction] no prediction field, raw:', comment.substring(0, 200));
             throw new Error('Invalid prediction response');
         }
         // 兼容 "overall" / "总分" 等总分子段
@@ -284,7 +282,6 @@ async function fetchPrediction(examType, recs, exam, _retryCount, _targetEl) {
             }
         }
         if (data.prediction.total === undefined) {
-            console.warn('[Prediction] no total field, keys:', Object.keys(data.prediction), 'raw:', comment.substring(0, 200));
             throw new Error('Invalid prediction response');
         }
 
@@ -332,7 +329,6 @@ async function fetchPrediction(examType, recs, exam, _retryCount, _targetEl) {
             }
         }
     } catch (e) {
-        console.warn('[Prediction] failed for', examType, e);
         _predictionFailCache[examType] = Date.now();
         targetEl = _targetEl || document.getElementById('prediction-content');
         if (!targetEl) return;
@@ -725,7 +721,6 @@ async function fetchWeaknessAnalysis(examType, recs, exam) {
         _weaknessCache[cacheKey] = { data: data, ts: Date.now() };
         el.innerHTML = renderWeaknessHTML(data, exam);
     } catch (e) {
-        console.warn('[Weakness] failed for', examType, e);
         el.innerHTML = '<div class="weakness-error">分析暂时不可用</div>';
     }
 }

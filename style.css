@@ -5224,4 +5224,8 @@
     #report-preview > div > div[style*="border-radius:20px"] > div[style*="display:flex"] {
         flex-wrap: wrap;
     }
+    .feishu-code-display {
+        font-size: 1.8rem;
+        letter-spacing: 0.2em;
+    }
 }

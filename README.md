@@ -1,9 +1,9 @@
 ﻿<div align="center">
 
-# MyScore - AI 智能成绩管理系统 · V5.3.0-beta
+# MyScore - AI 智能成绩管理系统 · V5.5.0-beta
 
 <p>
-    <img src="https://img.shields.io/badge/v5.3.0--beta-Trend_Prediction-7c3aed?style=flat-square&logo=rocket&logoColor=white" alt="Version">
+    <img src="https://img.shields.io/badge/v5.5.0--beta-Feishu_Expansion-7c3aed?style=flat-square&logo=rocket&logoColor=white" alt="Version">
     <img src="https://img.shields.io/badge/Model-DeepSeek-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
     <img src="https://img.shields.io/badge/Deploy-Netlify_%2B_Zeabur-5468ff?style=flat-square&logo=vercel&logoColor=white" alt="Deploy">
     <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=flat-square" alt="License">
@@ -13,11 +13,26 @@
 
 </div>
 
-一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V5.3.0-beta**，完成趋势图各科预测、报告导出优化与成就系统修复。
+一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V5.5.0-beta**，飞书机器人扩展至 9 个命令，交互卡片全面升级。
 
 ## 🔔 最新版本速览
 
-### V5.3.0-beta (Current)
+### V5.5.0-beta (Current)
+- ✅ **飞书机器人完整对接**：9 种命令全覆盖（绑定/查询/趋势/目标/成就/统计/历史/打卡/等级）
+- ✅ **6 位码绑定流程**：设置页生成绑定码 → 飞书发送匹配 → 自动关联账号
+- ✅ **飞书成绩通知卡片**：录入成绩后自动推送交互式卡片到飞书
+- ✅ **飞书交互卡片升级**：所有命令使用 column_set 交互式卡片，视觉效果大幅提升
+- ✅ **设置页飞书区块**：绑定状态展示 / 6 位码大字展示 / 引导步骤 / 解绑功能
+- ✅ **导出日志增强**：新增飞书绑定状态字段
+- 🔧 **修复飞书通知 uid/id 字段混淆**
+- 🔧 **修复成就命令浏览器模块导入失败**
+
+### V5.4.0-beta
+- ✅ **飞书机器人完整对接**：命令路由系统 + 6 位码绑定流程 + 成绩通知卡片
+- ✅ **6 种卡片模板**：欢迎卡 / 成绩通知卡 / 查询结果卡 / 趋势文字 / 目标进度 / 成就墙
+- ✅ **设置页飞书区块**：绑定状态展示 / 6 位码大字展示 / 引导步骤 / 解绑功能
+
+### V5.3.0-beta
 - ✅ **个人名片**：点击头像查看完整名片（等级卡片 + 数据概览 + 成就墙 + 经验来源明细）
 - ✅ **AI 流式输出**：后端 SSE 流式代理 + 前端逐字显示 + 「正在思考」打字机动效
 - ✅ **游戏化 UI 组件**：导航栏经验条、连续打卡胶囊、成就墙徽章条

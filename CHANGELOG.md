@@ -5,6 +5,31 @@ The format is based on [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [5.5.0-beta] - 2026-05-03
+
+**代号：Feishu Integration（飞书集成）**
+
+### Added
+- ✅ **飞书机器人 9 命令全覆盖**：绑定/查询/趋势/目标/成就/统计/历史/打卡/等级
+- ✅ **飞书交互卡片全面升级**：所有命令使用 column_set 交互式卡片
+- ✅ **导出日志飞书状态**：exportLogs 新增 Feishu Bound 字段
+
+### Changed
+- 🔄 飞书绑定码移动端适配 — font-size 2.5rem→1.8rem
+- 🔄 清理 console.warn 调试语句 — dashboard/auth/report 共 8 处
+- 🔄 站内使用文档飞书命令表补充至 9 个命令
+- 🔄 用户协议/隐私政策新增飞书相关条款
+
+### Fixed
+- 🐛 飞书通知不推送 — findUserByUid → findUserById
+- 🐛 成就命令无响应 — 移除浏览器模块导入
+- 🐛 等级命令 RangeError — XP 计算公式修正
+- 🐛 飞书 webhook 重复推送 — 添加 event_id 去重机制
+- 🐛 绑定码复制按钮 this 上下文错误
+- 🐛 桌宠气泡移动端溢出
+
+---
+
 ## [5.4.0-beta] - 2026-05-04
 
 **代号：Feishu Integration（飞书集成）**

@@ -57,6 +57,7 @@ export function exportLogs() {
         var auth = JSON.parse(localStorage.getItem('myscore_auth') || '{}');
         header += 'Logged In: ' + (!!auth.token) + '\n';
         if (auth.uid) header += 'UID: ' + auth.uid + '\n';
+        header += 'Feishu Bound: ' + (!!auth.feishuOpenId) + '\n';
     } catch (e) {
         header += 'Logged In: parse_error\n';
     }

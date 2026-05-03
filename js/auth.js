@@ -662,7 +662,7 @@ async function pushToCloud() {
             body: JSON.stringify(gatherAllLocalStorage())
         });
         logEvent('sync-push', { success: true, recordCount: recCount });
-    } catch (e) { logEvent('sync-push', { success: false, recordCount: recCount, error: String(e) }); console.warn('Cloud sync failed:', e); showAiToast('云同步失败，请检查网络连接'); }
+    } catch (e) { logEvent('sync-push', { success: false, recordCount: recCount, error: String(e) }); showAiToast('云同步失败，请检查网络连接'); }
 }
 
 async function pullFromCloud() {
@@ -678,7 +678,7 @@ async function pullFromCloud() {
         } else {
             logEvent('sync-pull', { success: true, hadCloudData: false });
         }
-    } catch (e) { logEvent('sync-pull', { success: false, error: String(e) }); console.warn('Cloud pull failed:', e); showAiToast('云端数据拉取失败，请检查网络连接'); }
+    } catch (e) { logEvent('sync-pull', { success: false, error: String(e) }); showAiToast('云端数据拉取失败，请检查网络连接'); }
 }
 
 function gatherAllLocalStorage() {
