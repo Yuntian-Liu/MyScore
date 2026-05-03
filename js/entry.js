@@ -288,7 +288,7 @@ function submitScore(e) {
         if (!auth) return;
         try {
             var user = JSON.parse(auth);
-            if (!user.token || !user.feishuOpenId) return;
+            if (!user.token) return;
             fetch('/api/feishu/notify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + user.token },
