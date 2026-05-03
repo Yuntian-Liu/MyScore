@@ -401,7 +401,7 @@ async function shareReportToFeishu() {
         return;
     }
 
-    var auth = localStorage.getItem('myscoreauth');
+    var auth = localStorage.getItem('myscore_auth');
     if (!auth) { showAiToast('请先登录后再分享到飞书'); return; }
     var user;
     try { user = JSON.parse(auth); } catch (e) { showAiToast('登录状态异常'); return; }
@@ -430,7 +430,7 @@ async function shareReportToFeishu() {
 function _updateShareFeishuButtonVisibility() {
     var btn = document.getElementById('report-share-feishu-btn');
     if (!btn) return;
-    var auth = localStorage.getItem('myscoreauth');
+    var auth = localStorage.getItem('myscore_auth');
     if (!auth) { btn.style.display = 'none'; return; }
     try {
         var user = JSON.parse(auth);

@@ -829,6 +829,17 @@ function mergeCloudData(cloudData) {
             if ((cloudData.streak_data.longestStreak || 0) > (localStreak.longestStreak || 0)) {
                 localStreak.longestStreak = cloudData.streak_data.longestStreak;
             }
+            // lastDate 取更新的那个（防止云同步覆盖导致重复打卡）
+            if (cloudData.streak_data.lastDate && (!localStreak.lastDate || cloudData.streak_data.lastDate > localStreak.lastDate)) {
+                localStreak.lastDate = cloudData.streak_data.lastDate;
+            }
+            // dates 取并集
+            if (Array.isArray(cloudData.streak_data.dates)) {
+                localStreak.dates = localStreak.dates || [];
+                cloudData.streak_data.dates.forEach(function(d) {
+                    if (localStreak.dates.indexOf(d) === -1) localStreak.dates.push(d);
+                });
+            }
             localStorage.setItem(STORAGE.STREAK, JSON.stringify(localStreak));
             mergeInfo.streaksMerged = true;
         } catch {}
@@ -836,7 +847,11 @@ function mergeCloudData(cloudData) {
     if (cloudData.xp_data && typeof cloudData.xp_data === 'object') {
         try {
             var localXp = readStorageJson(STORAGE.XP, { total: 0, level: 1 });
-            if ((cloudData.xp_data.total || 0) > localXp.total) {
+            var cloudLevel = cloudData.xp_data.level || 1;
+            var cloudTotal = cloudData.xp_data.total || 0;
+            // 按等级优先比较：高等级胜出；同等级比剩余 XP
+            var cloudWins = cloudLevel > localXp.level || (cloudLevel === localXp.level && cloudTotal > localXp.total);
+            if (cloudWins) {
                 localStorage.setItem(STORAGE.XP, JSON.stringify(cloudData.xp_data));
             }
             mergeInfo.xpMerged = true;

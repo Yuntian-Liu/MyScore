@@ -32,7 +32,7 @@ export function renderDashboard() {
     const types = [...new Set(records.map(r => r.examType))];
     document.getElementById('exam-types-count').textContent = types.length;
     document.getElementById('record-count').textContent = records.length;
-    document.getElementById('latest-exam-date').textContent = records.length ? records[records.length-1].date : '-';
+    document.getElementById('latest-exam-date').textContent = records.length ? records.reduce(function(a, b) { return a.id > b.id ? a : b; }).date : '-';
 
     // Hero 归档
     const archiveGrid = document.getElementById('hero-archive-grid');
