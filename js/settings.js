@@ -246,8 +246,12 @@ function renderFeishuBindSection() {
     }
 
     container.innerHTML = '<div class="feishu-bind-card">' +
-        '<p style="color:var(--text-secondary);font-size:0.875rem;margin-bottom:0.75rem;">绑定后可在飞书接收成绩通知、查询成绩和成就</p>' +
-        '<button class="btn-primary" onclick="requestFeishuBindCode()" style="width:100%;">绑定飞书机器人</button></div>';
+        '<p style="color:var(--text-secondary);font-size:0.875rem;margin-bottom:0.5rem;">绑定后可在飞书接收成绩通知、查询成绩和成就</p>' +
+        '<div style="background:rgba(39,91,86,0.05);border-radius:8px;padding:0.6rem 0.75rem;margin-bottom:0.75rem;font-size:0.8rem;color:var(--text-muted);line-height:1.6;">' +
+        '<div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.25rem;"><span style="color:var(--accent);font-weight:600;">①</span> 打开飞书，搜索 <strong style="color:var(--text-secondary);">MyScore</strong></div>' +
+        '<div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.25rem;"><span style="color:var(--accent);font-weight:600;">②</span> 进入机器人对话</div>' +
+        '<div style="display:flex;align-items:center;gap:0.4rem;"><span style="color:var(--accent);font-weight:600;">③</span> 点击下方按钮获取绑定码</div></div>' +
+        '<button class="btn-primary" onclick="requestFeishuBindCode()" style="width:100%;">获取绑定码</button></div>';
 }
 
 async function requestFeishuBindCode() {
@@ -283,9 +287,11 @@ function renderBindCodeDisplay(code) {
 
         container.innerHTML = '<div class="feishu-bind-card">' +
             '<div style="text-align:center;">' +
-            '<p style="color:var(--text-secondary);font-size:0.875rem;font-weight:500;">请在飞书中向 MyScore 机器人发送：</p>' +
+            '<p style="color:var(--text-secondary);font-size:0.875rem;font-weight:500;">在飞书搜索 <strong>MyScore</strong>，发送以下内容：</p>' +
             '<div class="feishu-code-display">' + code + '</div>' +
-            '<p style="color:var(--text-muted);font-size:0.8rem;margin-top:0.5rem;">发送内容：<code style="background:rgba(39,91,86,0.08);padding:2px 8px;border-radius:4px;font-size:0.85rem;color:var(--accent);">绑定 ' + code + '</code></p>' +
+            '<p style="color:var(--text-muted);font-size:0.85rem;margin-top:0.5rem;">复制后在飞书中粘贴发送</p>' +
+            '<div style="background:rgba(39,91,86,0.06);border-radius:6px;padding:0.5rem 0.75rem;margin:0.5rem 0;font-size:0.82rem;display:flex;align-items:center;justify-content:center;gap:0.3rem;cursor:pointer;" onclick="navigator.clipboard.writeText(\'绑定 ' + code + '\').then(function(){this.style.color=\'var(--accent)\';this.innerHTML=\'✅ 已复制：绑定 ' + code + '\'})" id="feishu-copy-btn">' +
+            '<span style="color:var(--text-muted);">📋</span><code style="background:none;color:var(--text-secondary);font-size:0.85rem;">绑定 ' + code + '</code><span style="color:var(--text-muted);font-size:0.75rem;margin-left:0.25rem;">点击复制</span></div>' +
             '<div class="feishu-countdown" id="feishu-timer">⏱ ' + timeStr + ' 后过期</div>' +
             '<button class="btn-secondary" onclick="checkFeishuBindStatus()" style="margin-top:1rem;width:100%;">我已发送，检查状态</button>' +
             '</div></div>';

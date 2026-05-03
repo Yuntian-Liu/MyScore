@@ -535,7 +535,8 @@ export const GUIDE_SECTIONS = [
         <div class="guide-quick-item"><span class="guide-num">3</span>左下角「快捷工具」可展开工具箱（桌面端 hover，移动端点击），内含设置、伴学助手、版本日志</div>
         <div class="guide-quick-item"><span class="guide-num">4</span>注册账号后数据自动同步云端，换设备不丢失</div>
         <div class="guide-quick-item"><span class="guide-num">5</span>每日打卡积累经验值，解锁成就徽章</div>
-        <div class="guide-quick-item"><span class="guide-num">6</span>点击右上角头像 → 查看个人名片（等级/经验/打卡/成就一览）</div>
+        <div class="guide-quick-item"><span class="guide-num">6</span>设置页可绑定飞书机器人，录入成绩后自动收到飞书通知卡片</div>
+        <div class="guide-quick-item"><span class="guide-num">7</span>点击右上角头像 → 查看个人名片（等级/经验/打卡/成就一览）</div>
       </div>
     </div>`
   },
@@ -638,6 +639,52 @@ export const GUIDE_SECTIONS = [
         桌面宠物
       </div>
       <p class="guide-desc">右下角的桌宠会随你的成绩变化表情。支持自由拖动、缩放、吸附到屏幕边缘，可关闭和重新打开。</p>
+    </div>`
+  },
+  { id: 'guide-feishu', label: '飞书集成', content: `
+    <div class="guide-section" id="guide-feishu">
+      <div class="guide-section-title">
+        <span class="guide-icon" style="background:linear-gradient(135deg,#0ea5e9,#6366f1);">飞</span>
+        飞书机器人绑定
+      </div>
+      <p class="guide-desc">绑定飞书后，每次录入成绩都会自动推送精美的通知卡片到你的飞书。还可以在飞书中直接查询成绩、查看趋势和目标进度。</p>
+      <div class="guide-steps-list">
+        <div class="guide-step"><div class="guide-step-num">1</div><div><strong>打开飞书</strong>：在飞书搜索框中搜索 <strong style="color:var(--accent);">MyScore</strong>，进入机器人对话</div></div>
+        <div class="guide-step"><div class="guide-step-num">2</div><div><strong>获取绑定码</strong>：回到 MyScore 网站设置页，点击「获取绑定码」，获得 6 位数字码</div></div>
+        <div class="guide-step"><div class="guide-step-num">3</div><div><strong>发送绑定命令</strong>：在飞书中发送 <code style="background:rgba(39,91,86,0.08);padding:2px 8px;border-radius:4px;color:var(--accent);">绑定 XXXXXX</code>（替换为实际 6 位码）</div></div>
+        <div class="guide-step"><div class="guide-step-num">4</div><div><strong>完成绑定</strong>：收到"绑定成功！"欢迎卡片即表示绑定完成，网站设置页会显示绿色已绑定状态</div></div>
+      </div>
+      <p class="guide-desc" style="margin-top:0.75rem;font-size:0.82rem;color:var(--text-muted);">绑定码有效期为 5 分钟，过期后可重新获取。每个绑定码只能使用一次。</p>
+    </div>
+    <div class="guide-section">
+      <div class="guide-section-title">
+        <span class="guide-icon" style="background:linear-gradient(135deg,#0ea5e9,#10b981);">令</span>
+        机器人命令
+      </div>
+      <p class="guide-desc">绑定成功后，在飞书中直接发送以下关键词即可与 MyScore 交互：</p>
+      <table class="guide-table">
+        <thead><tr><th>命令</th><th>功能</th><th>返回形式</th></tr></thead>
+        <tbody>
+          <tr><td><code style="background:rgba(39,91,86,0.08);padding:2px 8px;border-radius:4px;">查询</code></td><td>查看最新一次考试成绩详情</td><td>交互式卡片</td></tr>
+          <tr><td><code style="background:rgba(39,91,86,0.08);padding:2px 8px;border-radius:4px;">趋势</code></td><td>最近 5 次成绩变化走势（含升降箭头）</td><td>文字消息</td></tr>
+          <tr><td><code style="background:rgba(39,91,86,0.08);padding:2px 8px;border-radius:4px;">目标</code></td><td>各科目目标完成进度百分比 + 进度条</td><td>文字消息</td></tr>
+          <tr><td><code style="background:rgba(39,91,86,0.08);padding:2px 8px;border-radius:4px;">成就</code></td><td>已解锁的成就列表</td><td>交互式卡片</td></tr>
+          <tr><td><code style="background:rgba(39,91,86,0.08);padding:2px 8px;border-radius:4px;">帮助</code></td><td>所有可用命令的快速参考</td><td>帮助卡片</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="guide-section">
+      <div class="guide-section-title">
+        <span class="guide-icon" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">通</span>
+        成绩通知推送
+      </div>
+      <p class="guide-desc">每次在网站录入成绩并保存后，如果已绑定飞书，系统会<strong>自动</strong>向飞书推送一张成绩通知卡片：</p>
+      <ul class="guide-list">
+        <li><strong>卡片内容</strong>：考试名称、日期、总分（大字突出）、各科分项明细、AI 摘要点评</li>
+        <li><strong>推送时机</strong>：保存成绩后静默异步推送，不阻塞主流程</li>
+        <li><strong>解绑方式</strong>：设置页 → 飞书集成区域 → 点击「解绑飞书」</li>
+      </ul>
+      <p class="guide-desc" style="margin-top:0.5rem;font-size:0.82rem;color:var(--text-muted);">未绑定飞书时，通知功能自动跳过，不影响正常使用。</p>
     </div>`
   },
   { id: 'guide-growth', label: '成长体系', content: `
