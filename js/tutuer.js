@@ -228,7 +228,7 @@ function setTutuerLoading(loading) {
     sending.disabled = loading;
     sending.innerHTML = loading
         ? '<span class="tutuer-send-loading"></span>'
-        : '发送';
+        : '↑';
 }
 
 export function setTutuerUnread(unread) {
@@ -314,7 +314,12 @@ async function sendTutuerMessage() {
         }
     } catch (err) {
         logEvent('tutuer-error', { error: String(err) });
-        tutuerMessages.push({ role: 'assistant', content: getTutuerFallbackReply(userText) });
+        if (err.status === 402 && window.showInsufficientStardustModal) {
+            showInsufficientStardustModal(err.stardustData);
+            tutuerMessages.push({ role: 'assistant', content: '✨ 星尘不足，本周 AI 伴学次数已用完。' });
+        } else {
+            tutuerMessages.push({ role: 'assistant', content: getTutuerFallbackReply(userText) });
+        }
     } finally {
         setTutuerLoading(false);
         saveTutuerHistory();

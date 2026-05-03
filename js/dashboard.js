@@ -329,6 +329,12 @@ async function fetchPrediction(examType, recs, exam, _retryCount, _targetEl) {
             }
         }
     } catch (e) {
+        if (e.status === 402 && window.showInsufficientStardustModal) {
+            showInsufficientStardustModal(e.stardustData);
+            targetEl = _targetEl || document.getElementById('prediction-content');
+            if (targetEl) targetEl.innerHTML = '<div class="prediction-error-wrap"><div class="prediction-error-text" style="color:#8b5cf6;">✨ 星尘不足，无法使用 AI 预测</div></div>';
+            return;
+        }
         _predictionFailCache[examType] = Date.now();
         targetEl = _targetEl || document.getElementById('prediction-content');
         if (!targetEl) return;
@@ -587,7 +593,7 @@ function renderExamDetail(examType) {
 
         // AI 成绩预测（3+条记录，手动触发）
         if (recs.length >= 3) {
-            html += '<h3 class="panel-section-title">🔮 AI 成绩预测</h3>';
+            html += '<h3 class="panel-section-title">🔮 AI 成绩预测 <span class="stardust-cost" style="background:rgba(59,130,246,0.1);color:#2563eb;">✨ 5</span></h3>';
             html += '<div id="panel-prediction-content" class="panel-prediction-section">';
             var predCached = _predictionCache['pred_' + examType];
             if (predCached && (Date.now() - predCached.ts < 3600000)) {
@@ -609,7 +615,7 @@ function renderExamDetail(examType) {
 
         // AI 薄弱项分析（3+条记录，手动触发）
         if (recs.length >= 3 && exam.subjects && exam.subjects.length >= 2) {
-            html += '<h3 class="panel-section-title">🩺 AI 薄弱项分析</h3>';
+            html += '<h3 class="panel-section-title">🩺 AI 薄弱项分析 <span class="stardust-cost" style="background:rgba(245,158,11,0.1);color:#d97706;">✨ 6</span></h3>';
             html += '<div id="weakness-content" class="weakness-section">';
             var weakCached = _weaknessCache['weak_' + examType];
             if (weakCached && (Date.now() - weakCached.ts < 7200000)) {
@@ -721,6 +727,11 @@ async function fetchWeaknessAnalysis(examType, recs, exam) {
         _weaknessCache[cacheKey] = { data: data, ts: Date.now() };
         el.innerHTML = renderWeaknessHTML(data, exam);
     } catch (e) {
+        if (e.status === 402 && window.showInsufficientStardustModal) {
+            showInsufficientStardustModal(e.stardustData);
+            el.innerHTML = '<div class="weakness-error" style="color:#8b5cf6;">✨ 星尘不足，无法使用薄弱项分析</div>';
+            return;
+        }
         el.innerHTML = '<div class="weakness-error">分析暂时不可用</div>';
     }
 }
@@ -996,7 +1007,7 @@ function renderRecentDetail() {
     var curStyle = localStorage.getItem('myscore_ai_style') || 'storm';
 
     html += '<div id="panel-ai-section" style="margin-top:1.2rem;">';
-    html += '<h3 class="panel-section-title">🤖 AI 点评</h3>';
+    html += '<h3 class="panel-section-title">🤖 AI 点评 <span class="stardust-cost" style="background:rgba(139,92,246,0.1);color:#7c3aed;">✨ 2</span></h3>';
     // 风格选择栏
     html += '<div id="panel-ai-style-bar" style="display:flex;gap:0.4rem;margin-bottom:0.5rem;flex-wrap:wrap;">';
     var styleList = [
@@ -1028,7 +1039,7 @@ function renderRecentDetail() {
     // 操作按钮（继续聊聊）
     var actionsDisplay = hasCached ? 'flex' : 'none';
     html += '<div id="panel-ai-actions" style="display:' + actionsDisplay + ';justify-content:flex-end;gap:0.5rem;margin-top:0.5rem;">';
-    html += '<button onclick="window._panelShowReply()" style="font-size:0.82rem;color:#174f3d;background:rgba(255,251,245,0.95);border:1px solid rgba(31,106,82,0.16);padding:0.42rem 0.9rem;border-radius:99px;cursor:pointer;font-weight:700;">继续聊聊</button>';
+    html += '<button onclick="window._panelShowReply()" style="font-size:0.82rem;color:#174f3d;background:rgba(255,251,245,0.95);border:1px solid rgba(31,106,82,0.16);padding:0.42rem 0.9rem;border-radius:99px;cursor:pointer;font-weight:700;">继续聊聊</button><span class="stardust-cost" style="background:rgba(236,72,153,0.1);color:#db2777;">✨ 1</span>';
     html += '</div>';
     // 回嘴输入区
     html += '<div id="panel-reply-input-area" style="display:none;margin-top:0.5rem;"><div style="display:flex;gap:0.5rem;">';

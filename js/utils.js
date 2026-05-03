@@ -157,12 +157,21 @@ export async function postComment(payload) {
         }
 
         if (!res.ok) {
+            if (res.status === 402) {
+                var err = new Error(data.error || '星尘不足');
+                err.status = 402;
+                err.stardustData = { balance: data.balance, cost: data.cost, nextRefresh: data.nextRefresh };
+                err.duration = Date.now() - startTime;
+                throw err;
+            }
             var err = new Error(data.error || ('AI 请求失败（' + res.status + '）'));
             err.status = res.status;
             err.duration = Date.now() - startTime;
             throw err;
         }
 
+        if (window.updateStardustFromHeaders) window.updateStardustFromHeaders(res.headers);
+        if (window.fetchStardustBalance) window.fetchStardustBalance();
         data._duration = Date.now() - startTime;
         return data;
     } catch (e) {
@@ -205,10 +214,20 @@ export async function postCommentStream(payload, onChunk) {
 
     if (!res.ok) {
         clearTimeout(timeoutId);
+        if (res.status === 402) {
+            var body = '';
+            try { body = await res.json(); } catch(e) {}
+            var err = new Error((body && body.error) || '星尘不足');
+            err.status = 402;
+            err.stardustData = body ? { balance: body.balance, cost: body.cost, nextRefresh: body.nextRefresh } : {};
+            throw err;
+        }
         var err = new Error('流式请求失败（' + res.status + '）');
         err.status = res.status;
         throw err;
     }
+
+    if (window.updateStardustFromHeaders) window.updateStardustFromHeaders(res.headers);
 
     var reader = res.body.getReader();
     var decoder = new TextDecoder();
@@ -239,5 +258,6 @@ export async function postCommentStream(payload, onChunk) {
     } finally {
         clearTimeout(timeoutId);
     }
+    if (window.fetchStardustBalance) window.fetchStardustBalance();
     return fullText;
 }

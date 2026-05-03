@@ -7,6 +7,7 @@ import { CORS_HEADERS, requestAiComment, requestAiCommentStream } from "./lib/ai
 import { handleFeishuEvent, generateBindCode, sendFeishuNotification } from "./lib/feishu.js";
 import { initDb, saveUserData, getUserData, findUser, findUserByUid, updateUserProfile, updateUserFeishuOpenId, maskEmail } from "./lib/db.js";
 import { sendVerificationCode, registerWithEmail, loginWithPassword, loginWithCode, verifyToken } from "./lib/auth.js";
+import { checkStardust, deductStardust, getFeatureCost, getStardustBalance } from "./lib/stardust.js";
 
 const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || "0.0.0.0";
@@ -145,42 +146,63 @@ async function handleCommentApi(req, res, ip) {
     return;
   }
 
-  // 检查认证状态
   const token = extractBearerToken(req);
   const payload = token ? verifyToken(token) : null;
 
-  // 未认证用户：检查每日限额
-  if (!payload) {
-    if (!checkAnonymousDailyLimit(ip)) {
-      sendJson(res, 429, { error: "今日 AI 评论次数已用完，登录即可解锁完整功能", limit: ANONYMOUS_DAILY_LIMIT }, CORS_HEADERS);
-      return;
-    }
-  }
-
   try {
     const body = await readJsonBody(req);
+    const { cost, mode, label } = getFeatureCost(body);
+
+    if (!payload) {
+      // 匿名用户：检查每日限额
+      if (!checkAnonymousDailyLimit(ip)) {
+        sendJson(res, 429, { error: "今日 AI 评论次数已用完，登录即可解锁完整功能", limit: ANONYMOUS_DAILY_LIMIT }, CORS_HEADERS);
+        return;
+      }
+    } else {
+      // 登录用户：先检查星尘余额
+      const userId = payload.userId;
+      const check = checkStardust(userId, cost);
+      if (!check.success) {
+        sendJson(res, 402, { error: check.error, balance: check.balance, cost, nextRefresh: check.nextRefresh }, CORS_HEADERS);
+        return;
+      }
+    }
+
     const config = {
       apiKey: process.env.AI_API_KEY,
       apiBaseUrl: process.env.AI_BASE_URL || "https://api.deepseek.com",
       model: process.env.AI_MODEL || "deepseek-v4-flash",
     };
 
-    // 流式路径：URL 带 ?stream=true
     const isStream = new URL(req.url, `http://${req.headers.host}`).searchParams.get("stream") === "true";
     if (isStream) {
-      res.writeHead(200, {
+      const streamHeaders = {
         ...CORS_HEADERS,
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
         Connection: "keep-alive",
-      });
+      };
+      res.writeHead(200, streamHeaders);
       await requestAiCommentStream(body, config, res);
+      // 流式完成后再扣星尘
+      if (payload) {
+        const dr = deductStardust(payload.userId, cost, mode);
+        streamHeaders["X-Stardust-Balance"] = String(dr.balance);
+        streamHeaders["X-Stardust-Cost"] = String(cost);
+      }
       res.end();
       return;
     }
 
     const result = await requestAiComment(body, config);
-    sendJson(res, 200, result, CORS_HEADERS);
+    // 非流式成功后再扣星尘
+    let extraHeaders = {};
+    if (payload) {
+      const dr = deductStardust(payload.userId, cost, mode);
+      extraHeaders = { "X-Stardust-Balance": String(dr.balance), "X-Stardust-Cost": String(cost) };
+    }
+    sendJson(res, 200, result, { ...CORS_HEADERS, ...extraHeaders });
   } catch (error) {
     sendJson(
       res,
@@ -512,6 +534,10 @@ async function handleSyncRequest(req, res) {
 
     if (req.method === "PUT") {
       const body = await readJsonBody(req);
+      const existing = getUserData(payload.userId);
+      if (existing && existing.stardust) {
+        body.stardust = existing.stardust;
+      }
       saveUserData(payload.userId, body);
       sendJson(res, 200, { ok: true }, CORS_HEADERS);
       return;
@@ -532,6 +558,19 @@ const server = createServer(async (req, res) => {
   const ip = req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.socket.remoteAddress || "unknown";
   if (!checkRateLimit(path, ip)) {
     sendJson(res, 429, { error: "请求过于频繁，请稍后再试" }, CORS_HEADERS);
+    return;
+  }
+
+  if (path === "/api/stardust" && req.method === "GET") {
+    const token = extractBearerToken(req);
+    const payload = token ? verifyToken(token) : null;
+    if (!payload) {
+      sendJson(res, 401, { error: "未登录或登录已过期" }, CORS_HEADERS);
+      return;
+    }
+    const userId = payload.userId;
+    const data = getStardustBalance(userId);
+    sendJson(res, 200, { ok: true, stardust: data }, CORS_HEADERS);
     return;
   }
 

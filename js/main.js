@@ -11,6 +11,7 @@ import { updateStreak, checkAchievements } from './gamification.js';
 
 // 导入 side-effect 模块（它们自注册 window 函数）
 import { logEvent } from './logger.js';
+import { fetchStardustBalance } from './stardust.js';
 import './settings.js';
 import './ai.js';
 import './report.js';

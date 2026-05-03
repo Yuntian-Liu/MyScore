@@ -3699,10 +3699,10 @@
     color: #9ca3af;
 }
 
-/* 数据概览三列 */
+/* 数据概览四列 */
 .pc-stats-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 0.75rem;
     margin-bottom: 1.2rem;
 }
@@ -4155,6 +4155,58 @@
     color: #b45309;
     font-weight: 600;
     white-space: nowrap;
+}
+
+/* 星尘胶囊 */
+.gam-stardust {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.18rem 0.55rem;
+    background: rgba(139, 92, 246, 0.08);
+    border-radius: 99px;
+    font-size: 0.68rem;
+    color: #7c3aed;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: default;
+}
+.gam-stardust.stardust-low {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+}
+.gam-stardust-icon {
+    font-size: 0.72rem;
+    line-height: 1;
+}
+.gam-stardust-count {
+    font-variant-numeric: tabular-nums;
+}
+
+/* 星尘不足弹窗 */
+.stardust-modal {
+    animation: modalIn 0.25s ease;
+}
+.stardust-modal .gradient-text {
+    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* 星尘消耗胶囊 */
+.stardust-cost {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+    vertical-align: middle;
+    margin-left: 6px;
+    line-height: 1.4;
 }
 
 /* 成就条 — hero-card 底部紧凑行 */

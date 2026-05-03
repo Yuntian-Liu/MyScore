@@ -1,9 +1,9 @@
 ﻿<div align="center">
 
-# MyScore - AI 智能成绩管理系统 · V5.5.0-beta
+# MyScore - AI 智能成绩管理系统 · V5.6.0-beta
 
 <p>
-    <img src="https://img.shields.io/badge/v5.5.0--beta-Feishu_Expansion-7c3aed?style=flat-square&logo=rocket&logoColor=white" alt="Version">
+    <img src="https://img.shields.io/badge/v5.6.0--beta-Stardust-8b5cf6?style=flat-square&logo=rocket&logoColor=white" alt="Version">
     <img src="https://img.shields.io/badge/Model-DeepSeek-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
     <img src="https://img.shields.io/badge/Deploy-Netlify_%2B_Zeabur-5468ff?style=flat-square&logo=vercel&logoColor=white" alt="Deploy">
     <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=flat-square" alt="License">
@@ -13,11 +13,13 @@
 
 </div>
 
-一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V5.5.0-beta**，飞书机器人扩展至 9 个命令，交互卡片全面升级。
+一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V5.6.0-beta**，星尘（Stardust）系统上线，AI 功能积分制。
 
 ## 🔔 最新版本速览
 
-### V5.5.0-beta (Current)
+### V5.6.0-beta (Current)
+- ✅ **星尘（Stardust）系统**：AI 功能积分制，登录用户每周 200 星尘，周一自动刷新
+- ✅ **星尘消耗分级**：评论✨2 / 回嘴✨1 / 预测✨5 / 分析✨6 / 突突er✨1
 - ✅ **飞书机器人完整对接**：9 种命令全覆盖（绑定/查询/趋势/目标/成就/统计/历史/打卡/等级）
 - ✅ **6 位码绑定流程**：设置页生成绑定码 → 飞书发送匹配 → 自动关联账号
 - ✅ **飞书成绩通知卡片**：录入成绩后自动推送交互式卡片到飞书
@@ -29,6 +31,16 @@
 - ✅ **报告页「分享到飞书」按钮**：成绩单/分享卡片双模式推送至飞书会话（需绑定飞书）
 - ✅ **注册流程飞书引导步骤**：注册完成后可选绑定，含 ⓘ 悬浮提示、绑定码生成、跳过功能
 - 📧 **联系邮箱更新为 ytunx.com**
+
+### V5.5.0-beta
+- ✅ **飞书机器人完整对接**：9 种命令全覆盖（绑定/查询/趋势/目标/成就/统计/历史/打卡/等级）
+- ✅ **6 位码绑定流程**：设置页生成绑定码 → 飞书发送匹配 → 自动关联账号
+- ✅ **飞书成绩通知卡片**：录入成绩后自动推送交互式卡片到飞书
+- ✅ **飞书交互卡片升级**：所有命令使用 column_set 交互式卡片，视觉效果大幅提升
+- ✅ **设置页飞书区块**：绑定状态展示 / 6 位码大字展示 / 引导步骤 / 解绑功能
+- ✅ **导出日志增强**：新增飞书绑定状态字段
+- ✅ **报告页「分享到飞书」按钮**：成绩单/分享卡片双模式推送至飞书会话
+- ✅ **注册流程飞书引导步骤**：注册完成后可选绑定，含绑定码生成、跳过功能
 
 ### V5.4.0-beta
 - ✅ **飞书机器人完整对接**：命令路由系统 + 6 位码绑定流程 + 成绩通知卡片

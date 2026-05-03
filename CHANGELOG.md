@@ -5,6 +5,27 @@ The format is based on [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [5.6.0-beta] - 2026-05-04
+
+**代号：Stardust（星尘）**
+
+### Added
+- ✅ **星尘（Stardust）系统**：AI 功能积分制，登录用户每周 200 星尘，周一 00:00 自动刷新
+- ✅ **星尘消耗分级**：评论✨2 / 回嘴✨1 / 预测✨5 / 分析✨6 / 突突er✨1
+- ✅ **星尘 UI**：导航栏余额胶囊 + 个人名片星尘列 + 功能标题消耗胶囊 + 余额不足弹窗
+- ✅ **星尘使用文档**：站内指南 AI 交互部分新增规则说明与消耗表格
+
+### Changed
+- 🔄 星尘 AI 成功后扣除（AI 失败不扣星尘）
+- 🔄 本地开发 Turnstile 自动跳过（localhost 免人机验证）
+- 🔄 CORS 暴露自定义 header（前端实时更新星尘余额）
+
+### Fixed
+- 🐛 云同步覆盖星尘数据 — pushToCloud 保留服务端 stardust 字段
+- 🐛 突突er 发送按钮变"发送"文字 — 恢复为 ↑ 箭头
+
+---
+
 ## [5.5.0-beta] - 2026-05-03
 
 **代号：Feishu Integration（飞书集成）**

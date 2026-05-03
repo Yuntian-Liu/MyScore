@@ -293,6 +293,7 @@ function onLoginSuccess(token, user) {
     setUserMode('loggedin');
     closeLoginModal();
     updateLoginButton();
+    if (window.fetchStardustBalance) window.fetchStardustBalance();
     _isSyncing = true;
     pullFromCloud().then(function() {
         if (hadLocalRecords) pushToCloud();
@@ -432,6 +433,7 @@ function confirmLogout() {
     window._auth_justLoggedOut = true;
     currentUser = null;
     if (window._resetAiCache) window._resetAiCache();
+    if (window.hideStardustBadge) window.hideStardustBadge();
     updateLoginButton();
     if (window.renderDashboard) window.renderDashboard();
 }
@@ -463,6 +465,7 @@ export async function restoreSession() {
             } catch {}
             logEvent('auth-session-restore', { hadSavedAuth: true, tokenValid: tokenValid, profileOk: profileOk });
             updateLoginButton();
+            if (window.fetchStardustBalance) window.fetchStardustBalance();
             pullFromCloud();
         } else {
             logEvent('auth-session-restore', { hadSavedAuth: false });
@@ -654,8 +657,10 @@ function renderProfileCardContent() {
     html += '<div class="pc-level-meta"><span>' + xpInLevel + ' / ' + xpNeeded + ' XP</span><span>累计 ' + xpTotal + ' XP</span></div>';
     html += '</div>';
     // === 区域3: 数据概览 ===
+    var stardustBal = (window.getStardustBalance && window.getStardustBalance()) || 0;
     html += '<div class="pc-stats-grid">';
     html += '<div class="pc-stat-item"><div class="pc-stat-icon">📝</div><div class="pc-stat-value">' + records.length + '</div><div class="pc-stat-label">总记录</div></div>';
+    html += '<div class="pc-stat-item"><div class="pc-stat-icon">✨</div><div class="pc-stat-value">' + stardustBal + '</div><div class="pc-stat-label">星尘</div></div>';
     html += '<div class="pc-stat-item"><div class="pc-stat-icon">' + (streak >= 7 ? '🔥' : '⚡') + '</div><div class="pc-stat-value">' + streak + '</div><div class="pc-stat-label">连续打卡' + (longestStreak > streak ? '<br><span style="font-size:0.7rem;color:#9ca3af;">最长 ' + longestStreak + ' 天</span>' : '') + '</div></div>';
     html += '<div class="pc-stat-item"><div class="pc-stat-icon">🏅</div><div class="pc-stat-value">' + achList.length + '/12</div><div class="pc-stat-label">已解锁成就</div></div>';
     html += '</div>';

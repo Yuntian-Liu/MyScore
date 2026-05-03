@@ -11,13 +11,13 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <link rel="apple-touch-icon" href="logo2.svg">
     <meta name="myscore-comment-endpoint" content="/api/comment">
-    <title>MyScore V5.5.0-beta - AI 智能成绩单 | 碳碳四键的个人开发应用实践</title>
+    <title>MyScore V5.6.0-beta - AI 智能成绩单 | 碳碳四键的个人开发应用实践</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-    <link rel="stylesheet" href="style.css?v=550b">
+    <link rel="stylesheet" href="style.css?v=560b">
 </head>
 <body>
     <!-- 离线横幅 -->
@@ -120,6 +120,10 @@
                                 <span class="gam-xp-label">Lv.<span class="gam-xp-level">1</span></span>
                                 <div class="gam-xp-track"><div class="gam-xp-fill"></div></div>
                                 <span class="gam-xp-text">0/80 XP</span>
+                            </div>
+                            <div id="gam-stardust" class="gam-stardust hidden" title="「收集星尘，唤醒 AI」&#10;MyScore 中使用 AI 功能的高级货币">
+                                <span class="gam-stardust-icon">✨</span>
+                                <span class="gam-stardust-count" id="gam-stardust-count">200</span>
                             </div>
                             <div id="gam-streak" class="gam-streak"></div>
                         </div>
@@ -652,7 +656,7 @@
                         </svg>
                     </span>
                     <div>
-                        <div class="footer-title">MyScore V5.5.0-beta</div>
+                        <div class="footer-title">MyScore V5.6.0-beta</div>
                         <div class="footer-desc">碳碳四键的个人开发实践项目</div>
                     </div>
                 </div>
@@ -688,7 +692,7 @@
                         <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
                         GitHub
                     </a>
-                    · V5.5.0-beta · 蜀ICP备2026006689号
+                    · V5.6.0-beta · 蜀ICP备2026006689号
                 </span>
                 <span>Designed for a calmer, brighter study workflow</span>
             </div>
@@ -769,6 +773,7 @@
         <div class="tutuer-quick-actions">
             <button class="tutuer-quick-btn" type="button" onclick="askTutuerStudyPlan()">📋 生成学习计划</button>
             <button class="tutuer-quick-btn" type="button" onclick="clearTutuerHistory()">🗑 清空对话</button>
+            <span class="stardust-cost" style="background:rgba(16,185,129,0.1);color:#059669;margin-left:auto;">✨ 1/条</span>
         </div>
         <div class="tutuer-input-row">
             <textarea id="tutuer-input" class="tutuer-input" autocomplete="off" placeholder="和突突er说点什么..." onkeydown="handleTutuerInputKeydown(event)"></textarea>
@@ -916,7 +921,7 @@
     </div>
 </div>
 
-<script type="module" src="js/main.js?v=550b"></script>
+<script type="module" src="js/main.js?v=560b"></script>
 
 </body>
 </html>

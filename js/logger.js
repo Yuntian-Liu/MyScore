@@ -58,6 +58,7 @@ export function exportLogs() {
         header += 'Logged In: ' + (!!auth.token) + '\n';
         if (auth.uid) header += 'UID: ' + auth.uid + '\n';
         header += 'Feishu Bound: ' + (!!auth.feishuOpenId) + '\n';
+        if (window.getStardustBalance) header += 'Stardust Balance: ' + (window.getStardustBalance() ?? 'N/A') + '\n';
     } catch (e) {
         header += 'Logged In: parse_error\n';
     }
