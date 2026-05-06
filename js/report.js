@@ -373,7 +373,6 @@ async function downloadReport() {
         try {
             canvas = await _captureWithTimeout(wrapper2, canvasOpts, 8000);
         } catch (e2) {
-            console.error('[Report] 系统字体截图也失败:', e2);
             alert('导出超时，请对预览区域截图保存');
         } finally {
             document.body.removeChild(wrapper2);

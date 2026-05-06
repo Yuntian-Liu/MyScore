@@ -200,7 +200,7 @@ export const IELTS_TABLES = {
     ]
 };
 
-export const APP_VERSION = '5.6.0-beta';
+export const APP_VERSION = '5.6.1-beta';
 export const CHANGELOG_STORAGE_KEY = 'myscore_changelog_seen_' + APP_VERSION;
 
 export const PET_STORAGE_KEY = 'myscore_pet_state';
@@ -309,6 +309,40 @@ export const CHANGELOG_CURRENT = `
 </div>
 <div class="changelog-entry">
   <div class="changelog-header">
+    <span class="changelog-version">V5.6.1-beta</span>
+    <span class="changelog-date">2026-05-07</span>
+  </div>
+  <div class="changelog-codename">Polish（抛光）</div>
+  <div class="changelog-section">
+    <div class="changelog-section-title">
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#8b5cf6,#3b82f6);">~</span>
+      优化
+    </div>
+    <ul class="changelog-list">
+      <li><strong>SEO / OG 标签</strong>：添加 meta description 与 Open Graph 标签，分享到飞书/微信等平台时显示富文本预览卡片</li>
+      <li><strong>noscript 降级提示</strong>：禁用 JavaScript 时显示友好提示而非空白页面</li>
+      <li><strong>PWA 图标兼容性</strong>：补充 192×192 与 512×512 PNG 图标（含 maskable），iOS Safari 可正常显示应用图标</li>
+      <li><strong>macOS 本地开发</strong>：新增 start-local.command 双击启动脚本，自动配置测试环境变量</li>
+    </ul>
+  </div>
+  <div class="changelog-section">
+    <div class="changelog-section-title">
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#ef4444,#f97316);">!</span>
+      修复
+    </div>
+    <ul class="changelog-list">
+      <li><strong>SW 预缓存补全</strong>：补全 settings.js / stardust.js / logger.js 三个缺失模块，离线模式下设置页、星尘系统、日志功能不再白屏</li>
+      <li><strong>版本日志日期错误</strong>：V5.4.0 日期从 05-04 修正为 05-02，时间线恢复正确顺序</li>
+      <li><strong>SVG logo 清理</strong>：移除 iconfont 平台残留属性（t / p-id / class），文件更干净</li>
+      <li><strong>console 调试代码清理</strong>：移除 ai.js / dashboard.js / report.js / utils.js 共 7 处 console.error / console.warn 生产残留</li>
+    </ul>
+  </div>
+</div>`;
+
+// ==================== 版本日志：历史版本 ====================
+export const CHANGELOG_HISTORY = `
+<div class="changelog-entry">
+  <div class="changelog-header">
     <span class="changelog-version">V5.6.0-beta</span>
     <span class="changelog-date">2026-05-04</span>
   </div>
@@ -364,10 +398,7 @@ export const CHANGELOG_CURRENT = `
       <li>飞书重复推送 — webhook 重试导致旧命令被重复处理，添加 event_id 去重机制</li>
     </ul>
   </div>
-</div>`;
-
-// ==================== 版本日志：历史版本 ====================
-export const CHANGELOG_HISTORY = `
+</div>
 <div class="changelog-entry">
   <div class="changelog-header">
     <span class="changelog-version">V5.5.0-beta</span>
@@ -420,7 +451,7 @@ export const CHANGELOG_HISTORY = `
 <div class="changelog-entry">
   <div class="changelog-header">
     <span class="changelog-version">V5.4.0-beta</span>
-    <span class="changelog-date">2026-05-04</span>
+    <span class="changelog-date">2026-05-02</span>
   </div>
   <div class="changelog-codename">Feishu Integration（飞书集成）</div>
   <div class="changelog-section">

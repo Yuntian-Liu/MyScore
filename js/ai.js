@@ -114,7 +114,7 @@ export async function fetchAIComment(examType, currentScore, historyScores) {
                 } else { box.innerHTML = '老师去吃饭了...'; }
             }
         }
-    } catch (err) { console.error(err); logEvent('ai-error', { examType, status: err.status || 0, duration: err.duration, error: err.message }); if (err.status === 402 && window.showInsufficientStardustModal) { showInsufficientStardustModal(err.stardustData); box.innerHTML = '<span style="color:#8b5cf6;">✨ 星尘不足，无法使用 AI 评论</span>'; } else { box.innerHTML = '老师断线了...'; } }
+    } catch (err) { logEvent('ai-error', { examType, status: err.status || 0, duration: err.duration, error: err.message }); if (err.status === 402 && window.showInsufficientStardustModal) { showInsufficientStardustModal(err.stardustData); box.innerHTML = '<span style="color:#8b5cf6;">✨ 星尘不足，无法使用 AI 评论</span>'; } else { box.innerHTML = '老师断线了...'; } }
     finally { aiStyleLocked = false; aiStyleCooldown = true; setTimeout(function() { aiStyleCooldown = false; }, 3000); }
 }
 
@@ -172,7 +172,7 @@ async function sendRebuttal() {
             localStorage.setItem('myscore_ai_debated', '1');
             logEvent('ai-rebuttal', { examType: lastExamType, style: currentAiStyle, length: data.comment.length, duration: data._duration });
         }
-    } catch (err) { console.error(err); logEvent('ai-error', { examType: lastExamType, type: 'rebuttal', status: err.status || 0, duration: err.duration, error: err.message }); if (err.status === 402 && window.showInsufficientStardustModal) { showInsufficientStardustModal(err.stardustData); box.innerHTML += '<br><span style="color:#8b5cf6;">✨ 星尘不足</span>'; } else { box.innerHTML += '<br>(老师被气得掉线了)'; } }
+    } catch (err) { logEvent('ai-error', { examType: lastExamType, type: 'rebuttal', status: err.status || 0, duration: err.duration, error: err.message }); if (err.status === 402 && window.showInsufficientStardustModal) { showInsufficientStardustModal(err.stardustData); box.innerHTML += '<br><span style="color:#8b5cf6;">✨ 星尘不足</span>'; } else { box.innerHTML += '<br>(老师被气得掉线了)'; } }
 }
 
 // ---- 目标追踪 ----

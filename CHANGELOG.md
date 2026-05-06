@@ -5,6 +5,24 @@ The format is based on [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [5.6.1-beta] - 2026-05-07
+
+**代号：Polish（抛光）**
+
+### Changed
+- 🔄 SEO / OG 标签 — 添加 meta description 与 Open Graph 标签，分享到社交平台显示富文本预览卡片
+- 🔄 noscript 降级提示 — 禁用 JavaScript 时显示友好提示而非空白页面
+- 🔄 PWA 图标兼容性 — 补充 192×192 与 512×512 PNG 图标（含 maskable），iOS Safari 正常显示
+- 🔄 macOS 本地开发 — 新增 start-local.command 双击启动脚本
+
+### Fixed
+- 🔧 SW 预缓存补全 — 补全 settings.js / stardust.js / logger.js，离线模式不再白屏
+- 🔧 版本日志日期错误 — V5.4.0 日期从 05-04 修正为 05-02
+- 🔧 SVG logo 清理 — 移除 iconfont 平台残留属性（t / p-id / class）
+- 🔧 console 调试代码清理 — 移除 ai.js / dashboard.js / report.js / utils.js 共 7 处 console.error/warn
+
+---
+
 ## [5.6.0-beta] - 2026-05-04
 
 **代号：Stardust（星尘）**

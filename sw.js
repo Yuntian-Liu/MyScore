@@ -1,13 +1,13 @@
 // ==================== MyScore Service Worker ====================
-var CACHE_NAME = 'myscore-v560b';
+var CACHE_NAME = 'myscore-v561b';
 
 var APP_SHELL = [
     '/',
     '/index.html',
-    '/style.css?v=560b',
+    '/style.css?v=561b',
     '/logo2.svg',
     '/manifest.json',
-    '/js/main.js?v=560b',
+    '/js/main.js?v=561b',
     '/js/config.js',
     '/js/storage.js',
     '/js/utils.js',
@@ -20,7 +20,10 @@ var APP_SHELL = [
     '/js/report.js',
     '/js/auth.js',
     '/js/ai.js',
-    '/js/gamification.js'
+    '/js/gamification.js',
+    '/js/settings.js',
+    '/js/stardust.js',
+    '/js/logger.js'
 ];
 
 // ==================== Install ====================

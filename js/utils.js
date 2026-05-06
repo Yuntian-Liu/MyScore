@@ -6,7 +6,6 @@ export function readStorageJson(key, fallback) {
         const raw = localStorage.getItem(key);
         return raw ? JSON.parse(raw) : fallback;
     } catch (error) {
-        console.warn('Failed to parse localStorage key:', key, error);
         return fallback;
     }
 }

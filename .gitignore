@@ -1,6 +1,7 @@
 node_modules/
 .env
 .env.local
+start-local.*
 start-local.bat
 .claude/
 .DS_Store
@@ -16,3 +17,4 @@ docs/
 LOGs/
 Summary_3.md
 RELEASE_SOP.md
+Summary_4.md

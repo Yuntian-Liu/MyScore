@@ -1,9 +1,9 @@
 ﻿<div align="center">
 
-# MyScore - AI 智能成绩管理系统 · V5.6.0-beta
+# MyScore - AI 智能成绩管理系统 · V5.6.1-beta
 
 <p>
-    <img src="https://img.shields.io/badge/v5.6.0--beta-Stardust-8b5cf6?style=flat-square&logo=rocket&logoColor=white" alt="Version">
+    <img src="https://img.shields.io/badge/v5.6.1--beta-Polish-8b5cf6?style=flat-square&logo=rocket&logoColor=white" alt="Version">
     <img src="https://img.shields.io/badge/Model-DeepSeek-3b82f6?style=flat-square&logo=probot&logoColor=white" alt="AI Model">
     <img src="https://img.shields.io/badge/Deploy-Netlify_%2B_Zeabur-5468ff?style=flat-square&logo=vercel&logoColor=white" alt="Deploy">
     <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=flat-square" alt="License">
@@ -13,11 +13,20 @@
 
 </div>
 
-一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V5.6.0-beta**，星尘（Stardust）系统上线，AI 功能积分制。
+一个功能完善且具备 **AI 交互能力** 和 **云端账号系统** 的考试成绩管理系统。当前为 **V5.6.1-beta**，抛光（Polish）版本，修复与体验优化。
 
 ## 🔔 最新版本速览
 
-### V5.6.0-beta (Current)
+### V5.6.1-beta (Current) — Polish（抛光）
+- 🔄 **SEO / OG 标签**：分享到社交平台显示富文本预览卡片
+- 🔄 **noscript 降级提示**：禁用 JS 时显示友好提示
+- 🔄 **PWA PNG 图标**：补充多尺寸图标提升 iOS 兼容性
+- 🔄 **macOS 启动脚本**：新增 start-local.command 双击启动
+- 🔧 **SW 预缓存补全 3 个 JS 文件**
+- 🔧 **V5.4.0 版本日志日期修正**
+- 🔧 **SVG logo 清理 + console 调试代码清理**
+
+### V5.6.0-beta — Stardust（星尘）
 - ✅ **星尘（Stardust）系统**：AI 功能积分制，登录用户每周 200 星尘，周一自动刷新
 - ✅ **星尘消耗分级**：评论✨2 / 回嘴✨1 / 预测✨5 / 分析✨6 / 突突er✨1
 - ✅ **飞书机器人完整对接**：9 种命令全覆盖（绑定/查询/趋势/目标/成就/统计/历史/打卡/等级）

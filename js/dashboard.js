@@ -1466,7 +1466,6 @@ window._startPanelAiAnalysis = async function() {
             box.innerHTML = '老师去吃饭了...';
         }
     } catch (err) {
-        console.error(err);
         // fallback 到非流式
         try {
             var data = await postComment({ examType: ctx.examName, currentScore: ctx.score, historyScores: ctx.history, style: style });
@@ -1480,7 +1479,6 @@ window._startPanelAiAnalysis = async function() {
                 box.innerHTML = '老师去吃饭了...';
             }
         } catch (err2) {
-            console.error(err2);
             logEvent('ai-error', { examType: ctx.examType, error: err2.message });
             box.innerHTML = '<span style="color:#9ca3af;">老师断线了... </span><button onclick="window._startPanelAiAnalysis()" style="margin-left:0.5rem;font-size:0.82rem;color:#1f6a52;background:none;border:1px solid rgba(31,106,82,0.2);padding:0.3rem 0.8rem;border-radius:99px;cursor:pointer;">重试</button>';
         }
@@ -1533,7 +1531,6 @@ window._panelSendRebuttal = async function() {
             logEvent('ai-rebuttal', { examType: ctx.examType, style: style, length: data.comment.length });
         }
     } catch (err) {
-        console.error(err);
         logEvent('ai-error', { examType: ctx.examType, type: 'rebuttal', error: err.message });
         box.innerHTML += '<br><span style="color:#9ca3af;">(老师被气得掉线了)</span>';
     }
