@@ -50,7 +50,8 @@ export function exportLogs() {
         'Time: ' + new Date().toISOString() + '\n' +
         'Timezone: UTC' + (new Date().getTimezoneOffset() > 0 ? '-' : '+') + Math.abs(new Date().getTimezoneOffset() / 60) + '\n' +
         'Screen: ' + screen.width + 'x' + screen.height + ' @' + (window.devicePixelRatio || 1) + 'x\n' +
-        'Viewport: ' + window.innerWidth + 'x' + window.innerHeight + '\n';
+        'Viewport: ' + window.innerWidth + 'x' + window.innerHeight + '\n' +
+        'Language: ' + (navigator.language || navigator.userLanguage || 'unknown') + '\n';
 
     // 登录状态
     try {
@@ -59,6 +60,8 @@ export function exportLogs() {
         if (auth.uid) header += 'UID: ' + auth.uid + '\n';
         header += 'Feishu Bound: ' + (!!auth.feishuOpenId) + '\n';
         if (window.getStardustBalance) header += 'Stardust Balance: ' + (window.getStardustBalance() ?? 'N/A') + '\n';
+        var lastSync = localStorage.getItem('myscore_last_sync');
+        if (lastSync) header += 'Last Sync: ' + lastSync + '\n';
     } catch (e) {
         header += 'Logged In: parse_error\n';
     }
