@@ -5,6 +5,15 @@ The format is based on [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [5.6.2-beta] - 2026-05-07
+
+**代号：Icon Fix（图标修复）**
+
+### Fixed
+- 🔧 PWA 图标 Android 裁切 — maskable 改用 SVG 矢量自适应，any 保留 PNG（iOS 兼容）
+
+---
+
 ## [5.6.1-beta] - 2026-05-07
 
 **代号：Polish（抛光）**

@@ -9,7 +9,7 @@
 *不止记录分数，更陪你复盘、答疑与成长。*
 
 <p>
-<img src="https://img.shields.io/badge/v5.6.1--beta-Polish-8b5cf6?style=for-the-badge&label=Version" alt="Version">
+<img src="https://img.shields.io/badge/v5.6.2--beta-Icon_Fix-8b5cf6?style=for-the-badge&label=Version" alt="Version">
 <img src="https://img.shields.io/badge/Node.js->=20-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js">
 <img src="https://img.shields.io/badge/DeepSeek-AI-3b82f6?style=for-the-badge&logo=probot&logoColor=white" alt="AI Model">
 <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=for-the-badge" alt="License">

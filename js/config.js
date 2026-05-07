@@ -200,7 +200,7 @@ export const IELTS_TABLES = {
     ]
 };
 
-export const APP_VERSION = '5.6.1-beta';
+export const APP_VERSION = '5.6.2-beta';
 export const CHANGELOG_STORAGE_KEY = 'myscore_changelog_seen_' + APP_VERSION;
 
 export const PET_STORAGE_KEY = 'myscore_pet_state';
@@ -309,6 +309,25 @@ export const CHANGELOG_CURRENT = `
 </div>
 <div class="changelog-entry">
   <div class="changelog-header">
+    <span class="changelog-version">V5.6.2-beta</span>
+    <span class="changelog-date">2026-05-07</span>
+  </div>
+  <div class="changelog-codename">Icon Fix（图标修复）</div>
+  <div class="changelog-section">
+    <div class="changelog-section-title">
+      <span class="changelog-icon" style="background:linear-gradient(135deg,#ef4444,#f97316);">!</span>
+      修复
+    </div>
+    <ul class="changelog-list">
+      <li><strong>PWA 图标 Android 裁切</strong>：maskable 图标改用 SVG，Android 矢量自适应不再裁切边缘；any 图标保留 PNG（iOS 兼容）</li>
+    </ul>
+  </div>
+</div>`;
+
+// ==================== 版本日志：历史版本 ====================
+export const CHANGELOG_HISTORY = `
+<div class="changelog-entry">
+  <div class="changelog-header">
     <span class="changelog-version">V5.6.1-beta</span>
     <span class="changelog-date">2026-05-07</span>
   </div>
@@ -337,10 +356,7 @@ export const CHANGELOG_CURRENT = `
       <li><strong>console 调试代码清理</strong>：移除 ai.js / dashboard.js / report.js / utils.js 共 7 处 console.error / console.warn 生产残留</li>
     </ul>
   </div>
-</div>`;
-
-// ==================== 版本日志：历史版本 ====================
-export const CHANGELOG_HISTORY = `
+</div>
 <div class="changelog-entry">
   <div class="changelog-header">
     <span class="changelog-version">V5.6.0-beta</span>

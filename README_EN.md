@@ -9,7 +9,7 @@
 *More than recording scores — it accompanies you through review, Q&A, and growth.*
 
 <p>
-<img src="https://img.shields.io/badge/v5.6.1--beta-Polish-8b5cf6?style=for-the-badge&label=Version" alt="Version">
+<img src="https://img.shields.io/badge/v5.6.2--beta-Icon_Fix-8b5cf6?style=for-the-badge&label=Version" alt="Version">
 <img src="https://img.shields.io/badge/Node.js->=20-339933?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js">
 <img src="https://img.shields.io/badge/DeepSeek-AI-3b82f6?style=for-the-badge&logo=probot&logoColor=white" alt="AI Model">
 <img src="https://img.shields.io/badge/License-MIT-fbbf24?style=for-the-badge" alt="License">
